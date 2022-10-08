@@ -73,8 +73,6 @@ public class PnmParser
 
     private Image ReadTextPixelImage(BinaryReader reader)
     {
-        char c;
-
         var width = GetNextHeaderValue(reader);
         var height = GetNextHeaderValue(reader);
         var scale = GetNextHeaderValue(reader);
@@ -164,27 +162,10 @@ public class PnmParser
     {
         var hasValue = false;
         var value = string.Empty;
-        char c;
-        var comment = false;
 
         do
         {
-            c = reader.ReadChar();
-
-            if (c == '#')
-            {
-                comment = true;
-            }
-
-            if (comment)
-            {
-                if (c == '\n')
-                {
-                    comment = false;
-                }
-
-                continue;
-            }
+            var c = reader.ReadChar();
 
             if (hasValue) continue;
             switch (c)
