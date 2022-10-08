@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using Avalonia.ReactiveUI;
 using System;
 
 namespace YAPaint
@@ -16,6 +17,7 @@ namespace YAPaint
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                          .UsePlatformDetect()
-                         .LogToTrace();
+                         .LogToTrace()
+                         .UseReactiveUI();
     }
 }
