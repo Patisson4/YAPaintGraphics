@@ -15,7 +15,8 @@
     <DockPanel>
         <Menu VerticalAlignment="Top">
             <MenuItem Header="File">
-                <MenuItem Header="Open..." Command="{Binding }" />
+                <MenuItem Header="Open" Command="{Binding }" />
+                <MenuItem Header="Save" Command="{Binding }" />
                 <Separator />
                 <MenuItem Header="Exit" />
             </MenuItem>

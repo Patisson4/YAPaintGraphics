@@ -1,7 +1,9 @@
-﻿namespace YAPaint.ViewModels
+﻿using System.Drawing;
+
+namespace YAPaint.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        public string Greeting => "Welcome to Avalonia!";
+        public Image Greeting => default!;
     }
 }
