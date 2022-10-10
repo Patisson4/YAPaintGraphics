@@ -10,7 +10,7 @@ public static class PnmParser
         using var stream = new FileStream(path, FileMode.Open);
         using var reader = new BinaryReader(stream);
 
-        if (reader.ReadChar() != 'P')
+        if (reader.ReadChar() is not 'P')
         {
             throw new NotSupportedFormatException("Unknown format specification");
         }
@@ -28,9 +28,9 @@ public static class PnmParser
 
         var bitmap = new Bitmap(width, height);
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 Color color = ReadColor(reader, type, scale);
                 bitmap.SetPixel(x, y, color);
@@ -56,7 +56,7 @@ public static class PnmParser
 
     private static Color ReadTextBitmapColor(BinaryReader reader)
     {
-        int bit = GetNextTextValue(reader) == 0 ? 255 : 0;
+        var bit = GetNextTextValue(reader) == 0 ? 255 : 0;
         return Color.FromArgb(bit, bit, bit);
     }
 
@@ -98,8 +98,8 @@ public static class PnmParser
 
     private static int GetNextHeaderValue(BinaryReader reader)
     {
-        var hasValue = false;
-        var value = string.Empty;
+        bool hasValue = false;
+        string value = string.Empty;
 
         do
         {
@@ -122,7 +122,7 @@ public static class PnmParser
 
     private static int GetNextTextValue(BinaryReader reader)
     {
-        var value = string.Empty;
+        string value = string.Empty;
         var c = reader.ReadChar();
 
         do
