@@ -9,9 +9,9 @@
         Title="YAPaint">
 
     <Design.DataContext>
-        <vm:MainWindowViewModel/>
+        <vm:MainWindowViewModel />
     </Design.DataContext>
-    
+
     <DockPanel>
         <Menu VerticalAlignment="Top">
             <MenuItem Header="File">
@@ -25,7 +25,7 @@
                 <MenuItem Header="Paste" />
             </MenuItem>
         </Menu>
-        <Image Source="{Binding BitmapImage}" Height="300"/>
+        <Image Source="{Binding BitmapImage}" Height="300" />
     </DockPanel>
 
 </Window>

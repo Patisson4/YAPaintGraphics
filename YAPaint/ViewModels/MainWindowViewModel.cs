@@ -7,45 +7,44 @@ using Avalonia.Controls;
 using ReactiveUI;
 using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
 
-namespace YAPaint.ViewModels
+namespace YAPaint.ViewModels;
+
+public class MainWindowViewModel : ViewModelBase
 {
-    public class MainWindowViewModel : ViewModelBase
+    private AvaloniaBitmap _bitmapImage = LoadImage(@"..\..\..\Assets\IMG_3609.jpg");
+
+    public string ImagePath { get; set; } = string.Empty;
+
+    public AvaloniaBitmap BitmapImage
     {
-        private AvaloniaBitmap _bitmapImage = LoadImage(@"..\..\..\Assets\IMG_3609.jpg");
+        get => _bitmapImage;
+        set => this.RaiseAndSetIfChanged(ref _bitmapImage, value);
+    }
 
-        public string ImagePath { get; set; } = string.Empty;
-
-        public AvaloniaBitmap BitmapImage
+    public async Task Open()
+    {
+        var dialog = new OpenFileDialog
         {
-            get => _bitmapImage;
-            set => this.RaiseAndSetIfChanged(ref _bitmapImage, value);
+            Filters = new List<FileDialogFilter>
+                { new FileDialogFilter { Name = "Image", Extensions = { "jpg", "png", "pnm", "bmp" } } },
+        };
+
+        string[] result = await dialog.ShowAsync(new Window());
+
+        if (result is not null)
+        {
+            ImagePath = result[0];
         }
 
-        public async Task Open()
-        {
-            var dialog = new OpenFileDialog
-            {
-                Filters = new List<FileDialogFilter>
-                    { new FileDialogFilter { Name = "Image", Extensions = { "jpg", "png", "pnm", "bmp" } } },
-            };
+        BitmapImage = LoadImage(ImagePath);
+    }
 
-            string[] result = await dialog.ShowAsync(new Window());
-
-            if (result is not null)
-            {
-                ImagePath = result[0];
-            }
-
-            BitmapImage = LoadImage(ImagePath);
-        }
-
-        public static AvaloniaBitmap LoadImage(string imagePath)
-        {
-            var bitmap = new Bitmap(imagePath);
-            using var stream = new MemoryStream();
-            bitmap.Save(stream, ImageFormat.Jpeg);
-            stream.Position = 0;
-            return new AvaloniaBitmap(stream);
-        }
+    public static AvaloniaBitmap LoadImage(string imagePath)
+    {
+        var bitmap = new Bitmap(imagePath);
+        using var stream = new MemoryStream();
+        bitmap.Save(stream, ImageFormat.Jpeg);
+        stream.Position = 0;
+        return new AvaloniaBitmap(stream);
     }
 }
