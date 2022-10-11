@@ -1,12 +1,11 @@
 using Avalonia.Controls;
 
-namespace YAPaint.Views
+namespace YAPaint.Views;
+
+public partial class MainWindow : Window
 {
-    public partial class MainWindow : Window
+    public MainWindow()
     {
-        public MainWindow()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }
