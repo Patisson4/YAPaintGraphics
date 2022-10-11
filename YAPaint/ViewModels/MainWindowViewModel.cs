@@ -1,18 +1,24 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using ReactiveUI;
+using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
 
 namespace YAPaint.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        private string _imagePath = string.Empty;
+        private AvaloniaBitmap _bitmapImage = LoadImage(@"..\..\..\Assets\IMG_3609.jpg");
 
-        public string ImagePath
+        public string ImagePath { get; set; } = string.Empty;
+
+        public AvaloniaBitmap BitmapImage
         {
-            get => _imagePath;
-            set => this.RaiseAndSetIfChanged(ref _imagePath, value);
+            get => _bitmapImage;
+            set => this.RaiseAndSetIfChanged(ref _bitmapImage, value);
         }
 
         public async Task Open()
@@ -29,6 +35,17 @@ namespace YAPaint.ViewModels
             {
                 ImagePath = result[0];
             }
+
+            BitmapImage = LoadImage(ImagePath);
+        }
+
+        public static AvaloniaBitmap LoadImage(string imagePath)
+        {
+            var bitmap = new Bitmap(imagePath);
+            using var stream = new MemoryStream();
+            bitmap.Save(stream, ImageFormat.Jpeg);
+            stream.Position = 0;
+            return new AvaloniaBitmap(stream);
         }
     }
 }

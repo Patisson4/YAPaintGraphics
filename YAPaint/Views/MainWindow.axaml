@@ -25,7 +25,7 @@
                 <MenuItem Header="Paste" />
             </MenuItem>
         </Menu>
-        <Image Source="{Binding ImagePath, Mode=OneWay}" />
+        <Image Source="{Binding BitmapImage}" Height="300"/>
     </DockPanel>
 
 </Window>
