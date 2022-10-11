@@ -15,8 +15,8 @@
     <DockPanel>
         <Menu VerticalAlignment="Top">
             <MenuItem Header="File">
-                <MenuItem Header="Open" Command="{Binding }" />
-                <MenuItem Header="Save" Command="{Binding }" />
+                <MenuItem Header="Open" Command="{Binding Open}" />
+                <MenuItem Header="Save" />
                 <Separator />
                 <MenuItem Header="Exit" />
             </MenuItem>
@@ -25,8 +25,7 @@
                 <MenuItem Header="Paste" />
             </MenuItem>
         </Menu>
-
-        <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Image Source="{Binding ImagePath, Mode=OneWay}" />
     </DockPanel>
 
 </Window>
