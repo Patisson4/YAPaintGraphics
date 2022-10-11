@@ -14,9 +14,9 @@ public class MainWindowViewModel : ViewModelBase
     private readonly FileDialogFilter _fileFilter = new FileDialogFilter
         { Name = "Image", Extensions = { "jpg", "png", "pnm", "bmp" } };
 
-    private AvaloniaBitmap _bitmapImage = LoadImage(@"..\..\..\Assets\IMG_3609.jpg");
+    private string ImagePath { get; set; } = string.Empty;
 
-    public string ImagePath { get; set; } = string.Empty;
+    private AvaloniaBitmap _bitmapImage = LoadImage(@"..\..\..\Assets\IMG_3609.jpg");
 
     public AvaloniaBitmap BitmapImage
     {
