@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YAPaint", "YAPaint\YAPaint.csproj", "{48A33246-12D8-45DA-A71F-E3D31F7F8276}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YAPaint.Core", "YAPaint.Core\YAPaint.Core.csproj", "{03068AD2-43DB-4A89-82B7-23B5432CD1B2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{48A33246-12D8-45DA-A71F-E3D31F7F8276}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{48A33246-12D8-45DA-A71F-E3D31F7F8276}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{48A33246-12D8-45DA-A71F-E3D31F7F8276}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03068AD2-43DB-4A89-82B7-23B5432CD1B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03068AD2-43DB-4A89-82B7-23B5432CD1B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03068AD2-43DB-4A89-82B7-23B5432CD1B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03068AD2-43DB-4A89-82B7-23B5432CD1B2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
