@@ -11,6 +11,9 @@ namespace YAPaint.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
+    private readonly FileDialogFilter _fileFilter = new FileDialogFilter
+        { Name = "Image", Extensions = { "jpg", "png", "pnm", "bmp" } };
+
     private AvaloniaBitmap _bitmapImage = LoadImage(@"..\..\..\Assets\IMG_3609.jpg");
 
     public string ImagePath { get; set; } = string.Empty;
@@ -25,8 +28,7 @@ public class MainWindowViewModel : ViewModelBase
     {
         var dialog = new OpenFileDialog
         {
-            Filters = new List<FileDialogFilter>
-                { new FileDialogFilter { Name = "Image", Extensions = { "jpg", "png", "pnm", "bmp" } } },
+            Filters = new List<FileDialogFilter> { _fileFilter },
         };
 
         string[] result = await dialog.ShowAsync(new Window());
@@ -37,6 +39,17 @@ public class MainWindowViewModel : ViewModelBase
         }
 
         BitmapImage = LoadImage(ImagePath);
+    }
+
+    public async Task Save()
+    {
+        var dialog = new SaveFileDialog { Filters = new List<FileDialogFilter> { _fileFilter } };
+        string result = await dialog.ShowAsync(new Window());
+
+        if (result is not null)
+        {
+            BitmapImage.Save(result);
+        }
     }
 
     public static AvaloniaBitmap LoadImage(string imagePath)

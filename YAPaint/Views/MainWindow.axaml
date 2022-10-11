@@ -16,7 +16,7 @@
         <Menu VerticalAlignment="Top">
             <MenuItem Header="File">
                 <MenuItem Header="Open" Command="{Binding Open}" />
-                <MenuItem Header="Save" />
+                <MenuItem Header="Save" Command="{Binding Save}"/>
                 <Separator />
                 <MenuItem Header="Exit" />
             </MenuItem>
