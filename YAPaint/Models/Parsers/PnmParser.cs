@@ -1,14 +1,21 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Drawing.Imaging;
-using YAPaint.Core.Exceptions;
+using System.IO;
+using YAPaint.Models.Exceptions;
 using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
 
-namespace YAPaint.Core.Parsers;
+namespace YAPaint.Models.Parsers;
 
 public static class PnmParser
 {
     public static Image ReadImage(string path)
     {
+        if (Path.GetExtension(path) is not (".pnm" or ".pbm" or ".pgm" or ".ppm"))
+        {
+            return new Bitmap(path);
+        }
+
         using var stream = new FileStream(path, FileMode.Open);
         using var reader = new BinaryReader(stream);
 
@@ -23,7 +30,7 @@ public static class PnmParser
         var height = GetNextHeaderValue(reader);
         var scale = 1;
 
-        if (type is '1' or '4')
+        if (type is not ('1' or '4'))
         {
             scale = GetNextHeaderValue(reader);
         }
@@ -107,7 +114,6 @@ public static class PnmParser
         {
             var c = reader.ReadChar();
 
-            if (hasValue) continue;
             switch (c)
             {
                 case '\n' or ' ' or '\t' when value.Length != 0:
@@ -136,17 +142,30 @@ public static class PnmParser
 
         return int.Parse(value);
     }
-    
-    public static AvaloniaBitmap ConvertToAvaloniaBitmap(this Image? bitmap)
+
+    public static AvaloniaBitmap ConvertToAvaloniaBitmap_MS(this Image bitmap)
+    {
+        using var stream = new MemoryStream();
+        bitmap.Save(stream, ImageFormat.Jpeg);
+        stream.Position = 0;
+        return new AvaloniaBitmap(stream);
+    }
+
+    public static AvaloniaBitmap ConvertToAvaloniaBitmap_LB(this Image bitmap)
     {
         var bitmapTmp = new Bitmap(bitmap);
-        var bitmapdata = bitmapTmp.LockBits(new Rectangle(0, 0, bitmapTmp.Width, bitmapTmp.Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
-        var avaloniaBitmap = new AvaloniaBitmap(Avalonia.Platform.PixelFormat.Bgra8888, Avalonia.Platform.AlphaFormat.Premul,
-            bitmapdata.Scan0,
-            new Avalonia.PixelSize(bitmapdata.Width, bitmapdata.Height),
+        var bitmapData = bitmapTmp.LockBits(
+            new Rectangle(0, 0, bitmapTmp.Width, bitmapTmp.Height),
+            ImageLockMode.ReadWrite,
+            PixelFormat.Format32bppArgb);
+        var avaloniaBitmap = new AvaloniaBitmap(
+            Avalonia.Platform.PixelFormat.Bgra8888,
+            Avalonia.Platform.AlphaFormat.Premul,
+            bitmapData.Scan0,
+            new Avalonia.PixelSize(bitmapData.Width, bitmapData.Height),
             new Avalonia.Vector(96, 96),
-            bitmapdata.Stride);
-        bitmapTmp.UnlockBits(bitmapdata);
+            bitmapData.Stride);
+        bitmapTmp.UnlockBits(bitmapData);
         bitmapTmp.Dispose();
         return avaloniaBitmap;
     }

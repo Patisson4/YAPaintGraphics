@@ -1,4 +1,6 @@
-﻿namespace YAPaint.Core.Exceptions;
+﻿using System;
+
+namespace YAPaint.Models.Exceptions;
 
 public class NotSupportedFormatException : Exception
 {

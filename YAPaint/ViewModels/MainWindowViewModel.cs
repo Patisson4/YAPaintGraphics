@@ -51,13 +51,4 @@ public class MainWindowViewModel : ViewModelBase
             BitmapImage.Save(result);
         }
     }
-
-    public static AvaloniaBitmap LoadImage(string imagePath)
-    {
-        var bitmap = new Bitmap(imagePath);
-        using var stream = new MemoryStream();
-        bitmap.Save(stream, ImageFormat.Jpeg);
-        stream.Position = 0;
-        return new AvaloniaBitmap(stream);
-    }
 }
