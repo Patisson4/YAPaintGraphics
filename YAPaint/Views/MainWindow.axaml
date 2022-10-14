@@ -16,12 +16,13 @@
         <Menu VerticalAlignment="Top">
             <MenuItem Header="File">
                 <MenuItem Header="Open" Command="{Binding Open}" />
-                <MenuItem Header="Save" Command="{Binding Save}"/>
+                <MenuItem Header="Save" Command="{Binding Save}" />
                 <Separator />
                 <MenuItem Header="Exit" Click="Exit" />
             </MenuItem>
         </Menu>
-        <Image Source="{Binding BitmapImage}" Height="300" />
+        <TextBlock DockPanel.Dock="Bottom" HorizontalAlignment="Left" Text="{Binding Message}" />
+        <Image DockPanel.Dock="Bottom" Source="{Binding BitmapImage}" Height="300" />
     </DockPanel>
 
 </Window>
