@@ -1,22 +1,21 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using ReactiveUI;
+using YAPaint.Models.Parsers;
 using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
 
 namespace YAPaint.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
-    private readonly FileDialogFilter _fileFilter = new FileDialogFilter
-        { Name = "Image", Extensions = { "jpg", "png", "pnm", "bmp" } };
+    private readonly List<FileDialogFilter> _fileFilters = new List<FileDialogFilter>
+    {
+        new FileDialogFilter { Name = "Image", Extensions = { "jpg", "bmp", "png", "pnm", "pbm", "pgm", "ppm" } },
+    };
 
-    private string ImagePath { get; set; } = string.Empty;
-
-    private AvaloniaBitmap _bitmapImage = LoadImage(@"..\..\..\Assets\IMG_3609.jpg");
+    private AvaloniaBitmap _bitmapImage = new Bitmap(@"..\..\..\Assets\LAX.jpg").ConvertToAvaloniaBitmap_MS();
 
     public AvaloniaBitmap BitmapImage
     {
@@ -26,24 +25,18 @@ public class MainWindowViewModel : ViewModelBase
 
     public async Task Open()
     {
-        var dialog = new OpenFileDialog
-        {
-            Filters = new List<FileDialogFilter> { _fileFilter },
-        };
-
+        var dialog = new OpenFileDialog { Filters = _fileFilters, AllowMultiple = false };
         string[] result = await dialog.ShowAsync(new Window());
 
         if (result is not null)
         {
-            ImagePath = result[0];
+            BitmapImage = PnmParser.ReadImage(result[0]).ConvertToAvaloniaBitmap_LB();
         }
-
-        BitmapImage = LoadImage(ImagePath);
     }
 
     public async Task Save()
     {
-        var dialog = new SaveFileDialog { Filters = new List<FileDialogFilter> { _fileFilter } };
+        var dialog = new SaveFileDialog { Filters = _fileFilters };
         string result = await dialog.ShowAsync(new Window());
 
         if (result is not null)
