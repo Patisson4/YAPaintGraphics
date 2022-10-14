@@ -1,22 +1,23 @@
-﻿using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using ReactiveUI;
+using YAPaint.Models.Parsers;
 using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
 
 namespace YAPaint.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
-    private readonly FileDialogFilter _fileFilter = new FileDialogFilter
-        { Name = "Image", Extensions = { "jpg", "png", "pnm", "bmp" } };
+    private string _message = "Nothing here";
 
-    private string ImagePath { get; set; } = string.Empty;
+    private readonly List<FileDialogFilter> _fileFilters = new List<FileDialogFilter>
+    {
+        new FileDialogFilter { Name = "Image", Extensions = { "jpg", "bmp", "png", "pnm", "pbm", "pgm", "ppm" } },
+    };
 
-    private AvaloniaBitmap _bitmapImage = LoadImage(@"..\..\..\Assets\IMG_3609.jpg");
+    private AvaloniaBitmap _bitmapImage = PnmParser.ReadImage(@"..\..\..\Assets\LAX.jpg").ConvertToAvaloniaBitmap();
 
     public AvaloniaBitmap BitmapImage
     {
@@ -24,40 +25,45 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _bitmapImage, value);
     }
 
+    public string Message
+    {
+        get => _message;
+        set => this.RaiseAndSetIfChanged(ref _message, value);
+    }
+
     public async Task Open()
     {
-        var dialog = new OpenFileDialog
+        try
         {
-            Filters = new List<FileDialogFilter> { _fileFilter },
-        };
+            var dialog = new OpenFileDialog { Filters = _fileFilters, AllowMultiple = false };
+            string[] result = await dialog.ShowAsync(new Window());
 
-        string[] result = await dialog.ShowAsync(new Window());
-
-        if (result is not null)
-        {
-            ImagePath = result[0];
+            if (result is not null)
+            {
+                BitmapImage = PnmParser.ReadImage(result[0]).ConvertToAvaloniaBitmap();
+            }
         }
-
-        BitmapImage = LoadImage(ImagePath);
+        catch (Exception e)
+        {
+            Message = e.ToString();
+        }
     }
 
     public async Task Save()
     {
-        var dialog = new SaveFileDialog { Filters = new List<FileDialogFilter> { _fileFilter } };
-        string result = await dialog.ShowAsync(new Window());
-
-        if (result is not null)
+        try
         {
-            BitmapImage.Save(result);
-        }
-    }
+            var dialog = new SaveFileDialog { Filters = _fileFilters };
+            string result = await dialog.ShowAsync(new Window());
 
-    public static AvaloniaBitmap LoadImage(string imagePath)
-    {
-        var bitmap = new Bitmap(imagePath);
-        using var stream = new MemoryStream();
-        bitmap.Save(stream, ImageFormat.Jpeg);
-        stream.Position = 0;
-        return new AvaloniaBitmap(stream);
+            if (result is not null)
+            {
+                await BitmapImage.ConvertToSystemBitmap().WriteRawImage(result);
+            }
+        }
+        catch (Exception e)
+        {
+            Message = e.ToString();
+        }
     }
 }
