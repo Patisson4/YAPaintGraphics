@@ -18,11 +18,7 @@
                 <MenuItem Header="Open" Command="{Binding Open}" />
                 <MenuItem Header="Save" Command="{Binding Save}"/>
                 <Separator />
-                <MenuItem Header="Exit" />
-            </MenuItem>
-            <MenuItem Header="Edit">
-                <MenuItem Header="Copy" />
-                <MenuItem Header="Paste" />
+                <MenuItem Header="Exit" Click="Exit" />
             </MenuItem>
         </Menu>
         <Image Source="{Binding BitmapImage}" Height="300" />
