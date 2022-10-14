@@ -12,7 +12,7 @@
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <DockPanel>
+    <DockPanel LastChildFill="True">
         <Menu VerticalAlignment="Top">
             <MenuItem Header="File">
                 <MenuItem Header="Open" Command="{Binding Open}" />
