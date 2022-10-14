@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Drawing;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using ReactiveUI;
@@ -10,12 +10,14 @@ namespace YAPaint.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
+    private string _message = "Nothing here";
+
     private readonly List<FileDialogFilter> _fileFilters = new List<FileDialogFilter>
     {
         new FileDialogFilter { Name = "Image", Extensions = { "jpg", "bmp", "png", "pnm", "pbm", "pgm", "ppm" } },
     };
 
-    private AvaloniaBitmap _bitmapImage = new Bitmap(@"..\..\..\Assets\LAX.jpg").ConvertToAvaloniaBitmap_MS();
+    private AvaloniaBitmap _bitmapImage = PnmParser.ReadImage(@"..\..\..\Assets\LAX.jpg").ConvertToAvaloniaBitmap();
 
     public AvaloniaBitmap BitmapImage
     {
@@ -23,25 +25,45 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _bitmapImage, value);
     }
 
+    public string Message
+    {
+        get => _message;
+        set => this.RaiseAndSetIfChanged(ref _message, value);
+    }
+
     public async Task Open()
     {
-        var dialog = new OpenFileDialog { Filters = _fileFilters, AllowMultiple = false };
-        string[] result = await dialog.ShowAsync(new Window());
-
-        if (result is not null)
+        try
         {
-            BitmapImage = PnmParser.ReadImage(result[0]).ConvertToAvaloniaBitmap_LB();
+            var dialog = new OpenFileDialog { Filters = _fileFilters, AllowMultiple = false };
+            string[] result = await dialog.ShowAsync(new Window());
+
+            if (result is not null)
+            {
+                BitmapImage = PnmParser.ReadImage(result[0]).ConvertToAvaloniaBitmap();
+            }
+        }
+        catch (Exception e)
+        {
+            Message = e.ToString();
         }
     }
 
     public async Task Save()
     {
-        var dialog = new SaveFileDialog { Filters = _fileFilters };
-        string result = await dialog.ShowAsync(new Window());
-
-        if (result is not null)
+        try
         {
-            BitmapImage.Save(result);
+            var dialog = new SaveFileDialog { Filters = _fileFilters };
+            string result = await dialog.ShowAsync(new Window());
+
+            if (result is not null)
+            {
+                await BitmapImage.ConvertToSystemBitmap().WriteRawImage(result);
+            }
+        }
+        catch (Exception e)
+        {
+            Message = e.ToString();
         }
     }
 }

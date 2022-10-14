@@ -1,7 +1,8 @@
-﻿using System;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using YAPaint.Models.Exceptions;
 using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
 
@@ -9,7 +10,7 @@ namespace YAPaint.Models.Parsers;
 
 public static class PnmParser
 {
-    public static Image ReadImage(string path)
+    public static Bitmap ReadImage(string path)
     {
         if (Path.GetExtension(path) is not (".pnm" or ".pbm" or ".pgm" or ".ppm"))
         {
@@ -47,6 +48,54 @@ public static class PnmParser
         }
 
         return bitmap;
+    }
+
+    public static async Task WriteTextImage(this Bitmap bitmap, string path)
+    {
+        await using var file = new StreamWriter(path);
+        await file.WriteLineAsync("P3");
+        await file.WriteLineAsync($"{bitmap.Width} {bitmap.Height}");
+        await file.WriteLineAsync("255");
+
+        for (int y = 0; y < bitmap.Height; y++)
+        {
+            for (int x = 0; x < bitmap.Width - 1; x++)
+            {
+                Color color = bitmap.GetPixel(x, y);
+                await file.WriteAsync($"{color.R} {color.G} {color.B} ");
+            }
+
+            {
+                Color color = bitmap.GetPixel(bitmap.Width - 1, y);
+                await file.WriteLineAsync($"{color.R} {color.G} {color.B}");
+            }
+        }
+    }
+
+    public static async Task WriteRawImage(this Bitmap bitmap, string path)
+    {
+        await using FileStream file = File.OpenWrite(path);
+
+        byte[] header = $"P6\n{bitmap.Width} {bitmap.Height}\n255\n".Select(x => (byte)x).ToArray();
+        await file.WriteAsync(header);
+
+        for (int y = 0; y < bitmap.Height; y++)
+        {
+            for (int x = 0; x < bitmap.Width - 1; x++)
+            {
+                Color color = bitmap.GetPixel(x, y);
+                file.WriteByte(color.R);
+                file.WriteByte(color.G);
+                file.WriteByte(color.B);
+            }
+
+            {
+                Color color = bitmap.GetPixel(bitmap.Width - 1, y);
+                file.WriteByte(color.R);
+                file.WriteByte(color.G);
+                file.WriteByte(color.B);
+            }
+        }
     }
 
     private static Color ReadColor(BinaryReader reader, char type, int scale)
@@ -116,7 +165,7 @@ public static class PnmParser
 
             switch (c)
             {
-                case '\n' or ' ' or '\t' when value.Length != 0:
+                case '\n' or '\r' or ' ' or '\t' when value.Length != 0:
                     hasValue = true;
                     break;
                 case >= '0' and <= '9':
@@ -136,22 +185,28 @@ public static class PnmParser
         do
         {
             value += c;
-
-            c = reader.ReadChar();
-        } while (c is not ('\n' or ' ' or '\t') || value.Length == 0);
+            try
+            {
+                c = reader.ReadChar();
+            }
+            catch (EndOfStreamException)
+            {
+                break;
+            }
+        } while (c is not ('\n' or '\r' or ' ' or '\t') || value.Length == 0);
 
         return int.Parse(value);
     }
 
-    public static AvaloniaBitmap ConvertToAvaloniaBitmap_MS(this Image bitmap)
+    public static Bitmap ConvertToSystemBitmap(this AvaloniaBitmap bitmap)
     {
         using var stream = new MemoryStream();
-        bitmap.Save(stream, ImageFormat.Jpeg);
+        bitmap.Save(stream);
         stream.Position = 0;
-        return new AvaloniaBitmap(stream);
+        return new Bitmap(stream);
     }
 
-    public static AvaloniaBitmap ConvertToAvaloniaBitmap_LB(this Image bitmap)
+    public static AvaloniaBitmap ConvertToAvaloniaBitmap(this Bitmap bitmap)
     {
         var bitmapTmp = new Bitmap(bitmap);
         var bitmapData = bitmapTmp.LockBits(
