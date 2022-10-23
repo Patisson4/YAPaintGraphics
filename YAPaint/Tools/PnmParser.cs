@@ -1,12 +1,12 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using YAPaint.Models.Exceptions;
 using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
 
-namespace YAPaint.Models.Parsers;
+namespace YAPaint.Tools;
 
 public static class PnmParser
 {
@@ -22,7 +22,7 @@ public static class PnmParser
 
         if (reader.ReadChar() is not 'P')
         {
-            throw new NotSupportedFormatException("Unknown format specification");
+            throw new NotSupportedException("Unknown format specification");
         }
 
         char type = reader.ReadChar();
@@ -108,7 +108,7 @@ public static class PnmParser
             '4' => ReadBinaryBitmapColor(reader),
             '5' => ReadBinaryGreyscaleColor(reader, scale),
             '6' => ReadBinaryPixelImage(reader, scale),
-            _ => throw new NotSupportedFormatException("Unknown format specification"),
+            _ => throw new NotSupportedException("Unknown format specification"),
         };
     }
 
