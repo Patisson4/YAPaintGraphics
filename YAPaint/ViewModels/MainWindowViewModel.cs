@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Logging;
 using ReactiveUI.Fody.Helpers;
 using YAPaint.Models.ColorSpaces;
 using YAPaint.Tools;
@@ -53,7 +54,7 @@ public class MainWindowViewModel : ViewModelBase
         }
         catch (Exception e)
         {
-            Message = e.ToString();
+            Logger.Sink?.Log(LogEventLevel.Error, "All", e, e.ToString());
         }
     }
 
@@ -71,7 +72,7 @@ public class MainWindowViewModel : ViewModelBase
         }
         catch (Exception e)
         {
-            Message = e.ToString();
+            Logger.Sink?.Log(LogEventLevel.Error, "All", e, e.ToString());
         }
     }
 
@@ -89,7 +90,7 @@ public class MainWindowViewModel : ViewModelBase
         }
         catch (Exception e)
         {
-            Message = e.ToString();
+            Logger.Sink?.Log(LogEventLevel.Error, "All", e, e.ToString());
         }
     }
 
