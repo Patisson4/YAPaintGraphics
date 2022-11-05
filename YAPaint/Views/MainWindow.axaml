@@ -13,7 +13,7 @@
     </Design.DataContext>
 
     <DockPanel LastChildFill="True">
-        <Menu VerticalAlignment="Top">
+        <Menu DockPanel.Dock="Top">
             <MenuItem Header="File">
                 <MenuItem Header="Open" Command="{Binding Open}" />
                 <MenuItem Header="Save" Command="{Binding Save}" />
@@ -21,8 +21,8 @@
                 <MenuItem Header="Exit" Click="Exit" />
             </MenuItem>
         </Menu>
-        <TextBlock DockPanel.Dock="Bottom" HorizontalAlignment="Left" Text="{Binding Message}" />
-        <Image DockPanel.Dock="Bottom" Source="{Binding BitmapImage}" Height="300" />
+        <TextBlock DockPanel.Dock="Bottom" Margin="10" HorizontalAlignment="Left" Text="{Binding Message}" />
+        <Image Source="{Binding BitmapImage}" />
     </DockPanel>
 
 </Window>
