@@ -197,31 +197,4 @@ public static class PnmParser
 
         return int.Parse(value);
     }
-
-    public static Bitmap ConvertToSystemBitmap(this AvaloniaBitmap bitmap)
-    {
-        using var stream = new MemoryStream();
-        bitmap.Save(stream);
-        stream.Position = 0;
-        return new Bitmap(stream);
-    }
-
-    public static AvaloniaBitmap ConvertToAvaloniaBitmap(this Bitmap bitmap)
-    {
-        var bitmapTmp = new Bitmap(bitmap);
-        var bitmapData = bitmapTmp.LockBits(
-            new Rectangle(0, 0, bitmapTmp.Width, bitmapTmp.Height),
-            ImageLockMode.ReadWrite,
-            PixelFormat.Format32bppArgb);
-        var avaloniaBitmap = new AvaloniaBitmap(
-            Avalonia.Platform.PixelFormat.Bgra8888,
-            Avalonia.Platform.AlphaFormat.Premul,
-            bitmapData.Scan0,
-            new Avalonia.PixelSize(bitmapData.Width, bitmapData.Height),
-            new Avalonia.Vector(96, 96),
-            bitmapData.Stride);
-        bitmapTmp.UnlockBits(bitmapData);
-        bitmapTmp.Dispose();
-        return avaloniaBitmap;
-    }
 }
