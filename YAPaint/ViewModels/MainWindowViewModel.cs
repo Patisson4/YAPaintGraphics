@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using ReactiveUI.Fody.Helpers;
@@ -18,7 +20,13 @@ public class MainWindowViewModel : ViewModelBase
         new FileDialogFilter { Name = "All", Extensions = { "*" } },
     };
 
+    private readonly List<string> _spaces = Assembly.GetExecutingAssembly()
+                                                    .GetTypes()
+                                                    .Where(t => t.GetInterfaces().Contains(typeof(IColorSpace)))
+                                                    .Select(t => t.Name)
+                                                    .ToList();
 
+    public IReadOnlyList<string> ColorSpaces => _spaces;
 
     [Reactive]
     public string Message { get; set; } = "Timings will be displayed here";
