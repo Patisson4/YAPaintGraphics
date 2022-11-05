@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using YAPaint.Models;
+using YAPaint.Models.ColorSpaces;
 using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
 
 namespace YAPaint.Tools;
 
 public static class PnmParser
 {
-    public static Bitmap ReadImage(string path)
+    public static PortableBitmap ReadImage<T>(Stream stream) where T : IColorSpace
     {
         using var reader = new BinaryReader(stream);
 
@@ -30,18 +31,18 @@ public static class PnmParser
             scale = GetNextHeaderValue(reader);
         }
 
-        var bitmap = new Bitmap(width, height);
+        var map = new IColorSpace[width, height];
 
-        for (var y = 0; y < height; y++)
+        for (int y = 0; y < height; y++)
         {
-            for (var x = 0; x < width; x++)
+            for (int x = 0; x < width; x++)
             {
                 Color color = ReadColor(reader, type, scale);
-                bitmap.SetPixel(x, y, color);
+                map[x, y] = T.FromSystemColor(color);
             }
         }
 
-        return bitmap;
+        return new PortableBitmap(map);
     }
 
     public static async Task WriteTextImage(this Bitmap bitmap, string path)
