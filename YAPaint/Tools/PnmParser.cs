@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
-using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using YAPaint.Models;
 using YAPaint.Models.ColorSpaces;
@@ -48,9 +48,7 @@ public static class PnmParser
     public static async Task WriteTextImage(this Bitmap bitmap, string path)
     {
         await using var file = new StreamWriter(path);
-        await file.WriteLineAsync("P3");
-        await file.WriteLineAsync($"{bitmap.Width} {bitmap.Height}");
-        await file.WriteLineAsync("255");
+        await file.WriteLineAsync($"P3\n{bitmap.Width} {bitmap.Height}\n255");
 
         for (int y = 0; y < bitmap.Height; y++)
         {
@@ -70,22 +68,13 @@ public static class PnmParser
     public static async Task WriteRawImage(this Bitmap bitmap, string path)
     {
         await using FileStream file = File.OpenWrite(path);
-
-        byte[] header = $"P6\n{bitmap.Width} {bitmap.Height}\n255\n".Select(x => (byte)x).ToArray();
-        await file.WriteAsync(header);
+        await file.WriteAsync(Encoding.ASCII.GetBytes($"P6\n{bitmap.Width} {bitmap.Height}\n255\n"));
 
         for (int y = 0; y < bitmap.Height; y++)
         {
-            for (int x = 0; x < bitmap.Width - 1; x++)
+            for (int x = 0; x < bitmap.Width; x++)
             {
                 Color color = bitmap.GetPixel(x, y);
-                file.WriteByte(color.R);
-                file.WriteByte(color.G);
-                file.WriteByte(color.B);
-            }
-
-            {
-                Color color = bitmap.GetPixel(bitmap.Width - 1, y);
                 file.WriteByte(color.R);
                 file.WriteByte(color.G);
                 file.WriteByte(color.B);
