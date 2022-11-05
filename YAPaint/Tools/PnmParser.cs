@@ -12,12 +12,6 @@ public static class PnmParser
 {
     public static Bitmap ReadImage(string path)
     {
-        if (Path.GetExtension(path) is not (".pnm" or ".pbm" or ".pgm" or ".ppm"))
-        {
-            return new Bitmap(path);
-        }
-
-        using var stream = new FileStream(path, FileMode.Open);
         using var reader = new BinaryReader(stream);
 
         if (reader.ReadChar() is not 'P')
