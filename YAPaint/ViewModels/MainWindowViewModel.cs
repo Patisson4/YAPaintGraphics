@@ -17,7 +17,7 @@ public class MainWindowViewModel : ViewModelBase
         new FileDialogFilter { Name = "Image", Extensions = { "jpg", "bmp", "png", "pnm", "pbm", "pgm", "ppm" } },
     };
 
-    private AvaloniaBitmap _bitmapImage = PnmParser.ReadImage(@"..\..\..\Assets\LAX.jpg").ConvertToAvaloniaBitmap();
+
 
     [Reactive]
     public string Message { get; set; } = "Timings will be displayed here";
