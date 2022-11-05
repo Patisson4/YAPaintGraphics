@@ -14,7 +14,8 @@ public class MainWindowViewModel : ViewModelBase
 
     private readonly List<FileDialogFilter> _fileFilters = new List<FileDialogFilter>
     {
-        new FileDialogFilter { Name = "Image", Extensions = { "jpg", "bmp", "png", "pnm", "pbm", "pgm", "ppm" } },
+        new FileDialogFilter { Name = "Portable Bitmaps", Extensions = { "pnm", "pbm", "pgm", "ppm" } },
+        new FileDialogFilter { Name = "All", Extensions = { "*" } },
     };
 
 
