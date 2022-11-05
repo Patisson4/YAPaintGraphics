@@ -16,11 +16,17 @@
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="File">
                 <MenuItem Header="Open" Command="{Binding Open}" />
-                <MenuItem Header="Save" Command="{Binding Save}" />
+                <MenuItem Header="Save As...">
+                    <MenuItem Header="Raw" Command="{Binding SaveRaw}" />
+                    <MenuItem Header="Plain" Command="{Binding SavePlain}" />
+                </MenuItem>
                 <Separator />
                 <MenuItem Header="Exit" Click="Exit" />
             </MenuItem>
         </Menu>
+        <Panel DockPanel.Dock="Right">
+            <ComboBox SelectedItem="{Binding SelectedColorSpace}" Items="{Binding ColorSpaces}" />
+        </Panel>
         <TextBlock DockPanel.Dock="Bottom" Margin="10" HorizontalAlignment="Left" Text="{Binding Message}" />
         <Image Source="{Binding BitmapImage}" />
     </DockPanel>
