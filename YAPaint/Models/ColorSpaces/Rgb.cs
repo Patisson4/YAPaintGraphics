@@ -2,7 +2,7 @@
 
 namespace YAPaint.Models.ColorSpaces;
 
-public class Rgb : IThreeChannelColorSpace
+public class Rgb : IThreeChannelColorSpace, IColorSpace
 {
     public Rgb(Coefficient red, Coefficient green, Coefficient blue)
     {

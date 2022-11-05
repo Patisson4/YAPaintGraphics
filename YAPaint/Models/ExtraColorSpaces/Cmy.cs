@@ -2,5 +2,5 @@
 
 namespace YAPaint.Models.ExtraColorSpaces;
 
-public class Cmy // : IThreeChannelColorSpace
+public class Cmy // : IThreeChannelColorSpace, IColorSpace
 { }

@@ -1,6 +1,6 @@
 ﻿namespace YAPaint.Models.ColorSpaces;
 
-public interface IThreeChannelColorSpace : IColorSpace
+public interface IThreeChannelColorSpace
 {
     public ColorChannel FirstChannel { get; }
     public ColorChannel SecondChannel { get; }

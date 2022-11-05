@@ -2,5 +2,5 @@
 
 namespace YAPaint.Models.ExtraColorSpaces;
 
-public class Hsl // : IThreeChannelColorSpace
+public class Hsl // : IThreeChannelColorSpace, IColorSpace
 { }
