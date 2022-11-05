@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -15,7 +16,7 @@ namespace YAPaint.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
-    private string _message = "Nothing here";
+    private readonly Stopwatch _timer = new Stopwatch();
 
     private readonly List<FileDialogFilter> _fileFilters = new List<FileDialogFilter>
     {
@@ -101,8 +102,13 @@ public class MainWindowViewModel : ViewModelBase
 
         if (result is not null)
         {
+            _timer.Restart();
+
             await using var stream = new FileStream(result[0], FileMode.Open);
             BitmapImage = PnmParser.ReadImage<TColorSpace>(stream).ToAvalonia();
+
+            _timer.Stop();
+            Message = $"Opened in {_timer.Elapsed}";
         }
     }
 
@@ -113,8 +119,13 @@ public class MainWindowViewModel : ViewModelBase
 
         if (result is not null)
         {
+            _timer.Restart();
+
             await using var stream = new FileStream(result, FileMode.Create);
             BitmapImage.ToPortable<TColorSpace>().SaveRaw(stream);
+
+            _timer.Stop();
+            Message = $"Saved in {_timer.Elapsed}";
         }
     }
 
@@ -125,8 +136,13 @@ public class MainWindowViewModel : ViewModelBase
 
         if (result is not null)
         {
+            _timer.Restart();
+
             await using var stream = new FileStream(result, FileMode.Create);
             BitmapImage.ToPortable<TColorSpace>().SavePlain(stream);
+
+            _timer.Stop();
+            Message = $"Saved in {_timer.Elapsed}";
         }
     }
 }
