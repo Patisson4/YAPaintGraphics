@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using YAPaint.Tools;
 using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
 
@@ -19,17 +19,14 @@ public class MainWindowViewModel : ViewModelBase
 
     private AvaloniaBitmap _bitmapImage = PnmParser.ReadImage(@"..\..\..\Assets\LAX.jpg").ConvertToAvaloniaBitmap();
 
-    public AvaloniaBitmap BitmapImage
-    {
-        get => _bitmapImage;
-        set => this.RaiseAndSetIfChanged(ref _bitmapImage, value);
-    }
+    [Reactive]
+    public string Message { get; set; } = "Timings will be displayed here";
 
-    public string Message
-    {
-        get => _message;
-        set => this.RaiseAndSetIfChanged(ref _message, value);
-    }
+    [Reactive]
+    public string SelectedColorSpace { get; set; } = nameof(Rgb);
+
+    [Reactive]
+    public AvaloniaBitmap BitmapImage { get; set; }
 
     public async Task Open()
     {
