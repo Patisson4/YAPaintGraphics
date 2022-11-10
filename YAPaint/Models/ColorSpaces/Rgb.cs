@@ -11,9 +11,6 @@ public class Rgb : IThreeChannelColorSpace, IColorSpace
         ThirdChannel = new ColorChannel(blue);
     }
 
-    public static IColorSpace Black { get; } = new Rgb(0, 0, 0);
-    public static IColorSpace White { get; } = new Rgb(1, 1, 1);
-
     public ColorChannel FirstChannel { get; }
     public ColorChannel SecondChannel { get; }
     public ColorChannel ThirdChannel { get; }
