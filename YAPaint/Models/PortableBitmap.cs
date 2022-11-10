@@ -29,6 +29,17 @@ public class PortableBitmap
         }
     }
 
+    public PortableBitmap(Stream stream)
+    {
+        // TODO: create enum with different color spaces?
+        throw new NotImplementedException();
+    }
+
+    public static PortableBitmap FromStream<T>(Stream stream) where T : IColorSpace
+    {
+        return PnmParser.ReadImage<T>(stream);
+    }
+
     public IColorSpace GetPixel(int x, int y)
     {
         CustomExceptionHelper.ThrowIfGreaterThan(x, Width);
@@ -43,11 +54,6 @@ public class PortableBitmap
         CustomExceptionHelper.ThrowIfGreaterThan(y, Height);
 
         _map[x, y] = color;
-    }
-
-    public static PortableBitmap Read<T>(Stream stream) where T : IColorSpace
-    {
-        return PnmParser.ReadImage<T>(stream);
     }
 
     public void SaveRaw(Stream stream)
@@ -106,7 +112,7 @@ public class PortableBitmap
             {
                 stream.Write(Encoding.ASCII.GetBytes($"{_map[x, y].ToPlain()} "));
             }
-            
+
             stream.Write(Encoding.ASCII.GetBytes($"{_map[Width - 1, y].ToPlain()}\n"));
         }
     }
