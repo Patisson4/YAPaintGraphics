@@ -24,11 +24,23 @@
                 <MenuItem Header="Exit" Click="Exit" />
             </MenuItem>
         </Menu>
-        <Panel DockPanel.Dock="Right">
-            <ComboBox SelectedItem="{Binding SelectedColorSpace}" Items="{Binding ColorSpaces}" />
-        </Panel>
-        <TextBlock DockPanel.Dock="Bottom" Margin="10" HorizontalAlignment="Left" Text="{Binding Message}" />
-        <Image Source="{Binding BitmapImage}" />
+        <StackPanel DockPanel.Dock="Right"
+                    VerticalAlignment="Top"
+                    HorizontalAlignment="Right"
+                    Spacing="10"
+                    Margin="5">
+            <ComboBox SelectedItem="{Binding SelectedColorSpace}"
+                      Items="{Binding ColorSpaceNames}"
+                      SelectionChanged="ColorSpacesComboBox_OnSelectionChanged" />
+            <CheckBox IsChecked="True" Content="1" Command="{Binding ToggleFirstChannel}" />
+            <CheckBox IsChecked="True" Content="2" Command="{Binding ToggleSecondChannel}" />
+            <CheckBox IsChecked="True" Content="3" Command="{Binding ToggleThirdChannel}" />
+        </StackPanel>
+        <TextBlock DockPanel.Dock="Bottom"
+                   Margin="10"
+                   HorizontalAlignment="Left"
+                   Text="{Binding Message}" />
+        <Image Source="{Binding AvaloniaImage}" />
     </DockPanel>
 
 </Window>
