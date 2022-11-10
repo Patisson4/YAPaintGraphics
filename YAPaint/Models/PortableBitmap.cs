@@ -56,6 +56,63 @@ public class PortableBitmap
         _map[x, y] = color;
     }
 
+    public void ToggleFirstChannel()
+    {
+        //TODO: support empty images
+        if (_map[0, 0] is not IThreeChannelColorSpace)
+        {
+            throw new ArgumentOutOfRangeException(nameof(_map), _map, "Unsupported operation for current IColorSpace");
+        }
+
+        for (int j = 0; j < Height; j++)
+        {
+            for (int i = 0; i < Width; i++)
+            {
+                var threeChannelColorSpace = (IThreeChannelColorSpace)_map[i, j];
+                threeChannelColorSpace.FirstChannel.IsVisible = !threeChannelColorSpace.FirstChannel.IsVisible;
+                _map[i, j] = (IColorSpace)threeChannelColorSpace;
+            }
+        }
+    }
+
+    public void ToggleSecondChannel()
+    {
+        //TODO: support empty images
+        if (_map[0, 0] is not IThreeChannelColorSpace)
+        {
+            throw new ArgumentOutOfRangeException(nameof(_map), _map, "Unsupported operation for current IColorSpace");
+        }
+
+        for (int j = 0; j < Height; j++)
+        {
+            for (int i = 0; i < Width; i++)
+            {
+                var threeChannelColorSpace = (IThreeChannelColorSpace)_map[i, j];
+                threeChannelColorSpace.SecondChannel.IsVisible = !threeChannelColorSpace.SecondChannel.IsVisible;
+                _map[i, j] = (IColorSpace)threeChannelColorSpace;
+            }
+        }
+    }
+
+    public void ToggleThirdChannel()
+    {
+        //TODO: support empty images
+        if (_map[0, 0] is not IThreeChannelColorSpace)
+        {
+            throw new ArgumentOutOfRangeException(nameof(_map), _map, "Unsupported operation for current IColorSpace");
+        }
+
+        for (int j = 0; j < Height; j++)
+        {
+            for (int i = 0; i < Width; i++)
+            {
+                var threeChannelColorSpace = (IThreeChannelColorSpace)_map[i, j];
+                threeChannelColorSpace.ThirdChannel.IsVisible = !threeChannelColorSpace.ThirdChannel.IsVisible;
+                _map[i, j] = (IColorSpace)threeChannelColorSpace;
+            }
+        }
+    }
+
     public void SaveRaw(Stream stream)
     {
         //TODO: support empty images
