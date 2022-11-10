@@ -11,8 +11,19 @@ public class Rgb : IThreeChannelColorSpace, IColorSpace
         ThirdChannel = new ColorChannel(blue);
     }
 
+    /// <summary>
+    /// Red part of RGB space
+    /// </summary>
     public ColorChannel FirstChannel { get; }
+
+    /// <summary>
+    /// Green part of RGB space
+    /// </summary>
     public ColorChannel SecondChannel { get; }
+
+    /// <summary>
+    /// Blue part of RGB space
+    /// </summary>
     public ColorChannel ThirdChannel { get; }
 
     public byte[] ToRaw()
