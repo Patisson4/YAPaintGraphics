@@ -38,7 +38,11 @@ public class Rgb : IThreeChannelColorSpace, IColorSpace
 
     public string ToPlain()
     {
-        return $"{Coefficient.Denormalize(FirstChannel.Value)} {Coefficient.Denormalize(SecondChannel.Value)} {Coefficient.Denormalize(ThirdChannel.Value)}";
+        return string.Format(
+            "{0} {1} {2}",
+            Coefficient.Denormalize(FirstChannel.Value),
+            Coefficient.Denormalize(SecondChannel.Value),
+            Coefficient.Denormalize(ThirdChannel.Value));
     }
 
     public Color ToSystemColor()
