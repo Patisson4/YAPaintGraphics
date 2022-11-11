@@ -18,6 +18,11 @@ public class PortableBitmap
         Width = map.GetLength(0);
         Height = map.GetLength(1);
 
+        if (map.Length == 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(map), map, "Bitmap cannot be empty");
+        }
+
         _map = new IColorSpace[Width, Height];
 
         for (int j = 0; j < Height; j++)
@@ -58,7 +63,6 @@ public class PortableBitmap
 
     public void ToggleFirstChannel()
     {
-        //TODO: support empty images
         if (_map[0, 0] is not IThreeChannelColorSpace)
         {
             throw new ArgumentOutOfRangeException(nameof(_map), _map, "Unsupported operation for current IColorSpace");
@@ -77,7 +81,6 @@ public class PortableBitmap
 
     public void ToggleSecondChannel()
     {
-        //TODO: support empty images
         if (_map[0, 0] is not IThreeChannelColorSpace)
         {
             throw new ArgumentOutOfRangeException(nameof(_map), _map, "Unsupported operation for current IColorSpace");
@@ -96,7 +99,6 @@ public class PortableBitmap
 
     public void ToggleThirdChannel()
     {
-        //TODO: support empty images
         if (_map[0, 0] is not IThreeChannelColorSpace)
         {
             throw new ArgumentOutOfRangeException(nameof(_map), _map, "Unsupported operation for current IColorSpace");
@@ -115,7 +117,6 @@ public class PortableBitmap
 
     public void SaveRaw(Stream stream)
     {
-        //TODO: support empty images
         int format = _map[0, 0] switch
         {
             BlackAndWhite => 4,
@@ -143,7 +144,6 @@ public class PortableBitmap
 
     public void SavePlain(Stream stream)
     {
-        //TODO: support empty images
         int format = _map[0, 0] switch
         {
             BlackAndWhite => 1,
