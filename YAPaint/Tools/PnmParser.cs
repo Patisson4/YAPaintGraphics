@@ -1,28 +1,23 @@
-﻿using System.Drawing;
-using System.Drawing.Imaging;
+﻿using System;
+using System.Drawing;
 using System.IO;
-using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using YAPaint.Models.Exceptions;
+using YAPaint.Models;
+using YAPaint.Models.ColorSpaces;
 using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
 
-namespace YAPaint.Models.Parsers;
+namespace YAPaint.Tools;
 
 public static class PnmParser
 {
-    public static Bitmap ReadImage(string path)
+    public static PortableBitmap ReadImage<T>(Stream stream) where T : IColorSpace
     {
-        if (Path.GetExtension(path) is not (".pnm" or ".pbm" or ".pgm" or ".ppm"))
-        {
-            return new Bitmap(path);
-        }
-
-        using var stream = new FileStream(path, FileMode.Open);
         using var reader = new BinaryReader(stream);
 
         if (reader.ReadChar() is not 'P')
         {
-            throw new NotSupportedFormatException("Unknown format specification");
+            throw new NotSupportedException("Unknown format specification");
         }
 
         char type = reader.ReadChar();
@@ -36,26 +31,24 @@ public static class PnmParser
             scale = GetNextHeaderValue(reader);
         }
 
-        var bitmap = new Bitmap(width, height);
+        var map = new IColorSpace[width, height];
 
-        for (var y = 0; y < height; y++)
+        for (int y = 0; y < height; y++)
         {
-            for (var x = 0; x < width; x++)
+            for (int x = 0; x < width; x++)
             {
                 Color color = ReadColor(reader, type, scale);
-                bitmap.SetPixel(x, y, color);
+                map[x, y] = T.FromSystemColor(color);
             }
         }
 
-        return bitmap;
+        return new PortableBitmap(map);
     }
 
     public static async Task WriteTextImage(this Bitmap bitmap, string path)
     {
         await using var file = new StreamWriter(path);
-        await file.WriteLineAsync("P3");
-        await file.WriteLineAsync($"{bitmap.Width} {bitmap.Height}");
-        await file.WriteLineAsync("255");
+        await file.WriteLineAsync($"P3\n{bitmap.Width} {bitmap.Height}\n255");
 
         for (int y = 0; y < bitmap.Height; y++)
         {
@@ -75,22 +68,13 @@ public static class PnmParser
     public static async Task WriteRawImage(this Bitmap bitmap, string path)
     {
         await using FileStream file = File.OpenWrite(path);
-
-        byte[] header = $"P6\n{bitmap.Width} {bitmap.Height}\n255\n".Select(x => (byte)x).ToArray();
-        await file.WriteAsync(header);
+        await file.WriteAsync(Encoding.ASCII.GetBytes($"P6\n{bitmap.Width} {bitmap.Height}\n255\n"));
 
         for (int y = 0; y < bitmap.Height; y++)
         {
-            for (int x = 0; x < bitmap.Width - 1; x++)
+            for (int x = 0; x < bitmap.Width; x++)
             {
                 Color color = bitmap.GetPixel(x, y);
-                file.WriteByte(color.R);
-                file.WriteByte(color.G);
-                file.WriteByte(color.B);
-            }
-
-            {
-                Color color = bitmap.GetPixel(bitmap.Width - 1, y);
                 file.WriteByte(color.R);
                 file.WriteByte(color.G);
                 file.WriteByte(color.B);
@@ -108,7 +92,7 @@ public static class PnmParser
             '4' => ReadBinaryBitmapColor(reader),
             '5' => ReadBinaryGreyscaleColor(reader, scale),
             '6' => ReadBinaryPixelImage(reader, scale),
-            _ => throw new NotSupportedFormatException("Unknown format specification"),
+            _ => throw new NotSupportedException("Unknown format specification"),
         };
     }
 
@@ -196,32 +180,5 @@ public static class PnmParser
         } while (c is not ('\n' or '\r' or ' ' or '\t') || value.Length == 0);
 
         return int.Parse(value);
-    }
-
-    public static Bitmap ConvertToSystemBitmap(this AvaloniaBitmap bitmap)
-    {
-        using var stream = new MemoryStream();
-        bitmap.Save(stream);
-        stream.Position = 0;
-        return new Bitmap(stream);
-    }
-
-    public static AvaloniaBitmap ConvertToAvaloniaBitmap(this Bitmap bitmap)
-    {
-        var bitmapTmp = new Bitmap(bitmap);
-        var bitmapData = bitmapTmp.LockBits(
-            new Rectangle(0, 0, bitmapTmp.Width, bitmapTmp.Height),
-            ImageLockMode.ReadWrite,
-            PixelFormat.Format32bppArgb);
-        var avaloniaBitmap = new AvaloniaBitmap(
-            Avalonia.Platform.PixelFormat.Bgra8888,
-            Avalonia.Platform.AlphaFormat.Premul,
-            bitmapData.Scan0,
-            new Avalonia.PixelSize(bitmapData.Width, bitmapData.Height),
-            new Avalonia.Vector(96, 96),
-            bitmapData.Stride);
-        bitmapTmp.UnlockBits(bitmapData);
-        bitmapTmp.Dispose();
-        return avaloniaBitmap;
     }
 }

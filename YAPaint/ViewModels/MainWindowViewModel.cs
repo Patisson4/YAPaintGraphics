@@ -1,69 +1,148 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using ReactiveUI;
-using YAPaint.Models.Parsers;
+using Avalonia.Logging;
+using ReactiveUI.Fody.Helpers;
+using YAPaint.Models.ColorSpaces;
+using YAPaint.Tools;
 using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
 
 namespace YAPaint.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
-    private string _message = "Nothing here";
+    private readonly Stopwatch _timer = new Stopwatch();
 
     private readonly List<FileDialogFilter> _fileFilters = new List<FileDialogFilter>
     {
-        new FileDialogFilter { Name = "Image", Extensions = { "jpg", "bmp", "png", "pnm", "pbm", "pgm", "ppm" } },
+        new FileDialogFilter { Name = "Portable Bitmaps", Extensions = { "pnm", "pbm", "pgm", "ppm" } },
+        new FileDialogFilter { Name = "All", Extensions = { "*" } },
     };
 
-    private AvaloniaBitmap _bitmapImage = PnmParser.ReadImage(@"..\..\..\Assets\LAX.jpg").ConvertToAvaloniaBitmap();
+    private readonly List<string> _spaces = Assembly.GetExecutingAssembly()
+                                                    .GetTypes()
+                                                    .Where(t => t.GetInterfaces().Contains(typeof(IColorSpace)))
+                                                    .Select(t => t.Name)
+                                                    .ToList();
 
-    public AvaloniaBitmap BitmapImage
-    {
-        get => _bitmapImage;
-        set => this.RaiseAndSetIfChanged(ref _bitmapImage, value);
-    }
+    public IReadOnlyList<string> ColorSpaces => _spaces;
 
-    public string Message
-    {
-        get => _message;
-        set => this.RaiseAndSetIfChanged(ref _message, value);
-    }
+    [Reactive]
+    public string Message { get; set; } = "Timings will be displayed here";
+
+    [Reactive]
+    public string SelectedColorSpace { get; set; } = nameof(Rgb);
+
+    [Reactive]
+    public AvaloniaBitmap BitmapImage { get; set; }
 
     public async Task Open()
     {
         try
         {
-            var dialog = new OpenFileDialog { Filters = _fileFilters, AllowMultiple = false };
-            string[] result = await dialog.ShowAsync(new Window());
-
-            if (result is not null)
+            await (SelectedColorSpace switch
             {
-                BitmapImage = PnmParser.ReadImage(result[0]).ConvertToAvaloniaBitmap();
-            }
+                nameof(Rgb) => OpenAs<Rgb>(),
+                nameof(GreyScale) => OpenAs<GreyScale>(),
+                nameof(BlackAndWhite) => OpenAs<BlackAndWhite>(),
+                _ => throw new ArgumentException("Unsupported color space"),
+            });
         }
         catch (Exception e)
         {
-            Message = e.ToString();
+            Logger.Sink?.Log(LogEventLevel.Error, "All", e, e.ToString());
         }
     }
 
-    public async Task Save()
+    public async Task SaveRaw()
     {
         try
         {
-            var dialog = new SaveFileDialog { Filters = _fileFilters };
-            string result = await dialog.ShowAsync(new Window());
-
-            if (result is not null)
+            await (SelectedColorSpace switch
             {
-                await BitmapImage.ConvertToSystemBitmap().WriteRawImage(result);
-            }
+                nameof(Rgb) => SaveRawAs<Rgb>(),
+                nameof(GreyScale) => SaveRawAs<GreyScale>(),
+                nameof(BlackAndWhite) => SaveRawAs<BlackAndWhite>(),
+                _ => throw new ArgumentException("Unsupported color space"),
+            });
         }
         catch (Exception e)
         {
-            Message = e.ToString();
+            Logger.Sink?.Log(LogEventLevel.Error, "All", e, e.ToString());
+        }
+    }
+
+    public async Task SavePlain()
+    {
+        try
+        {
+            await (SelectedColorSpace switch
+            {
+                nameof(Rgb) => SavePlainAs<Rgb>(),
+                nameof(GreyScale) => SavePlainAs<GreyScale>(),
+                nameof(BlackAndWhite) => SavePlainAs<BlackAndWhite>(),
+                _ => throw new ArgumentException("Unsupported color space"),
+            });
+        }
+        catch (Exception e)
+        {
+            Logger.Sink?.Log(LogEventLevel.Error, "All", e, e.ToString());
+        }
+    }
+
+    private async Task OpenAs<TColorSpace>() where TColorSpace : IColorSpace
+    {
+        var dialog = new OpenFileDialog { Filters = _fileFilters, AllowMultiple = false };
+        string[] result = await dialog.ShowAsync(new Window());
+
+        if (result is not null)
+        {
+            _timer.Restart();
+
+            await using var stream = new FileStream(result[0], FileMode.Open);
+            BitmapImage = PnmParser.ReadImage<TColorSpace>(stream).ToAvalonia();
+
+            _timer.Stop();
+            Message = $"Opened in {_timer.Elapsed}";
+        }
+    }
+
+    private async Task SaveRawAs<TColorSpace>() where TColorSpace : IColorSpace
+    {
+        var dialog = new SaveFileDialog { Filters = _fileFilters };
+        string result = await dialog.ShowAsync(new Window());
+
+        if (result is not null)
+        {
+            _timer.Restart();
+
+            await using var stream = new FileStream(result, FileMode.Create);
+            BitmapImage.ToPortable<TColorSpace>().SaveRaw(stream);
+
+            _timer.Stop();
+            Message = $"Saved in {_timer.Elapsed}";
+        }
+    }
+
+    private async Task SavePlainAs<TColorSpace>() where TColorSpace : IColorSpace
+    {
+        var dialog = new SaveFileDialog { Filters = _fileFilters };
+        string result = await dialog.ShowAsync(new Window());
+
+        if (result is not null)
+        {
+            _timer.Restart();
+
+            await using var stream = new FileStream(result, FileMode.Create);
+            BitmapImage.ToPortable<TColorSpace>().SavePlain(stream);
+
+            _timer.Stop();
+            Message = $"Saved in {_timer.Elapsed}";
         }
     }
 }

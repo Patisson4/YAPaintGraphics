@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="YAPaint.Views.MainWindow"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/1158164.png"
         Title="YAPaint">
 
     <Design.DataContext>
@@ -13,16 +13,22 @@
     </Design.DataContext>
 
     <DockPanel LastChildFill="True">
-        <Menu VerticalAlignment="Top">
+        <Menu DockPanel.Dock="Top">
             <MenuItem Header="File">
                 <MenuItem Header="Open" Command="{Binding Open}" />
-                <MenuItem Header="Save" Command="{Binding Save}" />
+                <MenuItem Header="Save As...">
+                    <MenuItem Header="Raw" Command="{Binding SaveRaw}" />
+                    <MenuItem Header="Plain" Command="{Binding SavePlain}" />
+                </MenuItem>
                 <Separator />
                 <MenuItem Header="Exit" Click="Exit" />
             </MenuItem>
         </Menu>
-        <TextBlock DockPanel.Dock="Bottom" HorizontalAlignment="Left" Text="{Binding Message}" />
-        <Image DockPanel.Dock="Bottom" Source="{Binding BitmapImage}" Height="300" />
+        <Panel DockPanel.Dock="Right">
+            <ComboBox SelectedItem="{Binding SelectedColorSpace}" Items="{Binding ColorSpaces}" />
+        </Panel>
+        <TextBlock DockPanel.Dock="Bottom" Margin="10" HorizontalAlignment="Left" Text="{Binding Message}" />
+        <Image Source="{Binding BitmapImage}" />
     </DockPanel>
 
 </Window>
