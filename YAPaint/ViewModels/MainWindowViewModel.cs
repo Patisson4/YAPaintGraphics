@@ -150,7 +150,8 @@ public class MainWindowViewModel : ViewModelBase
             _timer.Restart();
 
             await using var stream = new FileStream(result[0], FileMode.Open);
-            _portableBitmap = PnmParser.ReadImage<TColorSpace>(stream);
+
+            _portableBitmap = PortableBitmap.FromStream<TColorSpace>(stream);
             AvaloniaImage = _portableBitmap.ToAvalonia();
 
             _timer.Stop();
