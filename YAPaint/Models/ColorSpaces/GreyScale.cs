@@ -37,7 +37,7 @@ public class GreyScale : IColorSpace
             throw new ArgumentOutOfRangeException(
                 nameof(color),
                 color,
-                "Unsupported value: color should be shadow of grey");
+                "Unsupported value: color should be a shadow of grey");
         }
 
         return new GreyScale(color.R);
