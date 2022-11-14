@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 
 namespace YAPaint.Models.ColorSpaces;
 
@@ -18,31 +17,29 @@ public class BlackAndWhite : IColorSpace
     public static IColorSpace Black { get; } = new BlackAndWhite(BlackCode);
     public static IColorSpace White { get; } = new BlackAndWhite(WhiteCode);
 
-    private byte ValueAsByte => _value ? byte.MaxValue : byte.MinValue;
-
     public byte[] ToRaw()
     {
-        return new[] { ValueAsByte };
+        return new[] { _value ? (byte)1 : (byte)0 };
     }
 
     public string ToPlain()
     {
-        return _value == WhiteCode ? "0" : "1";
+        return _value ? "1" : "0";
     }
 
-    public Color ToSystemColor()
+    public Rgb ToRgb()
     {
-        return Color.FromArgb(ValueAsByte, ValueAsByte, ValueAsByte);
+        return _value ? Rgb.Black : Rgb.White;
     }
 
-    public static IColorSpace FromSystemColor(Color color)
+    public static IColorSpace FromRgb(Rgb color)
     {
-        if (color.R == 0 && color.G == 0 && color.B == 0)
+        if (color.Equals(Rgb.Black))
         {
             return Black;
         }
 
-        if (color.R == 255 && color.G == 255 && color.B == 255)
+        if (color.Equals(Rgb.White))
         {
             return White;
         }

@@ -1,12 +1,10 @@
-﻿using System.Drawing;
-
-namespace YAPaint.Models.ColorSpaces;
+﻿namespace YAPaint.Models.ColorSpaces;
 
 public interface IColorSpace
 {
     byte[] ToRaw();
     string ToPlain();
 
-    Color ToSystemColor();
-    static abstract IColorSpace FromSystemColor(Color color);
+    Rgb ToRgb();
+    static abstract IColorSpace FromRgb(Rgb color);
 }

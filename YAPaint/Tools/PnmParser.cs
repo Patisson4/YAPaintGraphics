@@ -38,7 +38,7 @@ public static class PnmParser
             for (int x = 0; x < width; x++)
             {
                 Color color = ReadColor(reader, type, scale);
-                map[x, y] = T.FromSystemColor(color);
+                map[x, y] = T.FromRgb(color);
             }
         }
 
