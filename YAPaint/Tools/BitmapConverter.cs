@@ -18,7 +18,7 @@ public static class BitmapConverter
         {
             for (int i = 0; i < bitmap.PixelSize.Width; i++)
             {
-                map[i, j] = T.FromSystemColor(systemBitmap.GetPixel(i, j));
+                map[i, j] = T.FromRgb(systemBitmap.GetPixel(i, j));
             }
         }
 
@@ -32,7 +32,7 @@ public static class BitmapConverter
         {
             for (int i = 0; i < bitmap.Width; i++)
             {
-                systemBitmap.SetPixel(i, j, bitmap.GetPixel(i, j).ToSystemColor());
+                systemBitmap.SetPixel(i, j, bitmap.GetPixel(i, j).ToRgb());
             }
         }
 
