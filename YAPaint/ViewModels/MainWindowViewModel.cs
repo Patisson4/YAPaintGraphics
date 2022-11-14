@@ -103,7 +103,15 @@ public class MainWindowViewModel : ViewModelBase
 
     public void ApplyGamma()
     {
+        //TODO: change initial call to internal field
         BitmapImage = BitmapImage.ToPortable<Rgb>().ApplyGamma(Gamma).ToAvalonia();
+    }
+    
+    public void ConvertToGamma()
+    {
+        //TODO: save result in internal field instead of assignment
+        var result = BitmapImage.ToPortable<Rgb>().ApplyGamma(1 / Gamma);
+        BitmapImage = result.ApplyGamma(Gamma).ToAvalonia();
     }
 
     private async Task OpenAs<TColorSpace>() where TColorSpace : IColorSpace

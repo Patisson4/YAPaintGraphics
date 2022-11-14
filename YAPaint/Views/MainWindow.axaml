@@ -24,17 +24,19 @@
                 <MenuItem Header="Exit" Click="Exit" />
             </MenuItem>
         </Menu>
-        <Panel DockPanel.Dock="Right">
-            <ComboBox SelectedItem="{Binding SelectedColorSpace}" Items="{Binding ColorSpaces}" />
-        </Panel>
+        <StackPanel DockPanel.Dock="Right" Spacing="10">
+            <TextBlock Text="ColorSpace:" VerticalAlignment="Center" />
+            <ComboBox SelectedItem="{Binding SelectedColorSpace}"
+                      Items="{Binding ColorSpaces}"
+                      HorizontalAlignment="Right" />
+            <TextBlock Text="Gamma:" VerticalAlignment="Center" />
+            <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
+                           Value="{Binding Gamma}" Increment="0.01" Minimum="0.0" Maximum="2.5" />
+            <Button Content="Apply" Command="{Binding ApplyGamma}" />
+            <Button Content="Convert" Command="{Binding ConvertToGamma}" />
+        </StackPanel>
         <TextBlock DockPanel.Dock="Bottom" Margin="10" HorizontalAlignment="Left" Text="{Binding Message}" />
         <Image Source="{Binding BitmapImage}" />
     </DockPanel>
 
 </Window>
-
-
-<!-- <Button Name="Apply" Command="{Binding ApplyGamma}" /> -->
-<!-- <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}" -->
-<!--                ShowButtonSpinner="False" -->
-<!--                Value="{Binding Gamma}" Increment="0.01" Minimum="0.0" Maximum="2.5" /> -->
