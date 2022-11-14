@@ -32,3 +32,9 @@
     </DockPanel>
 
 </Window>
+
+
+<!-- <Button Name="Apply" Command="{Binding ApplyGamma}" /> -->
+<!-- <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}" -->
+<!--                ShowButtonSpinner="False" -->
+<!--                Value="{Binding Gamma}" Increment="0.01" Minimum="0.0" Maximum="2.5" /> -->

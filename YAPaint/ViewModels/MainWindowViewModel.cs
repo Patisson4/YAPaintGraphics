@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -40,6 +41,11 @@ public class MainWindowViewModel : ViewModelBase
 
     [Reactive]
     public AvaloniaBitmap BitmapImage { get; set; }
+
+    [Reactive]
+    public float Gamma { get; set; } = 2.0f;
+    
+    public CultureInfo InvariantCultureInfo { get; } = CultureInfo.InvariantCulture;
 
     public async Task Open()
     {
@@ -93,6 +99,11 @@ public class MainWindowViewModel : ViewModelBase
         {
             Logger.Sink?.Log(LogEventLevel.Error, "All", e, e.ToString());
         }
+    }
+
+    public void ApplyGamma()
+    {
+        BitmapImage = BitmapImage.ToPortable<Rgb>().ApplyGamma(Gamma).ToAvalonia();
     }
 
     private async Task OpenAs<TColorSpace>() where TColorSpace : IColorSpace
