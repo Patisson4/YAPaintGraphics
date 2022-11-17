@@ -41,11 +41,11 @@ public class YCbCr601 : IThreeChannelColorSpace, IColorSpace
 
     public static IColorSpace FromRgb(Rgb color)
     {
-        return new YCbCr601(16 + 65.481f * color.FirstChannel.Value + 128.553f * color.SecondChannel.Value +
-                            24.996f * color.ThirdChannel.Value, 
-            128 -37.797f * color.FirstChannel.Value -74.203f * color.SecondChannel.Value +
-            112f * color.ThirdChannel.Value, 
-            128 + 112f * color.FirstChannel.Value -93.786f * color.SecondChannel.Value -18.214f 
-            * color.ThirdChannel.Value);
+        return new YCbCr601(16 + (65.738f * color.FirstChannel.Value + 129.057f * color.SecondChannel.Value +
+                            25.064f * color.ThirdChannel.Value) / 256f, 
+            128 + ( - 37.945f * color.FirstChannel.Value -74.494f * color.SecondChannel.Value +
+            112.439f * color.ThirdChannel.Value) / 256f, 
+            128 + (112.439f * color.FirstChannel.Value -94.154f * color.SecondChannel.Value -18.285f 
+            * color.ThirdChannel.Value) / 256f );
     }
 }
