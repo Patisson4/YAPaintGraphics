@@ -36,7 +36,10 @@ public class YCbCr601 : IThreeChannelColorSpace, IColorSpace
 
     public Rgb ToRgb()
     {
-        throw new System.NotImplementedException();
+        return new Rgb(
+            255f / 219f * (FirstChannel.Value * 256f - 16) + 255f / 224f * 1.402f * (ThirdChannel.Value * 256f - 128),
+            255f / 219f * (FirstChannel.Value * 256f - 16) - 255f / 224f * 1.772f * 0.114f / 0.587f * (SecondChannel.Value * 256 - 128) - 255f / 224f * 1.402f * 0.299f / 0.587f * (ThirdChannel.Value * 256f - 128),
+            255f / 219f * (FirstChannel.Value * 256f - 16) - 255f / 224f * 1.772f  * (SecondChannel.Value * 256 - 128));
     }
 
     public static IColorSpace FromRgb(Rgb color)
