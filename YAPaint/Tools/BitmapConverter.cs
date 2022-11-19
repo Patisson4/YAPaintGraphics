@@ -2,23 +2,22 @@
 using System.Drawing.Imaging;
 using System.IO;
 using YAPaint.Models;
-using YAPaint.Models.ColorSpaces;
 using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
 
 namespace YAPaint.Tools;
 
 public static class BitmapConverter
 {
-    public static PortableBitmap ToPortable<T>(this AvaloniaBitmap bitmap) where T : IColorSpace
+    public static PortableBitmap ToPortable(this AvaloniaBitmap bitmap)
     {
         Bitmap systemBitmap = bitmap.ConvertToSystemBitmap();
-        var map = new IColorSpace[systemBitmap.Width, systemBitmap.Height];
+        var map = new ColorSpace[systemBitmap.Width, systemBitmap.Height];
 
         for (int j = 0; j < bitmap.PixelSize.Height; j++)
         {
             for (int i = 0; i < bitmap.PixelSize.Width; i++)
             {
-                map[i, j] = T.FromRgb(systemBitmap.GetPixel(i, j));
+                map[i, j] = systemBitmap.GetPixel(i, j);
             }
         }
 
@@ -32,7 +31,7 @@ public static class BitmapConverter
         {
             for (int i = 0; i < bitmap.Width; i++)
             {
-                systemBitmap.SetPixel(i, j, bitmap.GetPixel(i, j).ToRgb());
+                systemBitmap.SetPixel(i, j, bitmap.GetPixel(i, j));
             }
         }
 

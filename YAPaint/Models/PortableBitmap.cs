@@ -1,19 +1,22 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using YAPaint.Models.ColorSpaces;
 using YAPaint.Tools;
 
 namespace YAPaint.Models;
 
 public class PortableBitmap
 {
-    private readonly IColorSpace[,] _map;
+    private readonly ColorSpace[,] _map;
+
+    private bool _isFirstVisible = true;
+    private bool _isSecondVisible = true;
+    private bool _isThirdVisible = true;
 
     public int Width { get; }
     public int Height { get; }
 
-    public PortableBitmap(IColorSpace[,] map)
+    public PortableBitmap(ColorSpace[,] map)
     {
         Width = map.GetLength(0);
         Height = map.GetLength(1);
@@ -23,7 +26,7 @@ public class PortableBitmap
             throw new ArgumentOutOfRangeException(nameof(map), map, "Bitmap cannot be empty");
         }
 
-        _map = new IColorSpace[Width, Height];
+        _map = new ColorSpace[Width, Height];
 
         for (int j = 0; j < Height; j++)
         {
@@ -40,20 +43,32 @@ public class PortableBitmap
         throw new NotImplementedException();
     }
 
-    public static PortableBitmap FromStream<T>(Stream stream) where T : IColorSpace
+    public static PortableBitmap FromStream(Stream stream)
     {
-        return PnmParser.ReadImage<T>(stream);
+        return PnmParser.ReadImage(stream);
     }
 
-    public IColorSpace GetPixel(int x, int y)
+    public ColorSpace GetPixel(int x, int y)
     {
         CustomExceptionHelper.ThrowIfGreaterThan(x, Width);
         CustomExceptionHelper.ThrowIfGreaterThan(y, Height);
 
-        return _map[x, y];
+        var color = _map[x, y];
+
+        if (_isFirstVisible && _isSecondVisible && _isThirdVisible)
+        {
+            return color;
+        }
+
+        var result = new ColorSpace(
+            _isFirstVisible ? color.First : 0f,
+            _isSecondVisible ? color.Second : 0f,
+            _isThirdVisible ? color.Third : 0f);
+
+        return result;
     }
 
-    public void SetPixel(int x, int y, IColorSpace color)
+    public void SetPixel(int x, int y, ColorSpace color)
     {
         CustomExceptionHelper.ThrowIfGreaterThan(x, Width);
         CustomExceptionHelper.ThrowIfGreaterThan(y, Height);
@@ -63,80 +78,27 @@ public class PortableBitmap
 
     public void ToggleFirstChannel()
     {
-        if (_map[0, 0] is not IThreeChannelColorSpace)
-        {
-            throw new ArgumentOutOfRangeException(nameof(_map), _map, "Unsupported operation for current IColorSpace");
-        }
-
-        for (int j = 0; j < Height; j++)
-        {
-            for (int i = 0; i < Width; i++)
-            {
-                var threeChannelColorSpace = (IThreeChannelColorSpace)_map[i, j];
-                threeChannelColorSpace.FirstChannel.IsVisible = !threeChannelColorSpace.FirstChannel.IsVisible;
-                _map[i, j] = (IColorSpace)threeChannelColorSpace;
-            }
-        }
+        _isFirstVisible = !_isFirstVisible;
     }
 
     public void ToggleSecondChannel()
     {
-        if (_map[0, 0] is not IThreeChannelColorSpace)
-        {
-            throw new ArgumentOutOfRangeException(nameof(_map), _map, "Unsupported operation for current IColorSpace");
-        }
-
-        for (int j = 0; j < Height; j++)
-        {
-            for (int i = 0; i < Width; i++)
-            {
-                var threeChannelColorSpace = (IThreeChannelColorSpace)_map[i, j];
-                threeChannelColorSpace.SecondChannel.IsVisible = !threeChannelColorSpace.SecondChannel.IsVisible;
-                _map[i, j] = (IColorSpace)threeChannelColorSpace;
-            }
-        }
+        _isSecondVisible = !_isSecondVisible;
     }
 
     public void ToggleThirdChannel()
     {
-        if (_map[0, 0] is not IThreeChannelColorSpace)
-        {
-            throw new ArgumentOutOfRangeException(nameof(_map), _map, "Unsupported operation for current IColorSpace");
-        }
-
-        for (int j = 0; j < Height; j++)
-        {
-            for (int i = 0; i < Width; i++)
-            {
-                var threeChannelColorSpace = (IThreeChannelColorSpace)_map[i, j];
-                threeChannelColorSpace.ThirdChannel.IsVisible = !threeChannelColorSpace.ThirdChannel.IsVisible;
-                _map[i, j] = (IColorSpace)threeChannelColorSpace;
-            }
-        }
+        _isThirdVisible = !_isThirdVisible;
     }
 
     public void SaveRaw(Stream stream)
     {
-        int format = _map[0, 0] switch
-        {
-            BlackAndWhite => 4,
-            GreyScale => 5,
-            Rgb => 6,
-            _ => throw new ArgumentOutOfRangeException(
-                nameof(_map),
-                _map,
-                "Unsupported color space"),
-        };
-
-        stream.Write(Encoding.ASCII.GetBytes($"P{format}\n"));
+        stream.Write(Encoding.ASCII.GetBytes("P6\n"));
         stream.Write(Encoding.ASCII.GetBytes($"{Width} {Height}\n"));
+        stream.Write(Encoding.ASCII.GetBytes($"{byte.MaxValue}\n"));
 
-        if (format != 4)
-        {
-            stream.Write(Encoding.ASCII.GetBytes($"{byte.MaxValue}\n"));
-        }
-
-        foreach (IColorSpace color in _map)
+        //TODO: use GetPixel for correct visibility
+        foreach (ColorSpace color in _map)
         {
             stream.Write(color.ToRaw());
         }
@@ -144,33 +106,18 @@ public class PortableBitmap
 
     public void SavePlain(Stream stream)
     {
-        int format = _map[0, 0] switch
-        {
-            BlackAndWhite => 1,
-            GreyScale => 2,
-            Rgb => 3,
-            _ => throw new ArgumentOutOfRangeException(
-                nameof(_map),
-                _map,
-                "Unsupported color space"),
-        };
-
-        stream.Write(Encoding.ASCII.GetBytes($"P{format}\n"));
+        stream.Write(Encoding.ASCII.GetBytes("P4\n"));
         stream.Write(Encoding.ASCII.GetBytes($"{Width} {Height}\n"));
-
-        if (format != 1)
-        {
-            stream.Write(Encoding.ASCII.GetBytes($"{byte.MaxValue}\n"));
-        }
+        stream.Write(Encoding.ASCII.GetBytes($"{byte.MaxValue}\n"));
 
         for (int y = 0; y < Height; y++)
         {
             for (int x = 0; x < Width - 1; x++)
             {
-                stream.Write(Encoding.ASCII.GetBytes($"{_map[x, y].ToPlain()} "));
+                stream.Write(Encoding.ASCII.GetBytes($"{GetPixel(x, y).ToPlain()} "));
             }
 
-            stream.Write(Encoding.ASCII.GetBytes($"{_map[Width - 1, y].ToPlain()}\n"));
+            stream.Write(Encoding.ASCII.GetBytes($"{GetPixel(Width - 1, y).ToPlain()}\n"));
         }
     }
 }
