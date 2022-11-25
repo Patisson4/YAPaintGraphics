@@ -3,7 +3,8 @@ using System.Drawing;
 
 namespace YAPaint.Models.ColorSpaces;
 
-public class BlackAndWhite : IColorSpace, IColorConvertable<BlackAndWhite>
+public class BlackAndWhite : IColorSpace, IColorConvertable<BlackAndWhite>,
+                             IThreeCoefficientConstructable<BlackAndWhite>
 {
     private const bool WhiteCode = false; // 0
     private const bool BlackCode = true; // 1
@@ -14,6 +15,15 @@ public class BlackAndWhite : IColorSpace, IColorConvertable<BlackAndWhite>
     private BlackAndWhite(bool value)
     {
         _value = value;
+    }
+
+    public static BlackAndWhite FromCoefficients(Coefficient first, Coefficient second, Coefficient third)
+    {
+        return FromSystemColor(
+            Color.FromArgb(
+                Coefficient.Denormalize(first),
+                Coefficient.Denormalize(second),
+                Coefficient.Denormalize(third)));
     }
 
     public static BlackAndWhite Black { get; } = new BlackAndWhite(BlackCode);

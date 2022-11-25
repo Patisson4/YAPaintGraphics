@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace YAPaint.Models.ColorSpaces;
 
-public class GreyScale : IColorSpace, IColorConvertable<GreyScale>
+public class GreyScale : IColorSpace, IColorConvertable<GreyScale>, IThreeCoefficientConstructable<GreyScale>
 {
     public GreyScale(byte grey)
     {
@@ -11,6 +11,15 @@ public class GreyScale : IColorSpace, IColorConvertable<GreyScale>
     }
 
     private byte Grey { get; }
+    
+    public static GreyScale FromCoefficients(Coefficient first, Coefficient second, Coefficient third)
+    {
+        return FromSystemColor(
+            Color.FromArgb(
+                Coefficient.Denormalize(first),
+                Coefficient.Denormalize(second),
+                Coefficient.Denormalize(third)));
+    }
 
     public byte[] ToRaw()
     {
