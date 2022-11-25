@@ -62,7 +62,7 @@ public class MainWindowViewModel : ViewModelBase
             MyFileLogger.SharedTimer.Stop();
             _operationsCount++;
             Message = $"({_operationsCount}) Opened in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-            MyFileLogger.Log("DBG", $"{Message}\n\n");
+            MyFileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
@@ -90,7 +90,7 @@ public class MainWindowViewModel : ViewModelBase
             MyFileLogger.SharedTimer.Stop();
             _operationsCount++;
             Message = $"({_operationsCount}) Saved in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-            MyFileLogger.Log("DBG", $"{Message}\n\n");
+            MyFileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
@@ -118,7 +118,7 @@ public class MainWindowViewModel : ViewModelBase
             MyFileLogger.SharedTimer.Stop();
             _operationsCount++;
             Message = $"({_operationsCount}) Saved in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-            MyFileLogger.Log("DBG", $"{Message}\n\n");
+            MyFileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
@@ -136,7 +136,7 @@ public class MainWindowViewModel : ViewModelBase
         MyFileLogger.SharedTimer.Stop();
         _operationsCount++;
         Message = $"({_operationsCount}) Toggled in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-        MyFileLogger.Log("DBG", $"{Message}\n\n");
+        MyFileLogger.Log("INF", $"{Message}\n");
     }
 
     public void ToggleSecondChannel()
@@ -149,7 +149,7 @@ public class MainWindowViewModel : ViewModelBase
         MyFileLogger.SharedTimer.Stop();
         _operationsCount++;
         Message = $"({_operationsCount}) Toggled in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-        MyFileLogger.Log("DBG", $"{Message}\n\n");
+        MyFileLogger.Log("INF", $"{Message}\n");
     }
 
     public void ToggleThirdChannel()
@@ -162,6 +162,6 @@ public class MainWindowViewModel : ViewModelBase
         MyFileLogger.SharedTimer.Stop();
         _operationsCount++;
         Message = $"({_operationsCount}) Toggled in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-        MyFileLogger.Log("DBG", $"{Message}\n\n");
+        MyFileLogger.Log("INF", $"{Message}\n");
     }
 }
