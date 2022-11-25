@@ -8,11 +8,11 @@ public class YCoCg : IThreeChannelColorSpace, IColorSpace
     public ColorChannel SecondChannel { get; }
     public ColorChannel ThirdChannel { get; }
 
-    public YCoCg(Coefficient y, Coefficient cb, Coefficient cr)
+    public YCoCg(Coefficient y, Coefficient co, Coefficient cg)
     {
         FirstChannel = new ColorChannel(y);
-        SecondChannel = new ColorChannel(cb);
-        ThirdChannel = new ColorChannel(cr);
+        SecondChannel = new ColorChannel(co);
+        ThirdChannel = new ColorChannel(cg);
     }
 
     public byte[] ToRaw()
