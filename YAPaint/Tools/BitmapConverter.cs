@@ -1,6 +1,5 @@
 ﻿using System.Drawing;
 using System.Drawing.Imaging;
-using System.IO;
 using YAPaint.Models;
 using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
 using Bitmap = System.Drawing.Bitmap;
@@ -9,26 +8,6 @@ namespace YAPaint.Tools;
 
 public static class BitmapConverter
 {
-    public static PortableBitmap ToPortable(this AvaloniaBitmap bitmap)
-    {
-        Bitmap systemBitmap = bitmap.ConvertToSystemBitmap();
-        var map = new ColorSpace[systemBitmap.Width, systemBitmap.Height];
-
-        for (int j = 0; j < bitmap.PixelSize.Height; j++)
-        {
-            for (int i = 0; i < bitmap.PixelSize.Width; i++)
-            {
-                var pixel = systemBitmap.GetPixel(i, j);
-                map[i, j] = new ColorSpace(
-                    Coefficient.Normalize(pixel.R),
-                    Coefficient.Normalize(pixel.G),
-                    Coefficient.Normalize(pixel.B));
-            }
-        }
-
-        return new PortableBitmap(map);
-    }
-
     public static unsafe AvaloniaBitmap ToAvalonia(this PortableBitmap bitmap)
     {
         using var systemBitmap = new Bitmap(bitmap.Width, bitmap.Height);
@@ -69,13 +48,5 @@ public static class BitmapConverter
         MyFileLogger.Log("DBG", $"Converted to AvaloniaBitmap at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s\n");
 
         return avaloniaBitmap;
-    }
-
-    private static Bitmap ConvertToSystemBitmap(this AvaloniaBitmap bitmap)
-    {
-        using var stream = new MemoryStream();
-        bitmap.Save(stream);
-        stream.Position = 0;
-        return new Bitmap(stream);
     }
 }
