@@ -19,6 +19,11 @@ public readonly record struct Coefficient
     {
         return (float)value / byte.MaxValue;
     }
+    
+    public static float Normalize(int value)
+    {
+        return (float)value / byte.MaxValue;
+    }
 
     public static byte Denormalize(float value)
     {
