@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using Avalonia.Logging;
 using ReactiveUI.Fody.Helpers;
 using YAPaint.Models;
 using YAPaint.Tools;
@@ -19,8 +17,6 @@ public class MainWindowViewModel : ViewModelBase
         new FileDialogFilter { Name = "Portable Bitmaps", Extensions = { "pnm", "pbm", "pgm", "ppm" } },
         new FileDialogFilter { Name = "All", Extensions = { "*" } },
     };
-
-    private readonly Stopwatch _timer = new Stopwatch();
 
     private int _operationsCount;
 
@@ -46,95 +42,126 @@ public class MainWindowViewModel : ViewModelBase
             var dialog = new OpenFileDialog { Filters = FileFilters, AllowMultiple = false };
             string[] result = await dialog.ShowAsync(new Window()); // TODO: find real parent
 
-            if (result is not null)
+            if (result is null)
             {
-                _timer.Restart();
-
-                await using var stream = new FileStream(result[0], FileMode.Open);
-
-                _portableBitmap = PortableBitmap.FromStream(stream);
-                AvaloniaImage = _portableBitmap.ToAvalonia();
-
-                _timer.Stop();
-                _operationsCount++;
-                Message = $"[{_operationsCount}] Opened in {_timer.Elapsed}";
+                return;
             }
+
+            MyFileLogger.SharedTimer.Restart();
+
+            await using var stream = new FileStream(result[0], FileMode.Open);
+
+            MyFileLogger.Log("DBG", $"Stream created at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s\n");
+
+            _portableBitmap = PortableBitmap.FromStream(stream);
+
+            var map = _portableBitmap.ToAvalonia();
+
+            AvaloniaImage = map;
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Opened in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("DBG", $"{Message}\n\n");
         }
         catch (Exception e)
         {
-            Logger.Sink?.Log(LogEventLevel.Error, "All", e, e.ToString());
+            MyFileLogger.Log("ERR", e.ToString());
         }
     }
 
     public async Task SaveRaw()
     {
-        var dialog = new SaveFileDialog { Filters = FileFilters };
-        string result = await dialog.ShowAsync(new Window()); // TODO: find real parent
-
-        if (result is not null)
+        try
         {
-            _timer.Restart();
+            var dialog = new SaveFileDialog { Filters = FileFilters };
+            string result = await dialog.ShowAsync(new Window()); // TODO: find real parent
+
+            if (result is null)
+            {
+                return;
+            }
+
+            MyFileLogger.SharedTimer.Restart();
 
             await using var stream = new FileStream(result, FileMode.Create);
             _portableBitmap.SaveRaw(stream);
 
-            _timer.Stop();
+            MyFileLogger.SharedTimer.Stop();
             _operationsCount++;
-            Message = $"[{_operationsCount}] Saved in {_timer.Elapsed}";
+            Message = $"({_operationsCount}) Saved in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("DBG", $"{Message}\n\n");
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", e.ToString());
         }
     }
 
     public async Task SavePlain()
     {
-        var dialog = new SaveFileDialog { Filters = FileFilters };
-        string result = await dialog.ShowAsync(new Window()); // TODO: find real parent
-
-        if (result is not null)
+        try
         {
-            _timer.Restart();
+            var dialog = new SaveFileDialog { Filters = FileFilters };
+            string result = await dialog.ShowAsync(new Window()); // TODO: find real parent
+
+            if (result is null)
+            {
+                return;
+            }
+
+            MyFileLogger.SharedTimer.Restart();
 
             await using var stream = new FileStream(result, FileMode.Create);
             _portableBitmap.SavePlain(stream);
 
-            _timer.Stop();
+            MyFileLogger.SharedTimer.Stop();
             _operationsCount++;
-            Message = $"[{_operationsCount}] Saved in {_timer.Elapsed}";
+            Message = $"({_operationsCount}) Saved in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("DBG", $"{Message}\n\n");
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", e.ToString());
         }
     }
 
     public void ToggleFirstChannel()
     {
-        _timer.Restart();
+        MyFileLogger.SharedTimer.Restart();
 
         _portableBitmap.ToggleFirstChannel();
         AvaloniaImage = _portableBitmap.ToAvalonia();
 
-        _timer.Stop();
+        MyFileLogger.SharedTimer.Stop();
         _operationsCount++;
-        Message = $"[{_operationsCount}] Toggled in {_timer.Elapsed}";
+        Message = $"({_operationsCount}) Toggled in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+        MyFileLogger.Log("DBG", $"{Message}\n\n");
     }
 
     public void ToggleSecondChannel()
     {
-        _timer.Restart();
+        MyFileLogger.SharedTimer.Restart();
 
         _portableBitmap.ToggleSecondChannel();
         AvaloniaImage = _portableBitmap.ToAvalonia();
 
-        _timer.Stop();
+        MyFileLogger.SharedTimer.Stop();
         _operationsCount++;
-        Message = $"[{_operationsCount}] Toggled in {_timer.Elapsed}";
+        Message = $"({_operationsCount}) Toggled in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+        MyFileLogger.Log("DBG", $"{Message}\n\n");
     }
 
     public void ToggleThirdChannel()
     {
-        _timer.Restart();
+        MyFileLogger.SharedTimer.Restart();
 
         _portableBitmap.ToggleThirdChannel();
         AvaloniaImage = _portableBitmap.ToAvalonia();
 
-        _timer.Stop();
+        MyFileLogger.SharedTimer.Stop();
         _operationsCount++;
-        Message = $"[{_operationsCount}] Toggled in {_timer.Elapsed}";
+        Message = $"({_operationsCount}) Toggled in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+        MyFileLogger.Log("DBG", $"{Message}\n\n");
     }
 }

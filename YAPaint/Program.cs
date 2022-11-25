@@ -3,6 +3,7 @@ using Avalonia.ReactiveUI;
 using System;
 using System.Diagnostics;
 using Avalonia.Logging;
+using YAPaint.Tools;
 
 namespace YAPaint;
 
@@ -23,6 +24,7 @@ class Program
         catch (Exception e)
         {
             Logger.Sink?.Log(LogEventLevel.Error, "All", e, e.ToString());
+            MyFileLogger.Log("ERR", e.ToString());
         }
     }
 

@@ -35,6 +35,8 @@ public class PortableBitmap
                 _map[i, j] = map[i, j];
             }
         }
+
+        MyFileLogger.Log("DBG", $"Object created at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s\n");
     }
 
     public PortableBitmap(Stream stream)
