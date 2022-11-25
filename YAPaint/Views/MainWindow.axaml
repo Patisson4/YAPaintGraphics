@@ -40,7 +40,7 @@
                    Margin="10"
                    HorizontalAlignment="Left"
                    Text="{Binding Message}" />
-        <Image Source="{Binding AvaloniaImage}" />
+        <Image Source="{Binding AvaloniaImage}" RenderOptions.BitmapInterpolationMode="Default"/>
     </DockPanel>
 
 </Window>
