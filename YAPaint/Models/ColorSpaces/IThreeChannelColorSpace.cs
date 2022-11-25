@@ -2,7 +2,7 @@
 
 public interface IThreeChannelColorSpace
 {
-    public ColorChannel FirstChannel { get; }
-    public ColorChannel SecondChannel { get; }
-    public ColorChannel ThirdChannel { get; }
+    ColorChannel FirstChannel { get; }
+    ColorChannel SecondChannel { get; }
+    ColorChannel ThirdChannel { get; }
 }

@@ -140,7 +140,7 @@ public class MainWindowViewModel : ViewModelBase
         Message = $"[{_operationsCount}] Toggled in {_timer.Elapsed}";
     }
 
-    private async Task OpenAs<TColorSpace>() where TColorSpace : IColorSpace
+    private async Task OpenAs<T>() where T : IColorSpace, IColorConvertable<T>
     {
         var dialog = new OpenFileDialog { Filters = FileFilters, AllowMultiple = false };
         string[] result = await dialog.ShowAsync(new Window()); // TODO: find real parent
@@ -151,7 +151,7 @@ public class MainWindowViewModel : ViewModelBase
 
             await using var stream = new FileStream(result[0], FileMode.Open);
 
-            _portableBitmap = PortableBitmap.FromStream<TColorSpace>(stream);
+            _portableBitmap = PortableBitmap.FromStream<T>(stream);
             AvaloniaImage = _portableBitmap.ToAvalonia();
 
             _timer.Stop();
