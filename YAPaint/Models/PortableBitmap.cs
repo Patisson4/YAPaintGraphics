@@ -40,7 +40,7 @@ public class PortableBitmap
         throw new NotImplementedException();
     }
 
-    public static PortableBitmap FromStream<T>(Stream stream) where T : IColorSpace, IColorConvertable<T>
+    public static PortableBitmap FromStream<T>(Stream stream) where T : IColorSpace, IColorConvertable<T>, IThreeCoefficientConstructable<T>
     {
         return PnmParser.ReadImage<T>(stream);
     }
