@@ -1,8 +1,9 @@
-﻿using YAPaint.Models.ColorSpaces;
+﻿using System.Drawing;
+using YAPaint.Models.ColorSpaces;
 
 namespace YAPaint.Models.ExtraColorSpaces;
 
-public class Cmy : IThreeChannelColorSpace, IColorSpace
+public class Cmy : IColorSpace, IColorConvertable<Cmy>, IThreeChannelColorSpace, IThreeCoefficientConstructable<Cmy>
 {
     public Cmy(Coefficient cyan, Coefficient magenta, Coefficient yellow)
     {
@@ -14,6 +15,11 @@ public class Cmy : IThreeChannelColorSpace, IColorSpace
     public ColorChannel FirstChannel { get; }
     public ColorChannel SecondChannel { get; }
     public ColorChannel ThirdChannel { get; }
+
+    public static Cmy FromCoefficients(Coefficient first, Coefficient second, Coefficient third)
+    {
+        return new Cmy(first, second, third);
+    }
 
     public byte[] ToRaw()
     {
@@ -31,17 +37,16 @@ public class Cmy : IThreeChannelColorSpace, IColorSpace
             $"{Coefficient.Denormalize(FirstChannel.Value)} {Coefficient.Denormalize(SecondChannel.Value)} {Coefficient.Denormalize(ThirdChannel.Value)}";
     }
 
-    public Rgb ToRgb()
+    public static Color ToSystemColor(Cmy color)
     {
-        return new Rgb(1f - FirstChannel.Value,
-            1f - SecondChannel.Value,
-            1f - ThirdChannel.Value);
+        return Color.FromArgb(
+            Coefficient.Denormalize(1f - color.FirstChannel.Value),
+            Coefficient.Denormalize(1f - color.SecondChannel.Value),
+            Coefficient.Denormalize(1f - color.ThirdChannel.Value));
     }
 
-    public static IColorSpace FromRgb(Rgb color)
+    public static Cmy FromSystemColor(Color color)
     {
-        return new Cmy(1f - color.FirstChannel.Value,
-            1f - color.SecondChannel.Value,
-            1f - color.ThirdChannel.Value);
+        return new Cmy(1f - color.R, 1f - color.G, 1f - color.B);
     }
 }

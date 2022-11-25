@@ -1,18 +1,25 @@
-﻿using YAPaint.Models.ColorSpaces;
+﻿using System.Drawing;
+using YAPaint.Models.ColorSpaces;
 
 namespace YAPaint.Models.ExtraColorSpaces;
 
-public class YCoCg : IThreeChannelColorSpace, IColorSpace
+public class YCoCg : IColorSpace, IColorConvertable<YCoCg>, IThreeChannelColorSpace,
+                     IThreeCoefficientConstructable<YCoCg>
 {
-    public ColorChannel FirstChannel { get; }
-    public ColorChannel SecondChannel { get; }
-    public ColorChannel ThirdChannel { get; }
-
     public YCoCg(Coefficient y, Coefficient co, Coefficient cg)
     {
         FirstChannel = new ColorChannel(y);
         SecondChannel = new ColorChannel(co);
         ThirdChannel = new ColorChannel(cg);
+    }
+
+    public ColorChannel FirstChannel { get; }
+    public ColorChannel SecondChannel { get; }
+    public ColorChannel ThirdChannel { get; }
+
+    public static YCoCg FromCoefficients(Coefficient first, Coefficient second, Coefficient third)
+    {
+        return new YCoCg(first, second, third);
     }
 
     public byte[] ToRaw()
@@ -31,19 +38,19 @@ public class YCoCg : IThreeChannelColorSpace, IColorSpace
             $"{Coefficient.Denormalize(FirstChannel.Value)} {Coefficient.Denormalize(SecondChannel.Value)} {Coefficient.Denormalize(ThirdChannel.Value)}";
     }
 
-    public Rgb ToRgb()
+    public static Color ToSystemColor(YCoCg color)
     {
-        return new Rgb(
-            FirstChannel.Value + SecondChannel.Value - ThirdChannel.Value,
-            FirstChannel.Value + ThirdChannel.Value,
-            FirstChannel.Value - SecondChannel.Value - ThirdChannel.Value);
+        return Color.FromArgb(
+            Coefficient.Denormalize(color.FirstChannel.Value + color.SecondChannel.Value - color.ThirdChannel.Value),
+            Coefficient.Denormalize(color.FirstChannel.Value + color.ThirdChannel.Value),
+            Coefficient.Denormalize(color.FirstChannel.Value - color.SecondChannel.Value - color.ThirdChannel.Value));
     }
 
-    public static IColorSpace FromRgb(Rgb color)
+    public static YCoCg FromSystemColor(Color color)
     {
-        return new YCoCg( 
-            0.25f * color.FirstChannel.Value + 0.5f * color.SecondChannel.Value + 0.25f * color.ThirdChannel.Value, 
-            0.5f + 0.5f * color.FirstChannel.Value - 0.5f * color.ThirdChannel.Value, 
-            0.5f - 0.25f * color.FirstChannel.Value + 0.5f * color.SecondChannel.Value - 0.25f * color.ThirdChannel.Value);
+        return new YCoCg(
+            0.25f * color.R + 0.5f * color.G + 0.25f * color.B,
+            0.5f + 0.5f * color.R - 0.5f * color.B,
+            0.5f - 0.25f * color.R + 0.5f * color.G - 0.25f * color.B);
     }
 }
