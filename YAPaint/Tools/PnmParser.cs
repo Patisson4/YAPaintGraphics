@@ -11,7 +11,7 @@ namespace YAPaint.Tools;
 
 public static class PnmParser
 {
-    public static PortableBitmap ReadImage<T>(Stream stream) where T : IColorSpace
+    public static PortableBitmap ReadImage<T>(Stream stream) where T : IColorSpace, IColorConvertable<T>
     {
         using var reader = new BinaryReader(stream);
 
@@ -38,7 +38,7 @@ public static class PnmParser
             for (int x = 0; x < width; x++)
             {
                 Color color = ReadColor(reader, type, scale);
-                map[x, y] = T.FromRgb(color);
+                map[x, y] = T.FromSystemColor(color);
             }
         }
 

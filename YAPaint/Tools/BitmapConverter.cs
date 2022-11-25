@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using YAPaint.Models;
@@ -9,22 +10,6 @@ namespace YAPaint.Tools;
 
 public static class BitmapConverter
 {
-    public static PortableBitmap ToPortable<T>(this AvaloniaBitmap bitmap) where T : IColorSpace
-    {
-        Bitmap systemBitmap = bitmap.ConvertToSystemBitmap();
-        var map = new IColorSpace[systemBitmap.Width, systemBitmap.Height];
-
-        for (int j = 0; j < bitmap.PixelSize.Height; j++)
-        {
-            for (int i = 0; i < bitmap.PixelSize.Width; i++)
-            {
-                map[i, j] = T.FromRgb(systemBitmap.GetPixel(i, j));
-            }
-        }
-
-        return new PortableBitmap(map);
-    }
-
     public static AvaloniaBitmap ToAvalonia(this PortableBitmap bitmap)
     {
         var systemBitmap = new Bitmap(bitmap.Width, bitmap.Height);
@@ -32,19 +17,21 @@ public static class BitmapConverter
         {
             for (int i = 0; i < bitmap.Width; i++)
             {
-                systemBitmap.SetPixel(i, j, bitmap.GetPixel(i, j).ToRgb());
+                var color = bitmap.GetPixel(i, j);
+                
+                var dest = color.GetType().Name switch
+                {
+                    nameof(Rgb) => Rgb.ToSystemColor((Rgb)color),
+                    nameof(GreyScale) => GreyScale.ToSystemColor((GreyScale)color),
+                    nameof(BlackAndWhite) => BlackAndWhite.ToSystemColor((BlackAndWhite)color),
+                    _ => throw new ArgumentException("Unsupported color space"),
+                };
+                
+                systemBitmap.SetPixel(i, j, dest);
             }
         }
 
         return systemBitmap.ConvertToAvaloniaBitmap();
-    }
-
-    private static Bitmap ConvertToSystemBitmap(this AvaloniaBitmap bitmap)
-    {
-        using var stream = new MemoryStream();
-        bitmap.Save(stream);
-        stream.Position = 0;
-        return new Bitmap(stream);
     }
 
     private static AvaloniaBitmap ConvertToAvaloniaBitmap(this Bitmap bitmap)
