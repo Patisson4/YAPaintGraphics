@@ -1,16 +1,14 @@
 ﻿using System;
+using System.Drawing;
 
 namespace YAPaint.Models.ColorSpaces;
 
-public class GreyScale : IColorSpace
+public class GreyScale : IColorSpace, IColorConvertable<GreyScale>
 {
     public GreyScale(byte grey)
     {
         Grey = grey;
     }
-
-    public static IColorSpace Black { get; } = new GreyScale(0);
-    public static IColorSpace White { get; } = new GreyScale(1);
 
     private byte Grey { get; }
 
@@ -24,25 +22,21 @@ public class GreyScale : IColorSpace
         return $"{Grey}";
     }
 
-    public Rgb ToRgb()
+    public static Color ToSystemColor(GreyScale color)
     {
-        return new Rgb(
-            Coefficient.Normalize(Grey),
-            Coefficient.Normalize(Grey),
-            Coefficient.Normalize(Grey));
+        return Color.FromArgb(color.Grey, color.Grey, color.Grey);
     }
 
-    public static IColorSpace FromRgb(Rgb color)
+    public static GreyScale FromSystemColor(Color color)
     {
-        if (float.Abs(color.FirstChannel.Value - color.SecondChannel.Value) < float.Epsilon
-         && float.Abs(color.ThirdChannel.Value - color.SecondChannel.Value) < float.Epsilon)
+        if (color.R != color.G || color.G != color.B)
         {
-            return new GreyScale(Coefficient.Denormalize(color.FirstChannel.Value));
+            throw new ArgumentOutOfRangeException(
+                nameof(color),
+                color,
+                "Unsupported value: color should be a shadow of grey");
         }
 
-        throw new ArgumentOutOfRangeException(
-            nameof(color),
-            color,
-            "Unsupported value: color should be a shadow of grey");
+        return new GreyScale(color.R);
     }
 }

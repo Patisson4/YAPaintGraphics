@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace YAPaint.Models.ColorSpaces;
 
-public class Rgb : IThreeChannelColorSpace, IColorSpace
+public class Rgb : IColorSpace, IColorConvertable<Rgb>, IThreeChannelColorSpace, IThreeCoefficientConstructable<Rgb>
 {
     public Rgb(Coefficient red, Coefficient green, Coefficient blue)
     {
@@ -27,8 +27,10 @@ public class Rgb : IThreeChannelColorSpace, IColorSpace
     /// </summary>
     public ColorChannel ThirdChannel { get; }
 
-    public static Rgb Black { get; } = new Rgb(0, 0, 0);
-    public static Rgb White { get; } = new Rgb(1, 1, 1);
+    public static Rgb FromCoefficients(Coefficient first, Coefficient second, Coefficient third)
+    {
+        return new Rgb(first, second, third);
+    }
 
     public byte[] ToRaw()
     {
@@ -49,25 +51,15 @@ public class Rgb : IThreeChannelColorSpace, IColorSpace
             Coefficient.Denormalize(ThirdChannel.Value));
     }
 
-    public Rgb ToRgb()
-    {
-        return this;
-    }
-
-    public static IColorSpace FromRgb(Rgb color)
-    {
-        return color;
-    }
-
-    public static implicit operator Color(Rgb rgb)
+    public static Color ToSystemColor(Rgb color)
     {
         return Color.FromArgb(
-            Coefficient.Denormalize(rgb.FirstChannel.Value),
-            Coefficient.Denormalize(rgb.SecondChannel.Value),
-            Coefficient.Denormalize(rgb.ThirdChannel.Value));
+            Coefficient.Denormalize(color.FirstChannel.Value),
+            Coefficient.Denormalize(color.SecondChannel.Value),
+            Coefficient.Denormalize(color.ThirdChannel.Value));
     }
 
-    public static implicit operator Rgb(Color color)
+    public static Rgb FromSystemColor(Color color)
     {
         return new Rgb(
             Coefficient.Normalize(color.R),
