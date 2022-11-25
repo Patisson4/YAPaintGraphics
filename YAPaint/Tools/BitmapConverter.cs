@@ -3,6 +3,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using YAPaint.Models;
 using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
+using Bitmap = System.Drawing.Bitmap;
 
 namespace YAPaint.Tools;
 
@@ -28,18 +29,46 @@ public static class BitmapConverter
         return new PortableBitmap(map);
     }
 
-    public static AvaloniaBitmap ToAvalonia(this PortableBitmap bitmap)
+    public static unsafe AvaloniaBitmap ToAvalonia(this PortableBitmap bitmap)
     {
-        var systemBitmap = new Bitmap(bitmap.Width, bitmap.Height);
+        using var systemBitmap = new Bitmap(bitmap.Width, bitmap.Height);
+
+        MyFileLogger.Log("DBG", $"System Bitmap created at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s\n");
+
+        var bitmapData = systemBitmap.LockBits(
+            new Rectangle(0, 0, bitmap.Width, bitmap.Height),
+            ImageLockMode.ReadWrite,
+            PixelFormat.Format32bppArgb);
+
+        var arr = (byte*)bitmapData.Scan0.ToPointer();
+
         for (int j = 0; j < bitmap.Height; j++)
         {
             for (int i = 0; i < bitmap.Width; i++)
             {
-                systemBitmap.SetPixel(i, j, bitmap.GetPixel(i, j));
+                var rawColor = bitmap.GetPixel(i, j).ToRaw();
+                arr[(j * bitmap.Width + i) * 4] = rawColor[2];
+                arr[(j * bitmap.Width + i) * 4 + 1] = rawColor[1];
+                arr[(j * bitmap.Width + i) * 4 + 2] = rawColor[0];
+                arr[(j * bitmap.Width + i) * 4 + 3] = byte.MaxValue;
             }
         }
 
-        return systemBitmap.ConvertToAvaloniaBitmap();
+        MyFileLogger.Log("DBG", $"Pixels assigned at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s\n");
+
+        var avaloniaBitmap = new AvaloniaBitmap(
+            Avalonia.Platform.PixelFormat.Bgra8888,
+            Avalonia.Platform.AlphaFormat.Premul,
+            bitmapData.Scan0,
+            new Avalonia.PixelSize(bitmapData.Width, bitmapData.Height),
+            new Avalonia.Vector(96, 96),
+            bitmapData.Stride);
+
+        systemBitmap.UnlockBits(bitmapData);
+
+        MyFileLogger.Log("DBG", $"Converted to AvaloniaBitmap at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s\n");
+
+        return avaloniaBitmap;
     }
 
     private static Bitmap ConvertToSystemBitmap(this AvaloniaBitmap bitmap)
@@ -48,24 +77,5 @@ public static class BitmapConverter
         bitmap.Save(stream);
         stream.Position = 0;
         return new Bitmap(stream);
-    }
-
-    private static AvaloniaBitmap ConvertToAvaloniaBitmap(this Bitmap bitmap)
-    {
-        var bitmapTmp = new Bitmap(bitmap);
-        var bitmapData = bitmapTmp.LockBits(
-            new Rectangle(0, 0, bitmapTmp.Width, bitmapTmp.Height),
-            ImageLockMode.ReadWrite,
-            PixelFormat.Format32bppArgb);
-        var avaloniaBitmap = new AvaloniaBitmap(
-            Avalonia.Platform.PixelFormat.Bgra8888,
-            Avalonia.Platform.AlphaFormat.Premul,
-            bitmapData.Scan0,
-            new Avalonia.PixelSize(bitmapData.Width, bitmapData.Height),
-            new Avalonia.Vector(96, 96),
-            bitmapData.Stride);
-        bitmapTmp.UnlockBits(bitmapData);
-        bitmapTmp.Dispose();
-        return avaloniaBitmap;
     }
 }
