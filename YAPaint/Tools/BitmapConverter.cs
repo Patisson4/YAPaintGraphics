@@ -17,7 +17,11 @@ public static class BitmapConverter
         {
             for (int i = 0; i < bitmap.PixelSize.Width; i++)
             {
-                map[i, j] = systemBitmap.GetPixel(i, j);
+                var pixel = systemBitmap.GetPixel(i, j);
+                map[i, j] = new ColorSpace(
+                    Coefficient.Normalize(pixel.R),
+                    Coefficient.Normalize(pixel.G),
+                    Coefficient.Normalize(pixel.B));
             }
         }
 

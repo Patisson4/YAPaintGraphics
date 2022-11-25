@@ -80,7 +80,7 @@ public static class PnmParser
         }
     }
 
-    private static Color ReadColor(BinaryReader reader, char type, int scale)
+    private static ColorSpace ReadColor(BinaryReader reader, char type, int scale)
     {
         return type switch
         {
@@ -94,46 +94,46 @@ public static class PnmParser
         };
     }
 
-    private static Color ReadTextBitmapColor(BinaryReader reader)
+    private static ColorSpace ReadTextBitmapColor(BinaryReader reader)
     {
         var bit = GetNextTextValue(reader) == 0 ? 255 : 0;
-        return Color.FromArgb(bit, bit, bit);
+        return new ColorSpace(Coefficient.Normalize(bit), Coefficient.Normalize(bit), Coefficient.Normalize(bit));
     }
 
-    private static Color ReadTextGreyscaleColor(BinaryReader reader, int scale)
+    private static ColorSpace ReadTextGreyscaleColor(BinaryReader reader, int scale)
     {
         var grey = GetNextTextValue(reader) * 255 / scale;
-        return Color.FromArgb(grey, grey, grey);
+        return new ColorSpace(Coefficient.Normalize(grey), Coefficient.Normalize(grey), Coefficient.Normalize(grey));
     }
 
-    private static Color ReadTextPixelColor(BinaryReader reader, int scale)
+    private static ColorSpace ReadTextPixelColor(BinaryReader reader, int scale)
     {
         var red = GetNextTextValue(reader) * 255 / scale;
         var green = GetNextTextValue(reader) * 255 / scale;
         var blue = GetNextTextValue(reader) * 255 / scale;
 
-        return Color.FromArgb(red, green, blue);
+        return new ColorSpace(Coefficient.Normalize(red), Coefficient.Normalize(green), Coefficient.Normalize(blue));
     }
 
-    private static Color ReadBinaryBitmapColor(BinaryReader reader)
+    private static ColorSpace ReadBinaryBitmapColor(BinaryReader reader)
     {
         var bit = reader.ReadByte() == 0 ? 255 : 0;
-        return Color.FromArgb(bit, bit, bit);
+        return new ColorSpace(Coefficient.Normalize(bit), Coefficient.Normalize(bit), Coefficient.Normalize(bit));
     }
 
-    private static Color ReadBinaryGreyscaleColor(BinaryReader reader, int scale)
+    private static ColorSpace ReadBinaryGreyscaleColor(BinaryReader reader, int scale)
     {
         var grey = reader.ReadByte() * 255 / scale;
-        return Color.FromArgb(grey, grey, grey);
+        return new ColorSpace(Coefficient.Normalize(grey), Coefficient.Normalize(grey), Coefficient.Normalize(grey));
     }
 
-    private static Color ReadBinaryPixelImage(BinaryReader reader, int scale)
+    private static ColorSpace ReadBinaryPixelImage(BinaryReader reader, int scale)
     {
         var red = reader.ReadByte() * 255 / scale;
         var green = reader.ReadByte() * 255 / scale;
         var blue = reader.ReadByte() * 255 / scale;
 
-        return Color.FromArgb(red, green, blue);
+        return new ColorSpace(Coefficient.Normalize(red), Coefficient.Normalize(green), Coefficient.Normalize(blue));
     }
 
     private static int GetNextHeaderValue(BinaryReader reader)
