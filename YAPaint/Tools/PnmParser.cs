@@ -11,7 +11,7 @@ namespace YAPaint.Tools;
 
 public static class PnmParser
 {
-    public static PortableBitmap ReadImage<T>(Stream stream) where T : IColorSpace, IColorConvertable<T>, IThreeCoefficientConstructable<T>
+    public static PortableBitmap ReadImage<T>(Stream stream) where T : IColorSpaceBase<T>
     {
         using var reader = new BinaryReader(stream);
 

@@ -3,8 +3,7 @@ using System.Drawing;
 
 namespace YAPaint.Models.ColorSpaces;
 
-public class BlackAndWhite : IColorSpace, IColorConvertable<BlackAndWhite>,
-                             IThreeCoefficientConstructable<BlackAndWhite>
+public class BlackAndWhite : IColorSpaceBase<BlackAndWhite>
 {
     private const bool WhiteCode = false; // 0
     private const bool BlackCode = true; // 1

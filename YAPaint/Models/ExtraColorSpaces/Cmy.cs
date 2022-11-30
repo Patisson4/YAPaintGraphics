@@ -3,7 +3,7 @@ using YAPaint.Models.ColorSpaces;
 
 namespace YAPaint.Models.ExtraColorSpaces;
 
-public class Cmy : IColorSpace, IColorConvertable<Cmy>, IThreeChannelColorSpace, IThreeCoefficientConstructable<Cmy>
+public class Cmy : IColorSpaceComplex<Cmy>
 {
     public Cmy(Coefficient cyan, Coefficient magenta, Coefficient yellow)
     {

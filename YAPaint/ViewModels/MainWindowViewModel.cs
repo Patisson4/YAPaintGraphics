@@ -140,7 +140,7 @@ public class MainWindowViewModel : ViewModelBase
         Message = $"[{_operationsCount}] Toggled in {_timer.Elapsed}";
     }
 
-    private async Task OpenAs<T>() where T : IColorSpace, IColorConvertable<T>, IThreeCoefficientConstructable<T>
+    private async Task OpenAs<T>() where T : IColorSpaceBase<T>
     {
         var dialog = new OpenFileDialog { Filters = FileFilters, AllowMultiple = false };
         string[] result = await dialog.ShowAsync(new Window()); // TODO: find real parent

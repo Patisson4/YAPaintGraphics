@@ -4,7 +4,7 @@ using YAPaint.Models.ColorSpaces;
 
 namespace YAPaint.Models.ExtraColorSpaces;
 
-public class Hsv : IColorSpace, IColorConvertable<Hsv>, IThreeChannelColorSpace, IThreeCoefficientConstructable<Hsv>
+public class Hsv : IColorSpaceComplex<Hsv>
 {
     public Hsv(Coefficient h, Coefficient s, Coefficient v)
     {

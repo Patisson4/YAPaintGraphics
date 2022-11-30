@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace YAPaint.Models.ColorSpaces;
 
-public class Rgb : IColorSpace, IColorConvertable<Rgb>, IThreeChannelColorSpace, IThreeCoefficientConstructable<Rgb>
+public class Rgb : IColorSpaceComplex<Rgb>
 {
     public Rgb(Coefficient red, Coefficient green, Coefficient blue)
     {
@@ -44,11 +44,8 @@ public class Rgb : IColorSpace, IColorConvertable<Rgb>, IThreeChannelColorSpace,
 
     public string ToPlain()
     {
-        return string.Format(
-            "{0} {1} {2}",
-            Coefficient.Denormalize(FirstChannel.Value),
-            Coefficient.Denormalize(SecondChannel.Value),
-            Coefficient.Denormalize(ThirdChannel.Value));
+        return
+            $"{Coefficient.Denormalize(FirstChannel.Value)} {Coefficient.Denormalize(SecondChannel.Value)} {Coefficient.Denormalize(ThirdChannel.Value)}";
     }
 
     public static Color ToSystemColor(Rgb color)

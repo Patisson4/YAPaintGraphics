@@ -40,7 +40,7 @@ public class PortableBitmap
         throw new NotImplementedException();
     }
 
-    public static PortableBitmap FromStream<T>(Stream stream) where T : IColorSpace, IColorConvertable<T>, IThreeCoefficientConstructable<T>
+    public static PortableBitmap FromStream<T>(Stream stream) where T : IColorSpaceBase<T>
     {
         return PnmParser.ReadImage<T>(stream);
     }
@@ -138,6 +138,7 @@ public class PortableBitmap
 
         foreach (IColorSpace color in _map)
         {
+            //TODO: Convert to certain ColorSpace
             stream.Write(color.ToRaw());
         }
     }

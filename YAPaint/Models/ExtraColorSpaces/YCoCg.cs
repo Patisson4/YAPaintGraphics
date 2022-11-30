@@ -3,8 +3,7 @@ using YAPaint.Models.ColorSpaces;
 
 namespace YAPaint.Models.ExtraColorSpaces;
 
-public class YCoCg : IColorSpace, IColorConvertable<YCoCg>, IThreeChannelColorSpace,
-                     IThreeCoefficientConstructable<YCoCg>
+public class YCoCg : IColorSpaceComplex<YCoCg>
 {
     public YCoCg(Coefficient y, Coefficient co, Coefficient cg)
     {

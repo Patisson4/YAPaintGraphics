@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace YAPaint.Models.ColorSpaces;
 
-public class GreyScale : IColorSpace, IColorConvertable<GreyScale>, IThreeCoefficientConstructable<GreyScale>
+public class GreyScale : IColorSpaceBase<GreyScale>
 {
     public GreyScale(byte grey)
     {
