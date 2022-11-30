@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using YAPaint.Models.ColorSpaces;
 using YAPaint.Tools;
 
 namespace YAPaint.Models;
@@ -45,9 +46,9 @@ public class PortableBitmap
         throw new NotImplementedException();
     }
 
-    public static PortableBitmap FromStream(Stream stream)
+    public static PortableBitmap FromStream<T>(Stream stream) where T : IColorSpace
     {
-        return PnmParser.ReadImage(stream);
+        return PnmParser.ReadImage<T>(stream);
     }
 
     public ColorSpace GetPixel(int x, int y)
@@ -102,6 +103,7 @@ public class PortableBitmap
         //TODO: use GetPixel for correct visibility
         foreach (ColorSpace color in _map)
         {
+            //TODO: Convert to certain ColorSpace
             stream.Write(color.ToRaw());
         }
     }

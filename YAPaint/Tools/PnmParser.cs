@@ -4,13 +4,14 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using YAPaint.Models;
+using YAPaint.Models.ColorSpaces;
 using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
 
 namespace YAPaint.Tools;
 
 public static class PnmParser
 {
-    public static PortableBitmap ReadImage(Stream stream)
+    public static PortableBitmap ReadImage<T>(Stream stream) where T : IColorSpace
     {
         using var reader = new BinaryReader(stream);
 

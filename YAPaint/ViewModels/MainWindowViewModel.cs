@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using ReactiveUI.Fody.Helpers;
 using YAPaint.Models;
+using YAPaint.Models.ColorSpaces;
 using YAPaint.Tools;
 using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
 
@@ -18,6 +22,13 @@ public class MainWindowViewModel : ViewModelBase
         new FileDialogFilter { Name = "All", Extensions = { "*" } },
     };
 
+    private static readonly List<Type> SpaceTypes = Assembly.GetExecutingAssembly()
+                                                            .GetTypes()
+                                                            .Where(t => t.GetInterfaces().Contains(typeof(IColorSpace)))
+                                                            .ToList();
+
+    private readonly Stopwatch _timer = new Stopwatch();
+
     private int _operationsCount;
 
     private PortableBitmap _portableBitmap;
@@ -26,43 +37,29 @@ public class MainWindowViewModel : ViewModelBase
     public string Message { get; set; } = "Timings will be displayed here";
 
     [Reactive]
-    public string SelectedColorSpace { get; set; } = "RGB";
+    public string SelectedColorSpace { get; set; } = nameof(Rgb);
 
     [Reactive]
     public AvaloniaBitmap AvaloniaImage { get; set; }
 
-    public static IReadOnlyCollection<string> ThreeChannelColorSpaceNames { get; } = new[] { "RGB" };
+    public static IReadOnlyCollection<string> ThreeChannelColorSpaceNames { get; } = SpaceTypes
+        .Where(t => t.GetInterfaces().Contains(typeof(IThreeChannelColorSpace)))
+        .Select(t => t.Name)
+        .ToList();
 
-    public static IReadOnlyCollection<string> ColorSpaceNames { get; } = new[] { "RGB" };
+    public static IReadOnlyCollection<string> ColorSpaceNames { get; } = SpaceTypes.Select(t => t.Name).ToList();
 
     public async Task Open()
     {
         try
         {
-            var dialog = new OpenFileDialog { Filters = FileFilters, AllowMultiple = false };
-            string[] result = await dialog.ShowAsync(new Window()); // TODO: find real parent
-
-            if (result is null)
+            await (SelectedColorSpace switch
             {
-                return;
-            }
-
-            MyFileLogger.SharedTimer.Restart();
-
-            await using var stream = new FileStream(result[0], FileMode.Open);
-
-            MyFileLogger.Log("DBG", $"Stream created at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s\n");
-
-            _portableBitmap = PortableBitmap.FromStream(stream);
-
-            var map = _portableBitmap.ToAvalonia();
-
-            AvaloniaImage = map;
-
-            MyFileLogger.SharedTimer.Stop();
-            _operationsCount++;
-            Message = $"({_operationsCount}) Opened in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-            MyFileLogger.Log("INF", $"{Message}\n");
+                nameof(Rgb) => OpenAs<Rgb>(),
+                nameof(GreyScale) => OpenAs<GreyScale>(),
+                nameof(BlackAndWhite) => OpenAs<BlackAndWhite>(),
+                _ => throw new ArgumentException("Unsupported color space"),
+            });
         }
         catch (Exception e)
         {
@@ -161,7 +158,31 @@ public class MainWindowViewModel : ViewModelBase
 
         MyFileLogger.SharedTimer.Stop();
         _operationsCount++;
-        Message = $"({_operationsCount}) Toggled in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+        Message = $"[{_operationsCount}] Toggled in {_timer.Elapsed}";
+    }
+
+    private async Task OpenAs<TColorSpace>() where TColorSpace : IColorSpace
+    {
+        var dialog = new OpenFileDialog { Filters = FileFilters, AllowMultiple = false };
+        string[] result = await dialog.ShowAsync(new Window()); // TODO: find real parent
+
+        if (result is null)
+        {
+            return;
+        }
+
+        MyFileLogger.SharedTimer.Restart();
+
+        await using var stream = new FileStream(result[0], FileMode.Open);
+
+        MyFileLogger.Log("DBG", $"Stream created at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s\n");
+
+        _portableBitmap = PortableBitmap.FromStream(stream);
+        AvaloniaImage = _portableBitmap.ToAvalonia();
+
+        MyFileLogger.SharedTimer.Stop();
+        _operationsCount++;
+        Message = $"({_operationsCount}) Opened in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
         MyFileLogger.Log("INF", $"{Message}\n");
     }
 }
