@@ -41,7 +41,7 @@ public static class PnmParser
             }
         }
 
-        MyFileLogger.Log("DBG", $"Read file at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s\n");
+        MyFileLogger.Log("DBG", $"Read file at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
 
         return new PortableBitmap(map);
     }

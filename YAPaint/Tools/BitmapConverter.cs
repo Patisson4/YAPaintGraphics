@@ -12,7 +12,7 @@ public static class BitmapConverter
     {
         using var systemBitmap = new Bitmap(bitmap.Width, bitmap.Height);
 
-        MyFileLogger.Log("DBG", $"System Bitmap created at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s\n");
+        MyFileLogger.Log("DBG", $"System Bitmap created at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
 
         var bitmapData = systemBitmap.LockBits(
             new Rectangle(0, 0, bitmap.Width, bitmap.Height),
@@ -33,7 +33,7 @@ public static class BitmapConverter
             }
         }
 
-        MyFileLogger.Log("DBG", $"Pixels assigned at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s\n");
+        MyFileLogger.Log("DBG", $"Pixels assigned at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
 
         var avaloniaBitmap = new AvaloniaBitmap(
             Avalonia.Platform.PixelFormat.Bgra8888,
@@ -45,7 +45,7 @@ public static class BitmapConverter
 
         systemBitmap.UnlockBits(bitmapData);
 
-        MyFileLogger.Log("DBG", $"Converted to AvaloniaBitmap at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s\n");
+        MyFileLogger.Log("DBG", $"Converted to AvaloniaBitmap at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
 
         return avaloniaBitmap;
     }

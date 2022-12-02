@@ -12,6 +12,6 @@ public static class MyFileLogger
     
     public static void Log(string level, string message)
     {
-        File.AppendAllText(Filepath, $"{DateTime.Now} [{level}] {message}");
+        File.AppendAllText(Filepath, $"{DateTime.Now} [{level}] {message}\n");
     }
 }

@@ -37,7 +37,7 @@ public class PortableBitmap
             }
         }
 
-        MyFileLogger.Log("DBG", $"Object created at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s\n");
+        MyFileLogger.Log("DBG", $"Object created at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
     }
 
     public PortableBitmap(Stream stream)

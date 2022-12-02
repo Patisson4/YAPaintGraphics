@@ -63,7 +63,7 @@ public class MainWindowViewModel : ViewModelBase
         }
         catch (Exception e)
         {
-            MyFileLogger.Log("ERR", e.ToString());
+            MyFileLogger.Log("ERR", $"{e}\n");
         }
     }
 
@@ -91,7 +91,7 @@ public class MainWindowViewModel : ViewModelBase
         }
         catch (Exception e)
         {
-            MyFileLogger.Log("ERR", e.ToString());
+            MyFileLogger.Log("ERR", $"{e}\n");
         }
     }
 
@@ -119,7 +119,7 @@ public class MainWindowViewModel : ViewModelBase
         }
         catch (Exception e)
         {
-            MyFileLogger.Log("ERR", e.ToString());
+            MyFileLogger.Log("ERR", $"{e}\n");
         }
     }
 
@@ -159,6 +159,7 @@ public class MainWindowViewModel : ViewModelBase
         MyFileLogger.SharedTimer.Stop();
         _operationsCount++;
         Message = $"[{_operationsCount}] Toggled in {_timer.Elapsed}";
+        MyFileLogger.Log("INF", $"{Message}\n");
     }
 
     private async Task OpenAs<TColorSpace>() where TColorSpace : IColorSpace
