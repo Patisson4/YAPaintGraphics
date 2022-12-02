@@ -19,13 +19,13 @@ public class PortableBitmap
 
     public PortableBitmap(ColorSpace[,] map)
     {
-        Width = map.GetLength(0);
-        Height = map.GetLength(1);
-
-        if (map.Length == 0)
+        if (map.Length <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(map), map, "Bitmap cannot be empty");
         }
+
+        Width = map.GetLength(0);
+        Height = map.GetLength(1);
 
         _map = new ColorSpace[Width, Height];
 
@@ -94,23 +94,26 @@ public class PortableBitmap
         _isThirdVisible = !_isThirdVisible;
     }
 
+    //TODO: P5 check
     public void SaveRaw(Stream stream)
     {
         stream.Write(Encoding.ASCII.GetBytes("P6\n"));
         stream.Write(Encoding.ASCII.GetBytes($"{Width} {Height}\n"));
         stream.Write(Encoding.ASCII.GetBytes($"{byte.MaxValue}\n"));
 
-        //TODO: use GetPixel for correct visibility
-        foreach (ColorSpace color in _map)
+        for (int y = 0; y < Height; y++)
         {
-            //TODO: Convert to certain ColorSpace
-            stream.Write(color.ToRaw());
+            for (int x = 0; x < Width; x++)
+            {
+                stream.Write(GetPixel(x, y).ToRaw());
+            }
         }
     }
 
+    //TODO: P2 check
     public void SavePlain(Stream stream)
     {
-        stream.Write(Encoding.ASCII.GetBytes("P4\n"));
+        stream.Write(Encoding.ASCII.GetBytes("P3\n"));
         stream.Write(Encoding.ASCII.GetBytes($"{Width} {Height}\n"));
         stream.Write(Encoding.ASCII.GetBytes($"{byte.MaxValue}\n"));
 
