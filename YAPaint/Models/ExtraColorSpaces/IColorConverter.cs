@@ -1,0 +1,7 @@
+﻿using YAPaint.Models.ColorSpaces;
+
+namespace YAPaint.Models.ExtraColorSpaces;
+
+public interface IColorConverter : IColorBaseConverter
+{
+}
