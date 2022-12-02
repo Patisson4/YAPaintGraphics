@@ -10,20 +10,29 @@ public class PortableBitmap
 {
     private readonly ColorSpace[,] _map;
 
-    private bool _isFirstVisible = true;
-    private bool _isSecondVisible = true;
-    private bool _isThirdVisible = true;
+    private bool _isFirstVisible;
+    private bool _isSecondVisible;
+    private bool _isThirdVisible;
 
     public IColorBaseConverter ColorConverter { get; private set; }
     public int Width { get; }
     public int Height { get; }
 
-    public PortableBitmap(ColorSpace[,] map, IColorBaseConverter colorConverter)
+    public PortableBitmap(
+        ColorSpace[,] map,
+        IColorBaseConverter colorConverter,
+        bool isFirstVisible,
+        bool isSecondVisible,
+        bool isThirdVisible)
     {
         if (map.Length <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(map), map, "Bitmap cannot be empty");
         }
+
+        _isFirstVisible = isFirstVisible;
+        _isSecondVisible = isSecondVisible;
+        _isThirdVisible = isThirdVisible;
 
         Width = map.GetLength(0);
         Height = map.GetLength(1);
@@ -40,11 +49,6 @@ public class PortableBitmap
         }
 
         MyFileLogger.Log("DBG", $"Object created at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
-    }
-
-    public static PortableBitmap FromStream(Stream stream, IColorBaseConverter colorConvert)
-    {
-        return PnmParser.ReadImage(stream, colorConvert);
     }
 
     public ColorSpace GetPixel(int x, int y)

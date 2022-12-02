@@ -4,14 +4,13 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using YAPaint.Models;
-using YAPaint.Models.ColorSpaces;
 using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
 
 namespace YAPaint.Tools;
 
 public static class PnmParser
 {
-    public static PortableBitmap ReadImage(Stream stream, IColorBaseConverter colorConverter)
+    public static ColorSpace[,] ReadImage(Stream stream)
     {
         using var reader = new BinaryReader(stream);
 
@@ -43,7 +42,7 @@ public static class PnmParser
 
         MyFileLogger.Log("DBG", $"Read file at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
 
-        return new PortableBitmap(map, colorConverter);
+        return map;
     }
 
     public static async Task WriteTextImage(this Bitmap bitmap, string path)

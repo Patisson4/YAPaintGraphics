@@ -43,6 +43,9 @@ public class MainWindowViewModel : ViewModelBase
 
     private PortableBitmap _portableBitmap;
     private IColorBaseConverter CurrentColorConverter => ColorSpaces.First(s => s.GetType().Name == SelectedColorSpace);
+    private bool _isFirstChannelVisible = true;
+    private bool _isSecondChannelVisible = true;
+    private bool _isThirdChannelVisible = true;
 
     [Reactive]
     public string Message { get; set; } = "Timings will be displayed here";
@@ -78,7 +81,13 @@ public class MainWindowViewModel : ViewModelBase
 
             MyFileLogger.Log("DBG", $"Stream created at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
 
-            _portableBitmap = PortableBitmap.FromStream(stream, CurrentColorConverter);
+            _portableBitmap = new PortableBitmap(
+                PnmParser.ReadImage(stream),
+                CurrentColorConverter,
+                _isFirstChannelVisible,
+                _isSecondChannelVisible,
+                _isThirdChannelVisible);
+
             AvaloniaImage = _portableBitmap.ToAvalonia();
 
             MyFileLogger.SharedTimer.Stop();
@@ -152,6 +161,12 @@ public class MainWindowViewModel : ViewModelBase
 
     public void ToggleFirstChannel()
     {
+        _isFirstChannelVisible = !_isFirstChannelVisible;
+        if (_portableBitmap is null)
+        {
+            return;
+        }
+
         MyFileLogger.SharedTimer.Restart();
 
         _portableBitmap.ToggleFirstChannel();
@@ -165,6 +180,12 @@ public class MainWindowViewModel : ViewModelBase
 
     public void ToggleSecondChannel()
     {
+        _isSecondChannelVisible = !_isSecondChannelVisible;
+        if (_portableBitmap is null)
+        {
+            return;
+        }
+
         MyFileLogger.SharedTimer.Restart();
 
         _portableBitmap.ToggleSecondChannel();
@@ -178,6 +199,12 @@ public class MainWindowViewModel : ViewModelBase
 
     public void ToggleThirdChannel()
     {
+        _isThirdChannelVisible = !_isThirdChannelVisible;
+        if (_portableBitmap is null)
+        {
+            return;
+        }
+
         MyFileLogger.SharedTimer.Restart();
 
         _portableBitmap.ToggleThirdChannel();
