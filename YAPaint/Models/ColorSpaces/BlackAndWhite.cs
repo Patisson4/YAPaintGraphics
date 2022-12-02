@@ -1,58 +1,29 @@
 ﻿using System;
-using System.Drawing;
 
 namespace YAPaint.Models.ColorSpaces;
 
-public class BlackAndWhite : IColorSpaceBase<BlackAndWhite>
+public class BlackAndWhite : IColorBaseConverter
 {
-    private const bool WhiteCode = false; // 0
-    private const bool BlackCode = true; // 1
+    private BlackAndWhite() { }
+    public static IColorBaseConverter Instance { get; } = new BlackAndWhite();
 
-    private readonly bool _value;
-    private byte ValueAsByte => _value ? (byte)1 : byte.MinValue;
-
-    private BlackAndWhite(bool value)
+    public ColorSpace ToRgb(ref ColorSpace color)
     {
-        _value = value;
+        return color;
     }
 
-    public static BlackAndWhite FromCoefficients(Coefficient first, Coefficient second, Coefficient third)
+    public ColorSpace FromRgb(ref ColorSpace color)
     {
-        return FromSystemColor(
-            Color.FromArgb(
-                Coefficient.Denormalize(first),
-                Coefficient.Denormalize(second),
-                Coefficient.Denormalize(third)));
-    }
-
-    public static BlackAndWhite Black { get; } = new BlackAndWhite(BlackCode);
-    public static BlackAndWhite White { get; } = new BlackAndWhite(WhiteCode);
-
-    public byte[] ToRaw()
-    {
-        return new[] { ValueAsByte };
-    }
-
-    public string ToPlain()
-    {
-        return _value ? "1" : "0";
-    }
-
-    public static Color ToSystemColor(BlackAndWhite color)
-    {
-        return Color.FromArgb(color.ValueAsByte, color.ValueAsByte, color.ValueAsByte);
-    }
-
-    public static BlackAndWhite FromSystemColor(Color color)
-    {
-        if (color.R == 0 && color.G == 0 && color.B == 0)
+        if (color.First == 0.0 && color.Second == 0.0 && color.Third == 0.0)
         {
-            return Black;
+            return color;
         }
 
-        if (color.R == 255 && color.G == 255 && color.B == 255)
+        if (float.Abs(color.First - 1.0f) < float.Epsilon
+         && float.Abs(color.Second - 1.0f) < float.Epsilon
+         && float.Abs(color.Third - 1.0f) < float.Epsilon)
         {
-            return White;
+            return color;
         }
 
         throw new ArgumentOutOfRangeException(

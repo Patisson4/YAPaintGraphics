@@ -1,49 +1,16 @@
-﻿using System;
-using System.Drawing;
-using YAPaint.Models.ColorSpaces;
+﻿namespace YAPaint.Models.ExtraColorSpaces;
 
-namespace YAPaint.Models.ExtraColorSpaces;
-
-public class Hsv : IColorSpaceComplex<Hsv>
+public class Hsv : IColorConverter
 {
-    public Hsv(Coefficient h, Coefficient s, Coefficient v)
-    {
-        FirstChannel = new ColorChannel(h);
-        SecondChannel = new ColorChannel(s);
-        ThirdChannel = new ColorChannel(v);
-    }
+    private Hsv() { }
+    public static IColorConverter Instance { get; } = new Hsv();
 
-    public ColorChannel FirstChannel { get; }
-    public ColorChannel SecondChannel { get; }
-    public ColorChannel ThirdChannel { get; }
-
-    public static Hsv FromCoefficients(Coefficient first, Coefficient second, Coefficient third)
+    public ColorSpace ToRgb(ref ColorSpace color)
     {
-        return new Hsv(first, second, third);
-    }
-
-    public byte[] ToRaw()
-    {
-        return new[]
-        {
-            Coefficient.Denormalize(FirstChannel.Value),
-            Coefficient.Denormalize(SecondChannel.Value),
-            Coefficient.Denormalize(ThirdChannel.Value),
-        };
-    }
-
-    public string ToPlain()
-    {
-        return
-            $"{Coefficient.Denormalize(FirstChannel.Value)} {Coefficient.Denormalize(SecondChannel.Value)} {Coefficient.Denormalize(ThirdChannel.Value)}";
-    }
-
-    public static Color ToSystemColor(Hsv color)
-    {
-        var C = color.ThirdChannel.Value * color.SecondChannel.Value;
-        var H = color.FirstChannel.Value * 6f;
-        var X = C * (1 - Math.Abs(H % 2 - 1));
-        var m = color.ThirdChannel.Value - C;
+        var C = color.Third * color.Second;
+        var H = color.First * 6f;
+        var X = C * (1 - float.Abs(H % 2 - 1));
+        var m = color.Third - C;
         float R1 = 0, G1 = 0, B1 = 0;
         if (H is >= 0 and < 1)
         {
@@ -82,33 +49,30 @@ public class Hsv : IColorSpaceComplex<Hsv>
             B1 = X;
         }
 
-        return Color.FromArgb(
-            Coefficient.Denormalize(R1 + m),
-            Coefficient.Denormalize(G1 + m),
-            Coefficient.Denormalize(B1 + m));
+        return new ColorSpace(R1 + m, G1 + m, B1 + m);
     }
 
-    public static Hsv FromSystemColor(Color color)
+    public ColorSpace FromRgb(ref ColorSpace color)
     {
-        var M = float.Max(float.Max(color.R, color.G), color.B);
-        var m = float.Min(float.Min(color.R, color.G), color.B);
+        var M = float.Max(float.Max(color.First, color.Second), color.Third);
+        var m = float.Min(float.Min(color.First, color.Second), color.Third);
         var C = M - m;
         float H = 0, S = 0, V = M;
         if (C == 0)
         {
             H = 0;
         }
-        else if (M == color.R)
+        else if (M == color.First)
         {
-            H = (((color.G - color.B) / C) % 6) / 6;
+            H = (((color.Second - color.Third) / C) % 6) / 6;
         }
-        else if (M == color.G)
+        else if (M == color.Second)
         {
-            H = ((color.B - color.R) / C + 2) / 6;
+            H = ((color.Third - color.First) / C + 2) / 6;
         }
         else
         {
-            H = ((color.R - color.G) / C + 4) / 6;
+            H = ((color.First - color.Second) / C + 4) / 6;
         }
 
         if (V != 0)
@@ -116,6 +80,6 @@ public class Hsv : IColorSpaceComplex<Hsv>
             S = C / V;
         }
 
-        return new Hsv(H, S, V);
+        return new ColorSpace(H, S, V);
     }
 }
