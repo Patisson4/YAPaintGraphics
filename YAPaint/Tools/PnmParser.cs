@@ -11,7 +11,7 @@ namespace YAPaint.Tools;
 
 public static class PnmParser
 {
-    public static PortableBitmap ReadImage<T>(Stream stream) where T : IColorSpace
+    public static PortableBitmap ReadImage(Stream stream, IColorBaseConverter colorConverter)
     {
         using var reader = new BinaryReader(stream);
 
@@ -43,7 +43,7 @@ public static class PnmParser
 
         MyFileLogger.Log("DBG", $"Read file at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
 
-        return new PortableBitmap(map);
+        return new PortableBitmap(map, colorConverter);
     }
 
     public static async Task WriteTextImage(this Bitmap bitmap, string path)

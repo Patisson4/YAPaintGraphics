@@ -14,10 +14,11 @@ public class PortableBitmap
     private bool _isSecondVisible = true;
     private bool _isThirdVisible = true;
 
+    public IColorBaseConverter ColorConverter { get; private set; }
     public int Width { get; }
     public int Height { get; }
 
-    public PortableBitmap(ColorSpace[,] map)
+    public PortableBitmap(ColorSpace[,] map, IColorBaseConverter colorConverter)
     {
         if (map.Length <= 0)
         {
@@ -26,6 +27,7 @@ public class PortableBitmap
 
         Width = map.GetLength(0);
         Height = map.GetLength(1);
+        ColorConverter = colorConverter;
 
         _map = new ColorSpace[Width, Height];
 
@@ -40,15 +42,9 @@ public class PortableBitmap
         MyFileLogger.Log("DBG", $"Object created at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
     }
 
-    public PortableBitmap(Stream stream)
+    public static PortableBitmap FromStream(Stream stream, IColorBaseConverter colorConvert)
     {
-        // TODO: create enum with different color spaces?
-        throw new NotImplementedException();
-    }
-
-    public static PortableBitmap FromStream<T>(Stream stream) where T : IColorSpace
-    {
-        return PnmParser.ReadImage<T>(stream);
+        return PnmParser.ReadImage(stream, colorConvert);
     }
 
     public ColorSpace GetPixel(int x, int y)
@@ -77,6 +73,26 @@ public class PortableBitmap
         CustomExceptionHelper.ThrowIfGreaterThan(y, Height);
 
         _map[x, y] = color;
+    }
+
+    public void ConvertTo(IColorBaseConverter colorConverter)
+    {
+        //consider more sophisticated check in the future
+        if (ColorConverter == colorConverter)
+        {
+            return;
+        }
+
+        for (int j = 0; j < Height; j++)
+        {
+            for (int i = 0; i < Width; i++)
+            {
+                var rgbColor = ColorConverter.ToRgb(ref _map[i, j]);
+                _map[i, j] = colorConverter.FromRgb(ref rgbColor);
+            }
+        }
+
+        ColorConverter = colorConverter;
     }
 
     public void ToggleFirstChannel()
