@@ -24,19 +24,29 @@
                 <MenuItem Header="Exit" Click="Exit" />
             </MenuItem>
         </Menu>
-        <StackPanel DockPanel.Dock="Right" Spacing="10">
+        <StackPanel DockPanel.Dock="Right"
+                    VerticalAlignment="Top"
+                    HorizontalAlignment="Right"
+                    Spacing="10"
+                    Margin="5">
             <TextBlock Text="ColorSpace:" VerticalAlignment="Center" />
             <ComboBox SelectedItem="{Binding SelectedColorSpace}"
-                      Items="{Binding ColorSpaces}"
-                      HorizontalAlignment="Right" />
+                      Items="{Binding ColorSpaceNames}"
+                      SelectionChanged="ColorSpacesComboBox_OnSelectionChanged" />
+            <CheckBox IsChecked="True" Content="1" Command="{Binding ToggleFirstChannel}" />
+            <CheckBox IsChecked="True" Content="2" Command="{Binding ToggleSecondChannel}" />
+            <CheckBox IsChecked="True" Content="3" Command="{Binding ToggleThirdChannel}" />
             <TextBlock Text="Gamma:" VerticalAlignment="Center" />
             <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
                            Value="{Binding Gamma}" Increment="0.01" Minimum="0.0" Maximum="2.5" />
             <Button Content="Apply" Command="{Binding ApplyGamma}" />
             <Button Content="Convert" Command="{Binding ConvertToGamma}" />
         </StackPanel>
-        <TextBlock DockPanel.Dock="Bottom" Margin="10" HorizontalAlignment="Left" Text="{Binding Message}" />
-        <Image Source="{Binding BitmapImage}" />
+        <TextBlock DockPanel.Dock="Bottom"
+                   Margin="10"
+                   HorizontalAlignment="Left"
+                   Text="{Binding Message}" />
+        <Image Source="{Binding AvaloniaImage}" RenderOptions.BitmapInterpolationMode="Default"/>
     </DockPanel>
 
 </Window>

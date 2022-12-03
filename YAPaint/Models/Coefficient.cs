@@ -13,9 +13,7 @@ public readonly record struct Coefficient
         _value = value;
     }
 
-    public static Coefficient Zero { get; } = new Coefficient(0f);
-    
-    public static float Normalize(byte value)
+    public static float Normalize(int value)
     {
         return (float)value / byte.MaxValue;
     }

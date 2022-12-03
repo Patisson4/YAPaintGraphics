@@ -4,14 +4,13 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using YAPaint.Models;
-using YAPaint.Models.ColorSpaces;
 using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
 
 namespace YAPaint.Tools;
 
 public static class PnmParser
 {
-    public static PortableBitmap ReadImage<T>(Stream stream) where T : IColorSpace
+    public static ColorSpace[,] ReadImage(Stream stream)
     {
         using var reader = new BinaryReader(stream);
 
@@ -31,18 +30,19 @@ public static class PnmParser
             scale = GetNextHeaderValue(reader);
         }
 
-        var map = new IColorSpace[width, height];
+        var map = new ColorSpace[width, height];
 
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
             {
-                Color color = ReadColor(reader, type, scale);
-                map[x, y] = T.FromRgb(color);
+                map[x, y] = ReadColor(reader, type, scale);
             }
         }
 
-        return new PortableBitmap(map);
+        MyFileLogger.Log("DBG", $"Read file at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
+
+        return map;
     }
 
     public static async Task WriteTextImage(this Bitmap bitmap, string path)
@@ -82,7 +82,7 @@ public static class PnmParser
         }
     }
 
-    private static Color ReadColor(BinaryReader reader, char type, int scale)
+    private static ColorSpace ReadColor(BinaryReader reader, char type, int scale)
     {
         return type switch
         {
@@ -96,46 +96,46 @@ public static class PnmParser
         };
     }
 
-    private static Color ReadTextBitmapColor(BinaryReader reader)
+    private static ColorSpace ReadTextBitmapColor(BinaryReader reader)
     {
         var bit = GetNextTextValue(reader) == 0 ? 255 : 0;
-        return Color.FromArgb(bit, bit, bit);
+        return new ColorSpace(Coefficient.Normalize(bit), Coefficient.Normalize(bit), Coefficient.Normalize(bit));
     }
 
-    private static Color ReadTextGreyscaleColor(BinaryReader reader, int scale)
+    private static ColorSpace ReadTextGreyscaleColor(BinaryReader reader, int scale)
     {
         var grey = GetNextTextValue(reader) * 255 / scale;
-        return Color.FromArgb(grey, grey, grey);
+        return new ColorSpace(Coefficient.Normalize(grey), Coefficient.Normalize(grey), Coefficient.Normalize(grey));
     }
 
-    private static Color ReadTextPixelColor(BinaryReader reader, int scale)
+    private static ColorSpace ReadTextPixelColor(BinaryReader reader, int scale)
     {
         var red = GetNextTextValue(reader) * 255 / scale;
         var green = GetNextTextValue(reader) * 255 / scale;
         var blue = GetNextTextValue(reader) * 255 / scale;
 
-        return Color.FromArgb(red, green, blue);
+        return new ColorSpace(Coefficient.Normalize(red), Coefficient.Normalize(green), Coefficient.Normalize(blue));
     }
 
-    private static Color ReadBinaryBitmapColor(BinaryReader reader)
+    private static ColorSpace ReadBinaryBitmapColor(BinaryReader reader)
     {
         var bit = reader.ReadByte() == 0 ? 255 : 0;
-        return Color.FromArgb(bit, bit, bit);
+        return new ColorSpace(Coefficient.Normalize(bit), Coefficient.Normalize(bit), Coefficient.Normalize(bit));
     }
 
-    private static Color ReadBinaryGreyscaleColor(BinaryReader reader, int scale)
+    private static ColorSpace ReadBinaryGreyscaleColor(BinaryReader reader, int scale)
     {
         var grey = reader.ReadByte() * 255 / scale;
-        return Color.FromArgb(grey, grey, grey);
+        return new ColorSpace(Coefficient.Normalize(grey), Coefficient.Normalize(grey), Coefficient.Normalize(grey));
     }
 
-    private static Color ReadBinaryPixelImage(BinaryReader reader, int scale)
+    private static ColorSpace ReadBinaryPixelImage(BinaryReader reader, int scale)
     {
         var red = reader.ReadByte() * 255 / scale;
         var green = reader.ReadByte() * 255 / scale;
         var blue = reader.ReadByte() * 255 / scale;
 
-        return Color.FromArgb(red, green, blue);
+        return new ColorSpace(Coefficient.Normalize(red), Coefficient.Normalize(green), Coefficient.Normalize(blue));
     }
 
     private static int GetNextHeaderValue(BinaryReader reader)

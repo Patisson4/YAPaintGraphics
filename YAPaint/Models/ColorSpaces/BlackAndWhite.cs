@@ -2,46 +2,28 @@
 
 namespace YAPaint.Models.ColorSpaces;
 
-public class BlackAndWhite : IColorSpace
+public class BlackAndWhite : IColorBaseConverter
 {
-    private const bool WhiteCode = false; // 0
-    private const bool BlackCode = true; // 1
+    private BlackAndWhite() { }
+    public static IColorBaseConverter Instance { get; } = new BlackAndWhite();
 
-    private readonly bool _value;
-
-    private BlackAndWhite(bool value)
+    public ColorSpace ToRgb(ref ColorSpace color)
     {
-        _value = value;
+        return color;
     }
 
-    public static IColorSpace Black { get; } = new BlackAndWhite(BlackCode);
-    public static IColorSpace White { get; } = new BlackAndWhite(WhiteCode);
-
-    public byte[] ToRaw()
+    public ColorSpace FromRgb(ref ColorSpace color)
     {
-        return new[] { _value ? (byte)1 : (byte)0 };
-    }
-
-    public string ToPlain()
-    {
-        return _value ? "1" : "0";
-    }
-
-    public Rgb ToRgb()
-    {
-        return _value ? Rgb.Black : Rgb.White;
-    }
-
-    public static IColorSpace FromRgb(Rgb color)
-    {
-        if (color.Equals(Rgb.Black))
+        if (color.First == 0.0 && color.Second == 0.0 && color.Third == 0.0)
         {
-            return Black;
+            return color;
         }
 
-        if (color.Equals(Rgb.White))
+        if (float.Abs(color.First - 1.0f) < float.Epsilon
+         && float.Abs(color.Second - 1.0f) < float.Epsilon
+         && float.Abs(color.Third - 1.0f) < float.Epsilon)
         {
-            return White;
+            return color;
         }
 
         throw new ArgumentOutOfRangeException(
