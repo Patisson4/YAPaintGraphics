@@ -66,7 +66,7 @@ public class MainWindowViewModel : ViewModelBase
 
     [Reactive]
     public float Gamma { get; set; } = 2.0f;
-    
+
     public CultureInfo InvariantCultureInfo { get; } = CultureInfo.InvariantCulture;
 
     public async Task Open()
@@ -167,13 +167,22 @@ public class MainWindowViewModel : ViewModelBase
 
     public void ApplyGamma()
     {
-        AvaloniaImage = _portableBitmap.ApplyGamma(Gamma).ToAvalonia();
+        AvaloniaImage = new PortableBitmap(
+            _portableBitmap.ApplyGamma(Gamma),
+            _portableBitmap.ColorConverter,
+            _isFirstChannelVisible,
+            _isSecondChannelVisible,
+            _isThirdChannelVisible).ToAvalonia();
     }
 
     public void ConvertToGamma()
     {
-        _portableBitmap = _portableBitmap.ApplyGamma(1 / Gamma);
-        AvaloniaImage = _portableBitmap.ApplyGamma(Gamma).ToAvalonia();
+        _portableBitmap = new PortableBitmap(
+            _portableBitmap.ApplyGamma(1 / Gamma),
+            _portableBitmap.ColorConverter,
+            _isFirstChannelVisible,
+            _isSecondChannelVisible,
+            _isThirdChannelVisible);
     }
 
     public void ToggleFirstChannel()

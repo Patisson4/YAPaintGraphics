@@ -1,36 +1,30 @@
-﻿using System;
-using YAPaint.Models;
-using YAPaint.Models.ColorSpaces;
+﻿using YAPaint.Models;
 
 namespace YAPaint.Tools;
 
 public static class GammaExtension
 {
-    public static PortableBitmap ApplyGamma(this PortableBitmap bitmap, float value)
+    public static ColorSpace[,] ApplyGamma(this PortableBitmap bitmap, float value)
     {
-        if (bitmap.GetPixel(0, 0) is not Rgb)
-        {
-            throw new NotImplementedException();
-        }
-
-        var map = new IColorSpace[bitmap.Width, bitmap.Height];
+        var map = new ColorSpace[bitmap.Width, bitmap.Height];
 
         for (int j = 0; j < bitmap.Height; j++)
         {
             for (int i = 0; i < bitmap.Width; i++)
             {
-                map[i, j] = bitmap.GetPixel(i, j).ToRgb().WithGamma(value);
+                ColorSpace pixel = bitmap.GetPixel(i, j);
+                map[i, j] = pixel.WithGamma(value);
             }
         }
 
-        return new PortableBitmap(map);
+        return map;
     }
 
-    private static Rgb WithGamma(this Rgb color, float value)
+    private static ColorSpace WithGamma(this ref ColorSpace color, float value)
     {
-        return new Rgb(
-            float.Pow(color.FirstChannel.Value, value),
-            float.Pow(color.SecondChannel.Value, value),
-            float.Pow(color.ThirdChannel.Value, value));
+        return new ColorSpace(
+            float.Pow(color.First, value),
+            float.Pow(color.Second, value),
+            float.Pow(color.Third, value));
     }
 }
