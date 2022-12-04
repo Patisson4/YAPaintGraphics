@@ -13,7 +13,7 @@ public static class CustomExceptionHelper
     {
         if (value > upperBound)
         {
-            throw new ArgumentOutOfRangeException(paramName, "Value exceeds operating range");
+            throw new ArgumentOutOfRangeException(paramName, value, "Value exceeds operating range");
         }
     }
 
@@ -26,7 +26,7 @@ public static class CustomExceptionHelper
     {
         if (value < lowerBound || value > upperBound)
         {
-            throw new ArgumentOutOfRangeException(paramName, "Value exceeds operating range");
+            throw new ArgumentOutOfRangeException(paramName, value, "Value exceeds operating range");
         }
     }
 }
