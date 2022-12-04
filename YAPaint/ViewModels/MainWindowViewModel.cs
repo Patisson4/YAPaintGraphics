@@ -48,11 +48,29 @@ public class MainWindowViewModel : ViewModelBase
     private bool _isSecondChannelVisible = true;
     private bool _isThirdChannelVisible = true;
 
+    private string _selectedColorSpace = nameof(Rgb);
+
     [Reactive]
     public string Message { get; set; } = "Timings will be displayed here";
 
+    // potential problem: attribute complex setter handling
+    // solution: reactive in-place via this.RaiseAndSetIfChanged(ref _selectedColorSpace, value);
     [Reactive]
-    public string SelectedColorSpace { get; set; } = nameof(Rgb);
+    public string SelectedColorSpace
+    {
+        get => _selectedColorSpace;
+        set
+        {
+            _selectedColorSpace = value;
+            if (_portableBitmap is null)
+            {
+                return;
+            }
+
+            _portableBitmap.ConvertTo(CurrentColorConverter);
+            AvaloniaImage = _portableBitmap.ToAvalonia();
+        }
+    }
 
     [Reactive]
     public AvaloniaBitmap AvaloniaImage { get; set; }

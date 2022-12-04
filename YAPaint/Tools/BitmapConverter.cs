@@ -28,6 +28,7 @@ public static class BitmapConverter
                 var color = bitmap.GetPixel(i, j);
                 var rgbColor = bitmap.ColorConverter.ToRgb(ref color);
                 var rawColor = rgbColor.ToRaw();
+
                 arr[(j * bitmap.Width + i) * 4] = rawColor[2];
                 arr[(j * bitmap.Width + i) * 4 + 1] = rawColor[1];
                 arr[(j * bitmap.Width + i) * 4 + 2] = rawColor[0];
