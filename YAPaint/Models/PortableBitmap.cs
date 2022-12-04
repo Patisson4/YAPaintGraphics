@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using YAPaint.Models.ColorSpaces;
@@ -194,9 +195,13 @@ public class PortableBitmap
             {
                 stream.WriteByte(bytePixel[1]);
             }
-            else
+            else if (IsThirdVisible)
             {
                 stream.WriteByte(bytePixel[2]);
+            }
+            else
+            {
+                throw new UnreachableException($"Tried to serialize part of pixel: {pixel.ToPlain()}");
             }
         }
     }
@@ -217,9 +222,13 @@ public class PortableBitmap
             {
                 stream.Write(Encoding.ASCII.GetBytes($"{Coefficient.Denormalize(pixel.Second)}"));
             }
-            else
+            else if (IsThirdVisible)
             {
                 stream.Write(Encoding.ASCII.GetBytes($"{Coefficient.Denormalize(pixel.Third)}"));
+            }
+            else
+            {
+                throw new UnreachableException($"Tried to serialize part of pixel: {pixel.ToPlain()}");
             }
         }
     }
