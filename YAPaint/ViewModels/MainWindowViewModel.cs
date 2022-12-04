@@ -43,6 +43,7 @@ public class MainWindowViewModel : ViewModelBase
 
     private PortableBitmap _portableBitmap;
     private IColorBaseConverter CurrentColorConverter => ColorSpaces.First(s => s.GetType().Name == SelectedColorSpace);
+
     private bool _isFirstChannelVisible = true;
     private bool _isSecondChannelVisible = true;
     private bool _isThirdChannelVisible = true;
