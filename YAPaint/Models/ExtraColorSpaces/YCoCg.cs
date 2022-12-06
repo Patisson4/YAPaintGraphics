@@ -9,8 +9,8 @@ public class YCoCg : IColorConverter
     {
         return new ColorSpace(
             color.First + color.Second - color.Third,
-            color.First + color.Third,
-            color.First - color.Second - color.Third);
+            color.First + color.Third - 0.5f,
+            color.First - color.Second - color.Third + 1f);
     }
 
     public ColorSpace FromRgb(ref ColorSpace color)

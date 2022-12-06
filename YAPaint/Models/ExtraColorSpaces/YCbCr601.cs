@@ -16,7 +16,7 @@ public class YCbCr601 : IColorConverter
     public ColorSpace FromRgb(ref ColorSpace color)
     {
         var y = 0.299f * color.First + 0.587f * color.Second + 0.114f * color.Third;
-        var cb = 0.5f - (color.Third - y) / 1.772f;
+        var cb = 0.5f + (color.Third - y) / 1.772f;
         var cr = 0.5f + (color.First - y) / 1.402f;
         return new ColorSpace(y, cb, cr);
     }
