@@ -7,79 +7,81 @@ public class Hsv : IColorConverter
 
     public ColorSpace ToRgb(ref ColorSpace color)
     {
-        var C = color.Third * color.Second;
-        var H = color.First * 6f;
-        var X = C * (1 - float.Abs(H % 2 - 1));
-        var m = color.Third - C;
-        float R1 = 0, G1 = 0, B1 = 0;
-        if (H is >= 0 and < 1)
+        var chroma = color.Third * color.Second;
+        var hue = color.First * 6f;
+        var x = chroma * (1 - float.Abs(hue % 2 - 1));
+        var min = color.Third - chroma;
+
+        float red1, green1, blue1;
+        if (hue is >= 0 and < 1)
         {
-            R1 = C;
-            G1 = X;
-            B1 = 0;
+            red1 = chroma;
+            green1 = x;
+            blue1 = 0;
         }
-        else if (H is >= 1 and < 2)
+        else if (hue is >= 1 and < 2)
         {
-            R1 = X;
-            G1 = C;
-            B1 = 0;
+            red1 = x;
+            green1 = chroma;
+            blue1 = 0;
         }
-        else if (H is >= 2 and < 3)
+        else if (hue is >= 2 and < 3)
         {
-            R1 = 0;
-            G1 = C;
-            B1 = X;
+            red1 = 0;
+            green1 = chroma;
+            blue1 = x;
         }
-        else if (H is >= 3 and < 4)
+        else if (hue is >= 3 and < 4)
         {
-            R1 = 0;
-            G1 = X;
-            B1 = C;
+            red1 = 0;
+            green1 = x;
+            blue1 = chroma;
         }
-        else if (H is >= 4 and < 5)
+        else if (hue is >= 4 and < 5)
         {
-            R1 = X;
-            G1 = 0;
-            B1 = C;
+            red1 = x;
+            green1 = 0;
+            blue1 = chroma;
         }
         else
         {
-            R1 = C;
-            G1 = 0;
-            B1 = X;
+            red1 = chroma;
+            green1 = 0;
+            blue1 = x;
         }
 
-        return new ColorSpace(R1 + m, G1 + m, B1 + m);
+        return new ColorSpace(red1 + min, green1 + min, blue1 + min);
     }
 
     public ColorSpace FromRgb(ref ColorSpace color)
     {
-        var M = float.Max(float.Max(color.First, color.Second), color.Third);
-        var m = float.Min(float.Min(color.First, color.Second), color.Third);
-        var C = M - m;
-        float H = 0, S = 0, V = M;
-        if (C == 0)
+        var value = float.Max(float.Max(color.First, color.Second), color.Third);
+        var min = float.Min(float.Min(color.First, color.Second), color.Third);
+        var chroma = value - min;
+
+        float hue, saturation = 0;
+        if (chroma == 0)
         {
-            H = 0;
+            hue = 0;
         }
-        else if (M == color.First)
+        else if (value == color.First)
         {
-            H = (((color.Second - color.Third) / C) % 6) / 6;
+            hue = ((color.Second - color.Third) / chroma + 6) % 6;
         }
-        else if (M == color.Second)
+        else if (value == color.Second)
         {
-            H = ((color.Third - color.First) / C + 2) / 6;
+            hue = (color.Third - color.First) / chroma + 2;
         }
         else
         {
-            H = ((color.First - color.Second) / C + 4) / 6;
+            hue = (color.First - color.Second) / chroma + 4;
         }
 
-        if (V != 0)
+        if (value != 0)
         {
-            S = C / V;
+            saturation = chroma / value;
         }
 
-        return new ColorSpace(H, S, V);
+        return new ColorSpace(hue / 6, saturation, value);
     }
 }

@@ -27,6 +27,16 @@ public readonly record struct Coefficient
         return (byte)(value * byte.MaxValue);
     }
 
+    public static float Truncate(float value)
+    {
+        return value switch
+        {
+            > 1f => 1f,
+            < 0f => 0f,
+            _ => value,
+        };
+    }
+
     public static implicit operator Coefficient(float value)
     {
         return new Coefficient(value);
