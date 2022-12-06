@@ -141,7 +141,6 @@ public class MainWindowViewModel : ViewModelBase
             MyFileLogger.SharedTimer.Restart();
 
             await using var stream = new FileStream(result, FileMode.Create);
-            _portableBitmap.ConvertTo(CurrentColorConverter);
             _portableBitmap.SaveRaw(stream);
 
             MyFileLogger.SharedTimer.Stop();
@@ -170,7 +169,6 @@ public class MainWindowViewModel : ViewModelBase
             MyFileLogger.SharedTimer.Restart();
 
             await using var stream = new FileStream(result, FileMode.Create);
-            _portableBitmap.ConvertTo(CurrentColorConverter);
             _portableBitmap.SavePlain(stream);
 
             MyFileLogger.SharedTimer.Stop();
