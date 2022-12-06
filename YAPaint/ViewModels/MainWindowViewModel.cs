@@ -188,22 +188,36 @@ public class MainWindowViewModel : ViewModelBase
 
     public void ApplyGamma()
     {
+        MyFileLogger.SharedTimer.Restart();
+        
         AvaloniaImage = new PortableBitmap(
             _portableBitmap.ApplyGamma(Gamma),
             _portableBitmap.ColorConverter,
             _isFirstChannelVisible,
             _isSecondChannelVisible,
             _isThirdChannelVisible).ToAvalonia();
+        
+        MyFileLogger.SharedTimer.Stop();
+        _operationsCount++;
+        Message = $"({_operationsCount}) Applied in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+        MyFileLogger.Log("INF", $"{Message}\n");
     }
 
     public void ConvertToGamma()
     {
+        MyFileLogger.SharedTimer.Restart();
+        
         _portableBitmap = new PortableBitmap(
             _portableBitmap.ApplyGamma(1 / Gamma),
             _portableBitmap.ColorConverter,
             _isFirstChannelVisible,
             _isSecondChannelVisible,
             _isThirdChannelVisible);
+        
+        MyFileLogger.SharedTimer.Stop();
+        _operationsCount++;
+        Message = $"({_operationsCount}) Converted in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+        MyFileLogger.Log("INF", $"{Message}\n");
     }
 
     public void ToggleFirstChannel()
