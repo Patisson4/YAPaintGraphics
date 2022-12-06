@@ -16,17 +16,4 @@ public static class CustomExceptionHelper
             throw new ArgumentOutOfRangeException(paramName, value, "Value exceeds operating range");
         }
     }
-
-    public static void ThrowIfNotBetween(
-        float value,
-        float lowerBound,
-        float upperBound,
-        [CallerArgumentExpression("value")]
-        string paramName = null)
-    {
-        if (value < lowerBound || value > upperBound)
-        {
-            throw new ArgumentOutOfRangeException(paramName, value, "Value exceeds operating range");
-        }
-    }
 }
