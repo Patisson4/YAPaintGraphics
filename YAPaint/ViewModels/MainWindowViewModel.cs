@@ -43,14 +43,14 @@ public class MainWindowViewModel : ViewModelBase
     private int _operationsCount;
 
     private PortableBitmap _portableBitmap;
+    private string _selectedColorSpace = nameof(Rgb);
+
     private IColorBaseConverter CurrentColorConverter =>
         ColorSpaces.First(s => s.GetType().Name == _selectedColorSpace);
 
     private bool _isFirstChannelVisible = true;
     private bool _isSecondChannelVisible = true;
     private bool _isThirdChannelVisible = true;
-
-    private string _selectedColorSpace = nameof(Rgb);
 
     [Reactive]
     public string Message { get; set; } = "Timings will be displayed here";

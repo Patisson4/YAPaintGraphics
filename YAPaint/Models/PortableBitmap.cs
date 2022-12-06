@@ -10,14 +10,6 @@ namespace YAPaint.Models;
 public class PortableBitmap
 {
     private readonly ColorSpace[,] _map;
-    public IColorBaseConverter ColorConverter { get; private set; }
-
-    public int Width { get; }
-    public int Height { get; }
-
-    public bool IsFirstVisible { get; private set; }
-    public bool IsSecondVisible { get; private set; }
-    public bool IsThirdVisible { get; private set; }
 
     public PortableBitmap(
         ColorSpace[,] map,
@@ -51,6 +43,15 @@ public class PortableBitmap
 
         MyFileLogger.Log("DBG", $"Object created at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
     }
+
+    public IColorBaseConverter ColorConverter { get; private set; }
+
+    public int Width { get; }
+    public int Height { get; }
+
+    public bool IsFirstVisible { get; private set; }
+    public bool IsSecondVisible { get; private set; }
+    public bool IsThirdVisible { get; private set; }
 
     public ColorSpace GetPixel(int x, int y)
     {
