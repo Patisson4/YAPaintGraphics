@@ -28,7 +28,7 @@ public class BlackAndWhite : IColorBaseConverter
 
         throw new ArgumentOutOfRangeException(
             nameof(color),
-            color,
+            color.ToPlain(),
             "Unsupported value: color should be either black or white");
     }
 }
