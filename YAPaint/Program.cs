@@ -19,7 +19,7 @@ class Program
         }
         catch (Exception e)
         {
-            MyFileLogger.Log("ERR", $"{e}\n");
+            MyFileLogger.Log("CRT", $"{e}\n");
         }
     }
 

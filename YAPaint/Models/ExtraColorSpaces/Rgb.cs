@@ -1,6 +1,4 @@
-﻿using YAPaint.Models.ExtraColorSpaces;
-
-namespace YAPaint.Models;
+﻿namespace YAPaint.Models.ExtraColorSpaces;
 
 public class Rgb : IColorConverter
 {

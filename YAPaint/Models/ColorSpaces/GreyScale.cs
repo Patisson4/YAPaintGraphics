@@ -18,7 +18,7 @@ public class GreyScale : IColorBaseConverter
         {
             throw new ArgumentOutOfRangeException(
                 nameof(color),
-                color,
+                color.ToPlain(),
                 "Unsupported value: color should be a shadow of grey");
         }
 

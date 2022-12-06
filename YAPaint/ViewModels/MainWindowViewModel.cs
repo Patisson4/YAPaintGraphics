@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using YAPaint.Models;
 using YAPaint.Models.ColorSpaces;
@@ -39,11 +39,14 @@ public class MainWindowViewModel : ViewModelBase
                                                                     .Cast<IColorBaseConverter>()
                                                                     .ToList();
 
-    private readonly Stopwatch _timer = new Stopwatch();
     private int _operationsCount;
 
     private PortableBitmap _portableBitmap;
-    private IColorBaseConverter CurrentColorConverter => ColorSpaces.First(s => s.GetType().Name == SelectedColorSpace);
+    private string _selectedColorSpace = nameof(Rgb);
+
+    private IColorBaseConverter CurrentColorConverter =>
+        ColorSpaces.First(s => s.GetType().Name == _selectedColorSpace);
+
     private bool _isFirstChannelVisible = true;
     private bool _isSecondChannelVisible = true;
     private bool _isThirdChannelVisible = true;
@@ -51,8 +54,28 @@ public class MainWindowViewModel : ViewModelBase
     [Reactive]
     public string Message { get; set; } = "Timings will be displayed here";
 
-    [Reactive]
-    public string SelectedColorSpace { get; set; } = nameof(Rgb);
+    public string SelectedColorSpace
+    {
+        get => _selectedColorSpace;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _selectedColorSpace, value);
+            if (_portableBitmap is null)
+            {
+                return;
+            }
+
+            MyFileLogger.SharedTimer.Restart();
+
+            _portableBitmap.ConvertTo(CurrentColorConverter);
+            AvaloniaImage = _portableBitmap.ToAvalonia();
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Changed ColorSpace in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
+        }
+    }
 
     [Reactive]
     public AvaloniaBitmap AvaloniaImage { get; set; }
@@ -122,7 +145,6 @@ public class MainWindowViewModel : ViewModelBase
             MyFileLogger.SharedTimer.Restart();
 
             await using var stream = new FileStream(result, FileMode.Create);
-            _portableBitmap.ConvertTo(CurrentColorConverter);
             _portableBitmap.SaveRaw(stream);
 
             MyFileLogger.SharedTimer.Stop();
@@ -151,7 +173,6 @@ public class MainWindowViewModel : ViewModelBase
             MyFileLogger.SharedTimer.Restart();
 
             await using var stream = new FileStream(result, FileMode.Create);
-            _portableBitmap.ConvertTo(CurrentColorConverter);
             _portableBitmap.SavePlain(stream);
 
             MyFileLogger.SharedTimer.Stop();
@@ -238,7 +259,7 @@ public class MainWindowViewModel : ViewModelBase
 
         MyFileLogger.SharedTimer.Stop();
         _operationsCount++;
-        Message = $"[{_operationsCount}] Toggled in {_timer.Elapsed}";
+        Message = $"({_operationsCount}) Toggled in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
         MyFileLogger.Log("INF", $"{Message}\n");
     }
 }

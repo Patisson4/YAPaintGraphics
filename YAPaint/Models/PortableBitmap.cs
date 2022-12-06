@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using YAPaint.Models.ColorSpaces;
@@ -9,14 +10,6 @@ namespace YAPaint.Models;
 public class PortableBitmap
 {
     private readonly ColorSpace[,] _map;
-
-    private bool _isFirstVisible;
-    private bool _isSecondVisible;
-    private bool _isThirdVisible;
-
-    public IColorBaseConverter ColorConverter { get; private set; }
-    public int Width { get; }
-    public int Height { get; }
 
     public PortableBitmap(
         ColorSpace[,] map,
@@ -30,9 +23,9 @@ public class PortableBitmap
             throw new ArgumentOutOfRangeException(nameof(map), map, "Bitmap cannot be empty");
         }
 
-        _isFirstVisible = isFirstVisible;
-        _isSecondVisible = isSecondVisible;
-        _isThirdVisible = isThirdVisible;
+        IsFirstVisible = isFirstVisible;
+        IsSecondVisible = isSecondVisible;
+        IsThirdVisible = isThirdVisible;
 
         Width = map.GetLength(0);
         Height = map.GetLength(1);
@@ -51,6 +44,15 @@ public class PortableBitmap
         MyFileLogger.Log("DBG", $"Object created at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
     }
 
+    public IColorBaseConverter ColorConverter { get; private set; }
+
+    public int Width { get; }
+    public int Height { get; }
+
+    public bool IsFirstVisible { get; private set; }
+    public bool IsSecondVisible { get; private set; }
+    public bool IsThirdVisible { get; private set; }
+
     public ColorSpace GetPixel(int x, int y)
     {
         CustomExceptionHelper.ThrowIfGreaterThan(x, Width);
@@ -58,15 +60,15 @@ public class PortableBitmap
 
         var color = _map[x, y];
 
-        if (_isFirstVisible && _isSecondVisible && _isThirdVisible)
+        if (IsFirstVisible && IsSecondVisible && IsThirdVisible)
         {
             return color;
         }
 
         var result = new ColorSpace(
-            _isFirstVisible ? color.First : 0f,
-            _isSecondVisible ? color.Second : 0f,
-            _isThirdVisible ? color.Third : 0f);
+            IsFirstVisible ? color.First : 0f,
+            IsSecondVisible ? color.Second : 0f,
+            IsThirdVisible ? color.Third : 0f);
 
         return result;
     }
@@ -101,17 +103,17 @@ public class PortableBitmap
 
     public void ToggleFirstChannel()
     {
-        _isFirstVisible = !_isFirstVisible;
+        IsFirstVisible = !IsFirstVisible;
     }
 
     public void ToggleSecondChannel()
     {
-        _isSecondVisible = !_isSecondVisible;
+        IsSecondVisible = !IsSecondVisible;
     }
 
     public void ToggleThirdChannel()
     {
-        _isThirdVisible = !_isThirdVisible;
+        IsThirdVisible = !IsThirdVisible;
     }
 
     public void SaveRaw(Stream stream)
@@ -121,9 +123,9 @@ public class PortableBitmap
         {
             type = 5;
         }
-        else if (_isFirstVisible && !_isSecondVisible && !_isThirdVisible
-              || !_isFirstVisible && _isSecondVisible && !_isThirdVisible
-              || !_isFirstVisible && !_isSecondVisible && _isThirdVisible)
+        else if (IsFirstVisible && !IsSecondVisible && !IsThirdVisible
+              || !IsFirstVisible && IsSecondVisible && !IsThirdVisible
+              || !IsFirstVisible && !IsSecondVisible && IsThirdVisible)
         {
             type = 5;
         }
@@ -147,9 +149,9 @@ public class PortableBitmap
         {
             type = 2;
         }
-        else if (_isFirstVisible && !_isSecondVisible && !_isThirdVisible
-              || !_isFirstVisible && _isSecondVisible && !_isThirdVisible
-              || !_isFirstVisible && !_isSecondVisible && _isThirdVisible)
+        else if (IsFirstVisible && !IsSecondVisible && !IsThirdVisible
+              || !IsFirstVisible && IsSecondVisible && !IsThirdVisible
+              || !IsFirstVisible && !IsSecondVisible && IsThirdVisible)
         {
             type = 2;
         }
@@ -186,17 +188,21 @@ public class PortableBitmap
         }
         else
         {
-            if (ColorConverter is BlackAndWhite or GreyScale || _isFirstVisible)
+            if (ColorConverter is BlackAndWhite or GreyScale || IsFirstVisible)
             {
                 stream.WriteByte(bytePixel[0]);
             }
-            else if (_isSecondVisible)
+            else if (IsSecondVisible)
             {
                 stream.WriteByte(bytePixel[1]);
             }
-            else
+            else if (IsThirdVisible)
             {
                 stream.WriteByte(bytePixel[2]);
+            }
+            else
+            {
+                throw new UnreachableException($"Tried to serialize part of pixel: {pixel.ToPlain()}");
             }
         }
     }
@@ -209,17 +215,21 @@ public class PortableBitmap
         }
         else
         {
-            if (ColorConverter is BlackAndWhite or GreyScale || _isFirstVisible)
+            if (ColorConverter is BlackAndWhite or GreyScale || IsFirstVisible)
             {
                 stream.Write(Encoding.ASCII.GetBytes($"{Coefficient.Denormalize(pixel.First)}"));
             }
-            else if (_isSecondVisible)
+            else if (IsSecondVisible)
             {
                 stream.Write(Encoding.ASCII.GetBytes($"{Coefficient.Denormalize(pixel.Second)}"));
             }
-            else
+            else if (IsThirdVisible)
             {
                 stream.Write(Encoding.ASCII.GetBytes($"{Coefficient.Denormalize(pixel.Third)}"));
+            }
+            else
+            {
+                throw new UnreachableException($"Tried to serialize part of pixel: {pixel.ToPlain()}");
             }
         }
     }
