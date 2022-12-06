@@ -66,8 +66,15 @@ public class MainWindowViewModel : ViewModelBase
                 return;
             }
 
+            MyFileLogger.SharedTimer.Restart();
+
             _portableBitmap.ConvertTo(CurrentColorConverter);
             AvaloniaImage = _portableBitmap.ToAvalonia();
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Changed ColorSpace in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
         }
     }
 
