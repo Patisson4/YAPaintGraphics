@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -39,7 +38,6 @@ public class MainWindowViewModel : ViewModelBase
                                                                     .Cast<IColorBaseConverter>()
                                                                     .ToList();
 
-    private readonly Stopwatch _timer = new Stopwatch();
     private int _operationsCount;
 
     private PortableBitmap _portableBitmap;
@@ -235,7 +233,7 @@ public class MainWindowViewModel : ViewModelBase
 
         MyFileLogger.SharedTimer.Stop();
         _operationsCount++;
-        Message = $"[{_operationsCount}] Toggled in {_timer.Elapsed}";
+        Message = $"({_operationsCount}) Toggled in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
         MyFileLogger.Log("INF", $"{Message}\n");
     }
 }
