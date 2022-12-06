@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using YAPaint.Models;
 using YAPaint.Models.ColorSpaces;
@@ -42,7 +43,8 @@ public class MainWindowViewModel : ViewModelBase
     private int _operationsCount;
 
     private PortableBitmap _portableBitmap;
-    private IColorBaseConverter CurrentColorConverter => ColorSpaces.First(s => s.GetType().Name == SelectedColorSpace);
+    private IColorBaseConverter CurrentColorConverter =>
+        ColorSpaces.First(s => s.GetType().Name == _selectedColorSpace);
 
     private bool _isFirstChannelVisible = true;
     private bool _isSecondChannelVisible = true;
@@ -53,15 +55,12 @@ public class MainWindowViewModel : ViewModelBase
     [Reactive]
     public string Message { get; set; } = "Timings will be displayed here";
 
-    // potential problem: attribute complex setter handling
-    // solution: reactive in-place via this.RaiseAndSetIfChanged(ref _selectedColorSpace, value);
-    [Reactive]
     public string SelectedColorSpace
     {
         get => _selectedColorSpace;
         set
         {
-            _selectedColorSpace = value;
+            this.RaiseAndSetIfChanged(ref _selectedColorSpace, value);
             if (_portableBitmap is null)
             {
                 return;
