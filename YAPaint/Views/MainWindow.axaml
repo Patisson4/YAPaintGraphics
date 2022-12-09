@@ -33,6 +33,7 @@
             <TextBlock Text="ColorSpace:" VerticalAlignment="Center" />
             <ComboBox SelectedItem="{Binding SelectedColorSpace}"
                       Items="{Binding ColorSpaceNames}"
+                      AutoScrollToSelectedItem="False"
                       SelectionChanged="ColorSpacesComboBox_OnSelectionChanged" />
             <CheckBox IsChecked="True" Content="1" Command="{Binding ToggleFirstChannel}" />
             <CheckBox IsChecked="True" Content="2" Command="{Binding ToggleSecondChannel}" />
