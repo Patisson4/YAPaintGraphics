@@ -5,6 +5,8 @@ public class YCbCr601 : IColorConverter
     private YCbCr601() { }
     public static IColorConverter Instance { get; } = new YCbCr601();
 
+    public ColorSpace DefaultValue { get; } = new ColorSpace(0.5f, 0.5f, 0.5f);
+
     public ColorSpace ToRgb(ref ColorSpace color)
     {
         return new ColorSpace(

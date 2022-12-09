@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -85,6 +86,11 @@ public class MainWindowViewModel : ViewModelBase
         .ToList();
 
     public static IReadOnlyCollection<string> ColorSpaceNames { get; } = SpaceTypes.Select(t => t.Name).ToList();
+
+    [Reactive]
+    public float Gamma { get; set; } = 2.0f;
+
+    public CultureInfo InvariantCultureInfo { get; } = CultureInfo.InvariantCulture;
 
     public async Task Open()
     {
@@ -180,60 +186,129 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
+    public void ApplyGamma()
+    {
+        try
+        {
+            MyFileLogger.SharedTimer.Restart();
+
+            AvaloniaImage = new PortableBitmap(
+                _portableBitmap.ApplyGamma(Gamma),
+                _portableBitmap.ColorConverter,
+                _isFirstChannelVisible,
+                _isSecondChannelVisible,
+                _isThirdChannelVisible).ToAvalonia();
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Applied in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void ConvertToGamma()
+    {
+        try
+        {
+            MyFileLogger.SharedTimer.Restart();
+
+            _portableBitmap = new PortableBitmap(
+                _portableBitmap.ApplyGamma(1 / Gamma),
+                _portableBitmap.ColorConverter,
+                _isFirstChannelVisible,
+                _isSecondChannelVisible,
+                _isThirdChannelVisible);
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Converted in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
     public void ToggleFirstChannel()
     {
-        _isFirstChannelVisible = !_isFirstChannelVisible;
-        if (_portableBitmap is null)
+        try
         {
-            return;
+            _isFirstChannelVisible = !_isFirstChannelVisible;
+            if (_portableBitmap is null)
+            {
+                return;
+            }
+
+            MyFileLogger.SharedTimer.Restart();
+
+            _portableBitmap.ToggleFirstChannel();
+            AvaloniaImage = _portableBitmap.ToAvalonia();
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Toggled in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
         }
-
-        MyFileLogger.SharedTimer.Restart();
-
-        _portableBitmap.ToggleFirstChannel();
-        AvaloniaImage = _portableBitmap.ToAvalonia();
-
-        MyFileLogger.SharedTimer.Stop();
-        _operationsCount++;
-        Message = $"({_operationsCount}) Toggled in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-        MyFileLogger.Log("INF", $"{Message}\n");
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
     }
 
     public void ToggleSecondChannel()
     {
-        _isSecondChannelVisible = !_isSecondChannelVisible;
-        if (_portableBitmap is null)
+        try
         {
-            return;
+            _isSecondChannelVisible = !_isSecondChannelVisible;
+            if (_portableBitmap is null)
+            {
+                return;
+            }
+
+            MyFileLogger.SharedTimer.Restart();
+
+            _portableBitmap.ToggleSecondChannel();
+            AvaloniaImage = _portableBitmap.ToAvalonia();
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Toggled in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
         }
-
-        MyFileLogger.SharedTimer.Restart();
-
-        _portableBitmap.ToggleSecondChannel();
-        AvaloniaImage = _portableBitmap.ToAvalonia();
-
-        MyFileLogger.SharedTimer.Stop();
-        _operationsCount++;
-        Message = $"({_operationsCount}) Toggled in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-        MyFileLogger.Log("INF", $"{Message}\n");
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
     }
 
     public void ToggleThirdChannel()
     {
-        _isThirdChannelVisible = !_isThirdChannelVisible;
-        if (_portableBitmap is null)
+        try
         {
-            return;
+            _isThirdChannelVisible = !_isThirdChannelVisible;
+            if (_portableBitmap is null)
+            {
+                return;
+            }
+
+            MyFileLogger.SharedTimer.Restart();
+
+            _portableBitmap.ToggleThirdChannel();
+            AvaloniaImage = _portableBitmap.ToAvalonia();
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Toggled in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
         }
-
-        MyFileLogger.SharedTimer.Restart();
-
-        _portableBitmap.ToggleThirdChannel();
-        AvaloniaImage = _portableBitmap.ToAvalonia();
-
-        MyFileLogger.SharedTimer.Stop();
-        _operationsCount++;
-        Message = $"({_operationsCount}) Toggled in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-        MyFileLogger.Log("INF", $"{Message}\n");
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
     }
 }

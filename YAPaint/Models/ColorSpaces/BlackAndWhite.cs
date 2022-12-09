@@ -7,6 +7,8 @@ public class BlackAndWhite : IColorBaseConverter
     private BlackAndWhite() { }
     public static IColorBaseConverter Instance { get; } = new BlackAndWhite();
 
+    public ColorSpace DefaultValue { get; } = new ColorSpace(0f, 0f, 0f);
+
     public ColorSpace ToRgb(ref ColorSpace color)
     {
         return color;

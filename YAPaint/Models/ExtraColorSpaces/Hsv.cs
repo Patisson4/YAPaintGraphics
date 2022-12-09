@@ -5,6 +5,8 @@ public class Hsv : IColorConverter
     private Hsv() { }
     public static IColorConverter Instance { get; } = new Hsv();
 
+    public ColorSpace DefaultValue { get; } = new ColorSpace(0f, 1f, 1f);
+
     public ColorSpace ToRgb(ref ColorSpace color)
     {
         var chroma = color.Third * color.Second;
