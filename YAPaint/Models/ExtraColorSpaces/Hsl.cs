@@ -5,6 +5,8 @@ public class Hsl : IColorConverter
     private Hsl() { }
     public static IColorConverter Instance { get; } = new Hsl();
 
+    public ColorSpace DefaultValue { get; } = new ColorSpace(0f, 1f, 0.5f);
+
     public ColorSpace ToRgb(ref ColorSpace color)
     {
         var chroma = (1 - float.Abs(2f * color.Third - 1)) * color.Second;

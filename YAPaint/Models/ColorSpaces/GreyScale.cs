@@ -7,6 +7,8 @@ public class GreyScale : IColorBaseConverter
     private GreyScale() { }
     public static IColorBaseConverter Instance { get; } = new GreyScale();
 
+    public ColorSpace DefaultValue { get; } = new ColorSpace(0f, 0f, 0f);
+
     public ColorSpace ToRgb(ref ColorSpace color)
     {
         return color;

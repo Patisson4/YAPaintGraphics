@@ -66,9 +66,9 @@ public class PortableBitmap
         }
 
         var result = new ColorSpace(
-            IsFirstVisible ? color.First : 0f,
-            IsSecondVisible ? color.Second : 0f,
-            IsThirdVisible ? color.Third : 0f);
+            IsFirstVisible ? color.First : ColorConverter.DefaultValue.First,
+            IsSecondVisible ? color.Second : ColorConverter.DefaultValue.Second,
+            IsThirdVisible ? color.Third : ColorConverter.DefaultValue.Third);
 
         return result;
     }

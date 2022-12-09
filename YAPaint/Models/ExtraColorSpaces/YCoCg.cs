@@ -5,6 +5,8 @@ public class YCoCg : IColorConverter
     private YCoCg() { }
     public static IColorConverter Instance { get; } = new YCoCg();
 
+    public ColorSpace DefaultValue { get; } = new ColorSpace(0.5f, 0.5f, 0.5f);
+
     public ColorSpace ToRgb(ref ColorSpace color)
     {
         return new ColorSpace(
