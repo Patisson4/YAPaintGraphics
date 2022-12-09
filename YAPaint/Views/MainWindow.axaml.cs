@@ -1,5 +1,8 @@
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
+using YAPaint.ViewModels;
 
 namespace YAPaint.Views;
 
@@ -13,5 +16,14 @@ public partial class MainWindow : Window
     public void Exit(object sender, RoutedEventArgs e)
     {
         Close();
+    }
+
+    private void ColorSpacesComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        var comboBox = sender as ComboBox;
+        foreach (var checkBox in comboBox.GetLogicalSiblings().OfType<CheckBox>())
+        {
+            checkBox.IsVisible = MainWindowViewModel.ThreeChannelColorSpaceNames.Contains(comboBox?.SelectedItem);
+        }
     }
 }

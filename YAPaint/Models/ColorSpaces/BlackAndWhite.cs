@@ -1,55 +1,34 @@
 ﻿using System;
-using System.Drawing;
 
 namespace YAPaint.Models.ColorSpaces;
 
-public class BlackAndWhite : IColorSpace
+public class BlackAndWhite : IColorBaseConverter
 {
-    private const bool WhiteCode = false; // 0
-    private const bool BlackCode = true; // 1
+    private BlackAndWhite() { }
+    public static IColorBaseConverter Instance { get; } = new BlackAndWhite();
 
-    private readonly bool _value;
-
-    private BlackAndWhite(bool value)
+    public ColorSpace ToRgb(ref ColorSpace color)
     {
-        _value = value;
+        return color;
     }
 
-    public static IColorSpace Black { get; } = new BlackAndWhite(BlackCode);
-    public static IColorSpace White { get; } = new BlackAndWhite(WhiteCode);
-
-    private byte ValueAsByte => _value ? byte.MaxValue : byte.MinValue;
-
-    public byte[] ToRaw()
+    public ColorSpace FromRgb(ref ColorSpace color)
     {
-        return new[] { ValueAsByte };
-    }
-
-    public string ToPlain()
-    {
-        return _value == WhiteCode ? "0" : "1";
-    }
-
-    public Color ToSystemColor()
-    {
-        return Color.FromArgb(ValueAsByte, ValueAsByte, ValueAsByte);
-    }
-
-    public static IColorSpace FromSystemColor(Color color)
-    {
-        if (color.R == 0 && color.G == 0 && color.B == 0)
+        if (color.First == 0.0 && color.Second == 0.0 && color.Third == 0.0)
         {
-            return Black;
+            return color;
         }
 
-        if (color.R == 255 && color.G == 255 && color.B == 255)
+        if (float.Abs(color.First - 1.0f) < float.Epsilon
+         && float.Abs(color.Second - 1.0f) < float.Epsilon
+         && float.Abs(color.Third - 1.0f) < float.Epsilon)
         {
-            return White;
+            return color;
         }
 
         throw new ArgumentOutOfRangeException(
             nameof(color),
-            color,
+            color.ToPlain(),
             "Unsupported value: color should be either black or white");
     }
 }

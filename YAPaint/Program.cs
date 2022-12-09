@@ -1,8 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.ReactiveUI;
 using System;
-using System.Diagnostics;
-using Avalonia.Logging;
+using YAPaint.Tools;
 
 namespace YAPaint;
 
@@ -14,15 +13,13 @@ class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
-
         try
         {
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }
         catch (Exception e)
         {
-            Logger.Sink?.Log(LogEventLevel.Error, "All", e, e.ToString());
+            MyFileLogger.Log("CRT", $"{e}\n");
         }
     }
 
