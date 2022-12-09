@@ -22,7 +22,7 @@ public static class GammaExtension
 
     private static ColorSpace WithGamma(this ref ColorSpace color, float value)
     {
-        if (value == 0)
+        if (float.IsPositiveInfinity(value))
         {
             return new ColorSpace(
                 ComputeSRgbGamma(color.First),
@@ -30,7 +30,7 @@ public static class GammaExtension
                 ComputeSRgbGamma(color.Third));
         }
 
-        if (float.IsPositiveInfinity(value))
+        if (value == 0)
         {
             return new ColorSpace(
                 ComputeInverseSRgbGamma(color.First),
