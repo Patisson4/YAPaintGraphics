@@ -217,11 +217,12 @@ public class MainWindowViewModel : ViewModelBase
             MyFileLogger.SharedTimer.Restart();
 
             _portableBitmap = new PortableBitmap(
-                _portableBitmap.ApplyGamma(1 / Gamma),
+                _portableBitmap.ApplyGamma(Gamma),
                 _portableBitmap.ColorConverter,
                 _isFirstChannelVisible,
                 _isSecondChannelVisible,
                 _isThirdChannelVisible);
+            AvaloniaImage = _portableBitmap.ToAvalonia();
 
             MyFileLogger.SharedTimer.Stop();
             _operationsCount++;

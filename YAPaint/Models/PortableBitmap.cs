@@ -31,6 +31,7 @@ public class PortableBitmap
         Height = map.GetLength(1);
         ColorConverter = colorConverter;
 
+        //consider assigning existing array instead of copying it
         _map = new ColorSpace[Width, Height];
 
         for (int j = 0; j < Height; j++)
