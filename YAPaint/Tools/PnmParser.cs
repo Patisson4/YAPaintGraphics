@@ -10,7 +10,8 @@ public static class PnmParser
 {
     public static ColorSpace[,] ReadImage(Stream stream)
     {
-        using var reader = new BinaryReader(stream);
+        using var bufferedStream = new BufferedStream(stream);
+        using var reader = new BinaryReader(bufferedStream);
 
         if (reader.ReadChar() is not 'P')
         {
