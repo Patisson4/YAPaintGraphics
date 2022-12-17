@@ -186,6 +186,34 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
+    public async Task SavePng()
+    {
+        try
+        {
+            var dialog = new SaveFileDialog { Filters = FileFilters };
+            string result = await dialog.ShowAsync(new Window()); // TODO: find real parent
+
+            if (result is null)
+            {
+                return;
+            }
+
+            MyFileLogger.SharedTimer.Restart();
+
+            await using var stream = new FileStream(result, FileMode.Create);
+            _portableBitmap.SaveAsPng(stream);
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Saved in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
     public void ApplyGamma()
     {
         try

@@ -19,6 +19,7 @@
                 <MenuItem Header="Save As...">
                     <MenuItem Header="Raw" Command="{Binding SaveRaw}" />
                     <MenuItem Header="Plain" Command="{Binding SavePlain}" />
+                    <MenuItem Header="PNG" Command="{Binding SavePng}" />
                 </MenuItem>
                 <Separator />
                 <MenuItem Header="Exit" Click="Exit" />
