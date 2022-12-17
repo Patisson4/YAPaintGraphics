@@ -31,16 +31,8 @@ public class PortableBitmap
         Height = map.GetLength(1);
         ColorConverter = colorConverter;
 
-        //consider assigning existing array instead of copying it
         _map = new ColorSpace[Width, Height];
-
-        for (int j = 0; j < Height; j++)
-        {
-            for (int i = 0; i < Width; i++)
-            {
-                _map[i, j] = map[i, j];
-            }
-        }
+        Array.Copy(map, _map, map.Length);
 
         MyFileLogger.Log("DBG", $"Object created at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
     }
