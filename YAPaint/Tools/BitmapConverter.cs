@@ -1,55 +1,40 @@
-﻿using System.Drawing;
-using System.Drawing.Imaging;
+﻿using Avalonia;
+using Avalonia.Media.Imaging;
 using YAPaint.Models;
-using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
-using Bitmap = System.Drawing.Bitmap;
 
 namespace YAPaint.Tools;
 
 public static class BitmapConverter
 {
-    public static unsafe AvaloniaBitmap ToAvalonia(this PortableBitmap bitmap)
+    private static readonly Vector Dpi96 = new Vector(96, 96);
+    public static unsafe WriteableBitmap ToAvalonia(this PortableBitmap portableBitmap)
     {
-        using var systemBitmap = new Bitmap(bitmap.Width, bitmap.Height);
+        var writeableBitmap = new WriteableBitmap(
+            new PixelSize(portableBitmap.Width, portableBitmap.Height),
+            Dpi96,
+            Avalonia.Platform.PixelFormat.Bgra8888,
+            Avalonia.Platform.AlphaFormat.Premul);
 
-        MyFileLogger.Log("DBG", $"System Bitmap created at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
+        using var bitmapLock = writeableBitmap.Lock();
 
-        var bitmapData = systemBitmap.LockBits(
-            new Rectangle(0, 0, bitmap.Width, bitmap.Height),
-            ImageLockMode.ReadWrite,
-            PixelFormat.Format32bppArgb);
-
-        var arr = (byte*)bitmapData.Scan0.ToPointer();
-
-        for (int j = 0; j < bitmap.Height; j++)
+        for (int j = 0; j < portableBitmap.Height; j++)
         {
-            for (int i = 0; i < bitmap.Width; i++)
+            for (int i = 0; i < portableBitmap.Width; i++)
             {
-                var color = bitmap.GetPixel(i, j);
-                var rgbColor = bitmap.ColorConverter.ToRgb(ref color);
+                var color = portableBitmap.GetPixel(i, j);
+                var rgbColor = portableBitmap.ColorConverter.ToRgb(ref color);
                 var rawColor = rgbColor.ToRaw();
+                var pointer = (byte*)bitmapLock.Address.ToPointer();
 
-                arr[(j * bitmap.Width + i) * 4] = rawColor[2];
-                arr[(j * bitmap.Width + i) * 4 + 1] = rawColor[1];
-                arr[(j * bitmap.Width + i) * 4 + 2] = rawColor[0];
-                arr[(j * bitmap.Width + i) * 4 + 3] = byte.MaxValue;
+                pointer[(j * portableBitmap.Width + i) * 4] = rawColor[2];
+                pointer[(j * portableBitmap.Width + i) * 4 + 1] = rawColor[1];
+                pointer[(j * portableBitmap.Width + i) * 4 + 2] = rawColor[0];
+                pointer[(j * portableBitmap.Width + i) * 4 + 3] = byte.MaxValue;
             }
         }
 
-        MyFileLogger.Log("DBG", $"Pixels assigned at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
-
-        var avaloniaBitmap = new AvaloniaBitmap(
-            Avalonia.Platform.PixelFormat.Bgra8888,
-            Avalonia.Platform.AlphaFormat.Premul,
-            bitmapData.Scan0,
-            new Avalonia.PixelSize(bitmapData.Width, bitmapData.Height),
-            new Avalonia.Vector(96, 96),
-            bitmapData.Stride);
-
-        systemBitmap.UnlockBits(bitmapData);
-
         MyFileLogger.Log("DBG", $"Converted to AvaloniaBitmap at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
 
-        return avaloniaBitmap;
+        return writeableBitmap;
     }
 }
