@@ -14,9 +14,9 @@ public class PortableBitmap
     public PortableBitmap(
         ColorSpace[,] map,
         IColorBaseConverter colorConverter,
-        bool isFirstVisible,
-        bool isSecondVisible,
-        bool isThirdVisible)
+        bool isFirstVisible = true,
+        bool isSecondVisible = true,
+        bool isThirdVisible = true)
     {
         if (map.Length <= 0)
         {
