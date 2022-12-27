@@ -14,8 +14,9 @@ public static class PngConverter
     private static readonly byte[] IendChunk = { 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130 };
     private static readonly byte[] IhdrBuffer = new byte[13];
 
-    private static readonly byte[] IhdrChunkName = Encoding.ASCII.GetBytes("IHDR");
-    private static readonly byte[] IdatChunkName = Encoding.ASCII.GetBytes("IDAT");
+    private static readonly byte[] IhdrChunkName = "IHDR"u8.ToArray();
+    private static readonly byte[] IdatChunkName = "IDAT"u8.ToArray();
+    private static readonly byte[] IendChunkName = "IEND"u8.ToArray();
 
     private const int SizeOfInt = sizeof(int);
 

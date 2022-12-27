@@ -157,11 +157,11 @@ public class PortableBitmap
             for (int x = 0; x < Width - 1; x++)
             {
                 WritePlainPixel(stream, GetPixel(x, y), byPart);
-                stream.Write(Encoding.ASCII.GetBytes(" "));
+                stream.Write(" "u8);
             }
 
             WritePlainPixel(stream, GetPixel(Width - 1, y), byPart);
-            stream.Write(Encoding.ASCII.GetBytes("\n"));
+            stream.Write("\n"u8);
         }
     }
 
