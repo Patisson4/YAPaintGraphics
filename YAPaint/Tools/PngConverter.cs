@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Buffers.Binary;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using YAPaint.Models;
 
@@ -20,12 +22,120 @@ public static class PngConverter
 
     private const int SizeOfInt = sizeof(int);
 
+    public static bool IsValidSignature(byte[] signature)
+    {
+        return signature.SequenceEqual(PngSignature);
+    }
+
     public static void SaveAsPng(this PortableBitmap bitmap, Stream outputStream)
     {
         outputStream.Write(PngSignature, 0, PngSignature.Length);
         WriteIhdrChunk(bitmap, outputStream);
         WriteIdatChunk(bitmap, outputStream);
         WriteIendChunk(outputStream);
+    }
+
+    public static ColorSpace[,] ReadPng(Stream inputStream)
+    {
+        int width = 0;
+        int height = 0;
+        byte bitDepth = 0;
+        byte colorType = 0;
+        var pixelData = new List<byte>();
+
+        while (true)
+        {
+            byte[] chunkLengthBytes = new byte[4];
+            inputStream.Read(chunkLengthBytes, 0, 4);
+            int chunkLength = BinaryPrimitives.ReverseEndianness(BitConverter.ToInt32(chunkLengthBytes, 0));
+
+            byte[] chunkTypeBytes = new byte[4];
+            inputStream.Read(chunkTypeBytes, 0, 4);
+
+            byte[] chunkData = new byte[chunkLength];
+            inputStream.Read(chunkData, 0, chunkLength);
+
+            byte[] chunkCrcBytes = new byte[4];
+            inputStream.Read(chunkCrcBytes, 0, 4);
+            uint chunkCrc = BinaryPrimitives.ReverseEndianness(BitConverter.ToUInt32(chunkCrcBytes, 0));
+
+            uint expectedChunkCrc = CalculateCrc(chunkTypeBytes, chunkData);
+            if (chunkCrc != expectedChunkCrc)
+            {
+                throw new InvalidDataException("Invalid crc");
+            }
+
+            if (chunkTypeBytes.SequenceEqual(IhdrChunkName))
+            {
+                width = BinaryPrimitives.ReverseEndianness(BitConverter.ToInt32(chunkData, 0));
+                height = BinaryPrimitives.ReverseEndianness(BitConverter.ToInt32(chunkData, 4));
+                bitDepth = chunkData[8];
+                colorType = chunkData[9];
+                if (chunkData[12] == 1)
+                {
+                    throw new NotSupportedException("Interlacing method Adam7 is not supported");
+                }
+            }
+            else if (chunkTypeBytes.SequenceEqual(IdatChunkName))
+            {
+                pixelData.AddRange(chunkData);
+            }
+            else if (chunkTypeBytes.SequenceEqual(IendChunkName))
+            {
+                break;
+            }
+            else
+            {
+                MyFileLogger.Log("WRN", $"Unsupported chunk format: {Encoding.Default.GetString(chunkTypeBytes)}; chunk ignored");
+            }
+        }
+
+        if (width == 0 || height == 0 || pixelData == null)
+        {
+            throw new InvalidDataException("Missing required chunk in PNG file");
+        }
+
+        //TODO: support 3
+        if (colorType is 3 or 4 or 6)
+        {
+            throw new NotSupportedException("Unsupported color type in PNG file");
+        }
+
+        if (bitDepth != 8)
+        {
+            throw new NotSupportedException("Unsupported bit depth in PNG file");
+        }
+
+        using var decompressedStream = new MemoryStream();
+
+        using (var compressedStream = new MemoryStream())
+        using (var deflateStream = new DeflateStream(compressedStream, CompressionMode.Decompress, true))
+        {
+            compressedStream.Write(CollectionsMarshal.AsSpan(pixelData));
+            compressedStream.Position = 0;
+            deflateStream.CopyTo(decompressedStream);
+        }
+
+        decompressedStream.Position = 0;
+        var map = new ColorSpace[width, height];
+        for (int y = 0; y < height; y++)
+        {
+            //skip filter bit
+            decompressedStream.ReadByte();
+            for (int x = 0; x < width; x++)
+            {
+                byte r = (byte)decompressedStream.ReadByte();
+                byte g = (byte)decompressedStream.ReadByte();
+                byte b = (byte)decompressedStream.ReadByte();
+                var color = new ColorSpace(
+                    Coefficient.Normalize(r),
+                    Coefficient.Normalize(g),
+                    Coefficient.Normalize(b));
+                map[x, y] = color;
+            }
+        }
+
+        return map;
     }
 
     private static void WriteIhdrChunk(PortableBitmap bitmap, Stream outputStream)
