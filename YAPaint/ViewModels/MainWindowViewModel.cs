@@ -20,7 +20,8 @@ public class MainWindowViewModel : ViewModelBase
 {
     private static readonly List<FileDialogFilter> FileFilters = new List<FileDialogFilter>
     {
-        new FileDialogFilter { Name = "Portable Bitmaps", Extensions = { "pnm", "pbm", "pgm", "ppm" } },
+        new FileDialogFilter { Name = "Portable Network Graphics", Extensions = { "png" } },
+        new FileDialogFilter { Name = "Portable Bitmap", Extensions = { "pnm", "pbm", "pgm", "ppm" } },
         new FileDialogFilter { Name = "All", Extensions = { "*" } },
     };
 
@@ -111,7 +112,7 @@ public class MainWindowViewModel : ViewModelBase
             MyFileLogger.Log("DBG", $"Stream created at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
 
             _portableBitmap = new PortableBitmap(
-                PnmParser.ReadImage(stream),
+                ImageReader.ReadImage(stream),
                 CurrentColorConverter,
                 _isFirstChannelVisible,
                 _isSecondChannelVisible,
@@ -201,7 +202,7 @@ public class MainWindowViewModel : ViewModelBase
             MyFileLogger.SharedTimer.Restart();
 
             await using var stream = new FileStream(result, FileMode.Create);
-            _portableBitmap.SaveAsPng(stream);
+            _portableBitmap.WritePng(stream);
 
             MyFileLogger.SharedTimer.Stop();
             _operationsCount++;

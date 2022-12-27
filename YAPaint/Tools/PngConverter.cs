@@ -27,7 +27,7 @@ public static class PngConverter
         return signature.SequenceEqual(PngSignature);
     }
 
-    public static void SaveAsPng(this PortableBitmap bitmap, Stream outputStream)
+    public static void WritePng(this PortableBitmap bitmap, Stream outputStream)
     {
         outputStream.Write(PngSignature, 0, PngSignature.Length);
         WriteIhdrChunk(bitmap, outputStream);
