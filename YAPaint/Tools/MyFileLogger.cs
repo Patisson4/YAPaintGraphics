@@ -6,7 +6,7 @@ namespace YAPaint.Tools;
 
 public static class MyFileLogger
 {
-    public static string Filepath { get; set; } = @"..\..\..\log.txt";
+    public const string Filepath = @"..\..\..\log.txt";
 
     public static Stopwatch SharedTimer { get; } = new Stopwatch();
     
