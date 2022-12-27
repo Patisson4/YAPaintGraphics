@@ -22,8 +22,8 @@ public class BarGrapher
             {
                 var pixel = bitmap.GetPixel(x, y);
                 histograms[0][Coefficient.Denormalize(pixel.First)]++;
-                histograms[1][Coefficient.Denormalize(pixel.First)]++;
-                histograms[2][Coefficient.Denormalize(pixel.First)]++;
+                histograms[1][Coefficient.Denormalize(pixel.Second)]++;
+                histograms[2][Coefficient.Denormalize(pixel.Third)]++;
             }
         }
 
