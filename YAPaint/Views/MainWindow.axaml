@@ -15,11 +15,16 @@
     <DockPanel LastChildFill="True">
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="File">
-                <MenuItem Header="Open" Command="{Binding Open}" />
-                <MenuItem Header="Save As...">
-                    <MenuItem Header="Raw" Command="{Binding SaveRaw}" />
-                    <MenuItem Header="Plain" Command="{Binding SavePlain}" />
+                <MenuItem Header="Open...">
+                    <MenuItem Header="PNG" Command="{Binding OpenPng}" />
+                    <MenuItem Header="PNM" Command="{Binding OpenPnm}" />
+                </MenuItem>
+                <MenuItem Header="Save...">
                     <MenuItem Header="PNG" Command="{Binding SavePng}" />
+                    <MenuItem Header="PNM...">
+                        <MenuItem Header="Raw" Command="{Binding SaveRaw}" />
+                        <MenuItem Header="Plain" Command="{Binding SavePlain}" />
+                    </MenuItem>
                 </MenuItem>
                 <Separator />
                 <MenuItem Header="Exit" Click="Exit" />

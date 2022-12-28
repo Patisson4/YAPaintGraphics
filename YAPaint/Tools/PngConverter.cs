@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using YAPaint.Models;
 
@@ -15,33 +14,39 @@ public static class PngConverter
     private static readonly byte[] PngSignature = { 137, 80, 78, 71, 13, 10, 26, 10 };
     private static readonly byte[] IendChunk = { 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130 };
     private static readonly byte[] IhdrBuffer = new byte[13];
+    private static readonly byte[] SignatureBuffer = new byte[8];
 
     private static readonly byte[] IhdrChunkName = "IHDR"u8.ToArray();
+    private static readonly byte[] GamaChunkName = "gAMA"u8.ToArray();
+    private static readonly byte[] PlteChunkName = "PLTE"u8.ToArray();
     private static readonly byte[] IdatChunkName = "IDAT"u8.ToArray();
     private static readonly byte[] IendChunkName = "IEND"u8.ToArray();
 
     private const int SizeOfInt = sizeof(int);
 
-    public static bool IsValidSignature(byte[] signature)
-    {
-        return signature.SequenceEqual(PngSignature);
-    }
-
-    public static void WritePng(this PortableBitmap bitmap, Stream outputStream)
+    public static void WritePng(this PortableBitmap bitmap, Stream outputStream, float gamma)
     {
         outputStream.Write(PngSignature, 0, PngSignature.Length);
         WriteIhdrChunk(bitmap, outputStream);
+        WriteGamaChunk(outputStream, gamma);
         WriteIdatChunk(bitmap, outputStream);
         WriteIendChunk(outputStream);
     }
 
-    public static ColorSpace[,] ReadPng(Stream inputStream)
+    public static ColorSpace[,] ReadPng(Stream inputStream, out float gamma)
     {
         int width = 0;
         int height = 0;
         byte bitDepth = 0;
         byte colorType = 0;
-        var pixelData = new List<byte>();
+        gamma = -1;
+        using var pixelData = new MemoryStream();
+        var palette = new List<(byte, byte, byte)>();
+        
+        if (inputStream.Read(SignatureBuffer, 0, 8) != 8 || !SignatureBuffer.SequenceEqual(PngSignature))
+        {
+            throw new InvalidDataException("Invalid Png Signature");
+        }
 
         while (true)
         {
@@ -76,9 +81,33 @@ public static class PngConverter
                     throw new NotSupportedException("Interlacing method Adam7 is not supported");
                 }
             }
+            else if (chunkTypeBytes.SequenceEqual(GamaChunkName))
+            {
+                var parsedGamma = BinaryPrimitives.ReverseEndianness(BitConverter.ToInt32(chunkData));
+                if (parsedGamma is 45454 or 45455 or 45456)
+                {
+                    gamma = 0;
+                }
+                else
+                {
+                    gamma = (float)parsedGamma / 100000;
+                }
+            }
+            else if (chunkTypeBytes.SequenceEqual(PlteChunkName))
+            {
+                if (chunkLength % 3 != 0)
+                {
+                    throw new InvalidDataException("Invalid PLTE fromat");
+                }
+
+                for (int i = 0; i < chunkLength; i += 3)
+                {
+                    palette.Add((chunkData[i], chunkData[i + 1], chunkData[i + 2]));
+                }
+            }
             else if (chunkTypeBytes.SequenceEqual(IdatChunkName))
             {
-                pixelData.AddRange(chunkData);
+                pixelData.Write(chunkData);
             }
             else if (chunkTypeBytes.SequenceEqual(IendChunkName))
             {
@@ -86,19 +115,15 @@ public static class PngConverter
             }
             else
             {
-                MyFileLogger.Log("WRN", $"Unsupported chunk format: {Encoding.Default.GetString(chunkTypeBytes)}; chunk ignored");
+                MyFileLogger.Log(
+                    "WRN",
+                    $"Unsupported chunk format: {Encoding.Default.GetString(chunkTypeBytes)}; chunk ignored");
             }
         }
 
-        if (width == 0 || height == 0 || pixelData == null)
+        if (width == 0 || height == 0)
         {
             throw new InvalidDataException("Missing required chunk in PNG file");
-        }
-
-        //TODO: support 3
-        if (colorType is 3 or 4 or 6)
-        {
-            throw new NotSupportedException("Unsupported color type in PNG file");
         }
 
         if (bitDepth != 8)
@@ -106,36 +131,134 @@ public static class PngConverter
             throw new NotSupportedException("Unsupported bit depth in PNG file");
         }
 
-        using var decompressedStream = new MemoryStream();
-
-        using (var compressedStream = new MemoryStream())
-        using (var deflateStream = new DeflateStream(compressedStream, CompressionMode.Decompress, true))
+        pixelData.Position = 0;
+        using var decompressedData = new MemoryStream();
+        using (var deflateStream = new ZLibStream(pixelData, CompressionMode.Decompress, true))
         {
-            compressedStream.Write(CollectionsMarshal.AsSpan(pixelData));
-            compressedStream.Position = 0;
-            deflateStream.CopyTo(decompressedStream);
+            deflateStream.CopyTo(decompressedData);
         }
 
-        decompressedStream.Position = 0;
+        decompressedData.Position = 0;
+        var bytesPerPixel = BytesPerPixel(colorType);
+
+        Span<byte> prior = stackalloc byte[width * bytesPerPixel];
+        Span<byte> raw = stackalloc byte[width * bytesPerPixel];
         var map = new ColorSpace[width, height];
+
+        prior.Clear();
+
         for (int y = 0; y < height; y++)
         {
-            //skip filter bit
-            decompressedStream.ReadByte();
+            byte filterType = (byte)decompressedData.ReadByte();
+            decompressedData.Read(raw);
+
+            switch (filterType)
+            {
+                case 0: // None
+                    break;
+                case 1: // Sub
+                    for (int x = bytesPerPixel; x < raw.Length; x++)
+                    {
+                        raw[x] += raw[x - bytesPerPixel];
+                    }
+
+                    break;
+                case 2: // Up
+                    for (int x = 0; x < raw.Length; x++)
+                    {
+                        raw[x] += prior[x];
+                    }
+
+                    break;
+                case 3: // Average
+                    for (int x = 0; x < bytesPerPixel; x++)
+                    {
+                        raw[x] += (byte)(prior[x] / 2);
+                    }
+
+                    for (int x = bytesPerPixel; x < raw.Length; x++)
+                    {
+                        raw[x] += (byte)((raw[x - bytesPerPixel] + prior[x]) / 2);
+                    }
+
+                    break;
+                case 4: // Paeth
+                    for (int x = 0; x < bytesPerPixel; x++)
+                    {
+                        raw[x] += (byte)PaethPredictor(0, prior[x], 0);
+                    }
+
+                    for (int x = bytesPerPixel; x < raw.Length; x++)
+                    {
+                        raw[x] += (byte)PaethPredictor(raw[x - bytesPerPixel], prior[x], prior[x - bytesPerPixel]);
+                    }
+
+                    break;
+                default:
+                    throw new InvalidDataException("Invalid filter type");
+            }
+
             for (int x = 0; x < width; x++)
             {
-                byte r = (byte)decompressedStream.ReadByte();
-                byte g = (byte)decompressedStream.ReadByte();
-                byte b = (byte)decompressedStream.ReadByte();
-                var color = new ColorSpace(
+                byte r, g, b;
+                if (colorType is 3)
+                {
+                    (r, g, b) = palette[raw[x]];
+                }
+                else
+                {
+                    r = raw[x * bytesPerPixel];
+                    if (colorType is 0 or 4)
+                    {
+                        g = r;
+                        b = r;
+                    }
+                    else // color type 2 or 6
+                    {
+                        g = raw[x * bytesPerPixel + 1];
+                        b = raw[x * bytesPerPixel + 2];
+                        // scanline[x * bytesPerPixel + 3] - alpha - skipped
+                    }
+                }
+
+                map[x, y] = new ColorSpace(
                     Coefficient.Normalize(r),
                     Coefficient.Normalize(g),
                     Coefficient.Normalize(b));
-                map[x, y] = color;
             }
+
+            raw.CopyTo(prior);
         }
 
         return map;
+    }
+
+    private static byte BytesPerPixel(byte colorType)
+    {
+        return colorType switch
+        {
+            0 => 1,
+            2 => 3,
+            3 => 1,
+            4 => 2,
+            6 => 4,
+            _ => throw new InvalidDataException(),
+        };
+    }
+
+    private static int PaethPredictor(int a, int b, int c)
+    {
+        int p = a + b - c;
+        int pa = int.Abs(p - a);
+        int pb = int.Abs(p - b);
+        int pc = int.Abs(p - c);
+
+        if (pa <= pb && pa <= pc)
+        {
+            return a;
+        }
+
+        return pb <= pc ? b : c;
     }
 
     private static void WriteIhdrChunk(PortableBitmap bitmap, Stream outputStream)
@@ -144,7 +267,7 @@ public static class PngConverter
         BitConverter.GetBytes(BinaryPrimitives.ReverseEndianness(bitmap.Height)).CopyTo(IhdrBuffer, SizeOfInt);
 
         IhdrBuffer[8] = 8; // bit depth
-        IhdrBuffer[9] = 2; // color type // TODO: recognize and change color type based on bitmap data
+        IhdrBuffer[9] = 2; // color type // TODO: support 0
         IhdrBuffer[10] = 0; // compression method (deflate)
         IhdrBuffer[11] = 0; // filter method (adaptive)
         IhdrBuffer[12] = 0; // interlace method (none)
@@ -157,6 +280,22 @@ public static class PngConverter
         outputStream.Write(IhdrBuffer, 0, IhdrBuffer.Length);
         outputStream.Write(
             BitConverter.GetBytes(BinaryPrimitives.ReverseEndianness(CalculateCrc(IhdrChunkName, IhdrBuffer))),
+            0,
+            SizeOfInt);
+    }
+
+    private static void WriteGamaChunk(Stream outputStream, float gamma)
+    {
+        uint exactGamma = (uint)(float.Abs(gamma + 1) < float.Epsilon ? 45455 : gamma * 100000);
+        byte[] parsedGamma = BitConverter.GetBytes(BinaryPrimitives.ReverseEndianness(exactGamma));
+        outputStream.Write(
+            BitConverter.GetBytes(BinaryPrimitives.ReverseEndianness(4)),
+            0,
+            SizeOfInt);
+        outputStream.Write(GamaChunkName, 0, GamaChunkName.Length);
+        outputStream.Write(parsedGamma, 0, parsedGamma.Length);
+        outputStream.Write(
+            BitConverter.GetBytes(BinaryPrimitives.ReverseEndianness(CalculateCrc(GamaChunkName, parsedGamma))),
             0,
             SizeOfInt);
     }
@@ -176,14 +315,15 @@ public static class PngConverter
             }
         }
 
-        using var dataStream = new MemoryStream();
+        using var compressedData = new MemoryStream();
         pixelDataStream.Position = 0;
-        using (var deflateStream = new DeflateStream(dataStream, CompressionLevel.Optimal, true))
+
+        using (var deflateStream = new ZLibStream(compressedData, CompressionLevel.Optimal, true))
         {
             pixelDataStream.CopyTo(deflateStream);
         }
 
-        byte[] idatData = dataStream.ToArray();
+        byte[] idatData = compressedData.ToArray();
 
         outputStream.Write(
             BitConverter.GetBytes(BinaryPrimitives.ReverseEndianness((uint)idatData.Length)),

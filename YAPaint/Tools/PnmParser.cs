@@ -13,6 +13,11 @@ public static class PnmParser
         using var bufferedStream = new BufferedStream(stream);
         using var reader = new BinaryReader(bufferedStream);
 
+        if (reader.ReadChar() is not 'P')
+        {
+            throw new NotSupportedException("Unknown format specification");
+        }
+
         char type = reader.ReadChar();
 
         var width = GetNextTextValue(reader);
