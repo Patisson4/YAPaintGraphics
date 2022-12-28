@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using YAPaint.Models;
+using YAPaint.Models.ColorSpaces;
 
 namespace YAPaint.Tools;
 
@@ -42,7 +43,7 @@ public static class PngConverter
         gamma = -1;
         using var pixelData = new MemoryStream();
         var palette = new List<(byte, byte, byte)>();
-        
+
         if (inputStream.Read(SignatureBuffer, 0, 8) != 8 || !SignatureBuffer.SequenceEqual(PngSignature))
         {
             throw new InvalidDataException("Invalid Png Signature");
@@ -267,7 +268,19 @@ public static class PngConverter
         BitConverter.GetBytes(BinaryPrimitives.ReverseEndianness(bitmap.Height)).CopyTo(IhdrBuffer, SizeOfInt);
 
         IhdrBuffer[8] = 8; // bit depth
-        IhdrBuffer[9] = 2; // color type // TODO: support 0
+
+        if (bitmap.ColorConverter is BlackAndWhite or GreyScale
+         || bitmap.IsFirstVisible && !bitmap.IsSecondVisible && !bitmap.IsThirdVisible
+         || !bitmap.IsFirstVisible && bitmap.IsSecondVisible && !bitmap.IsThirdVisible
+         || !bitmap.IsFirstVisible && !bitmap.IsSecondVisible && bitmap.IsThirdVisible)
+        {
+            IhdrBuffer[9] = 0; // greyscale
+        }
+        else
+        {
+            IhdrBuffer[9] = 2; // truecolor
+        }
+
         IhdrBuffer[10] = 0; // compression method (deflate)
         IhdrBuffer[11] = 0; // filter method (adaptive)
         IhdrBuffer[12] = 0; // interlace method (none)
@@ -310,6 +323,12 @@ public static class PngConverter
             {
                 ColorSpace color = bitmap.GetPixel(x, y);
                 pixelDataStream.WriteByte(Coefficient.Denormalize(color.First));
+
+                if (IhdrBuffer[9] == 0)
+                {
+                    continue;
+                }
+
                 pixelDataStream.WriteByte(Coefficient.Denormalize(color.Second));
                 pixelDataStream.WriteByte(Coefficient.Denormalize(color.Third));
             }
