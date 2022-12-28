@@ -236,7 +236,7 @@ public class MainWindowViewModel : ViewModelBase
     {
         try
         {
-            var dialog = new SaveFileDialog { Filters = PnmFileFilters };
+            var dialog = new SaveFileDialog { Filters = PngFileFilters };
             string result = await dialog.ShowAsync(new Window()); // TODO: find real parent
 
             if (result is null)
