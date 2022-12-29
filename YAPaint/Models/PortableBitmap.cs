@@ -14,9 +14,9 @@ public class PortableBitmap
     public PortableBitmap(
         ColorSpace[,] map,
         IColorBaseConverter colorConverter,
-        bool isFirstVisible,
-        bool isSecondVisible,
-        bool isThirdVisible)
+        bool isFirstVisible = true,
+        bool isSecondVisible = true,
+        bool isThirdVisible = true)
     {
         if (map.Length <= 0)
         {
@@ -31,16 +31,8 @@ public class PortableBitmap
         Height = map.GetLength(1);
         ColorConverter = colorConverter;
 
-        //consider assigning existing array instead of copying it
         _map = new ColorSpace[Width, Height];
-
-        for (int j = 0; j < Height; j++)
-        {
-            for (int i = 0; i < Width; i++)
-            {
-                _map[i, j] = map[i, j];
-            }
-        }
+        Array.Copy(map, _map, map.Length);
 
         MyFileLogger.Log("DBG", $"Object created at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
     }
@@ -165,11 +157,11 @@ public class PortableBitmap
             for (int x = 0; x < Width - 1; x++)
             {
                 WritePlainPixel(stream, GetPixel(x, y), byPart);
-                stream.Write(Encoding.ASCII.GetBytes(" "));
+                stream.Write(" "u8);
             }
 
             WritePlainPixel(stream, GetPixel(Width - 1, y), byPart);
-            stream.Write(Encoding.ASCII.GetBytes("\n"));
+            stream.Write("\n"u8);
         }
     }
 

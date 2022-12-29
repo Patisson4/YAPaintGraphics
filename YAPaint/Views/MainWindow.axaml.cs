@@ -1,5 +1,6 @@
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using YAPaint.ViewModels;
@@ -25,5 +26,10 @@ public partial class MainWindow : Window
         {
             checkBox.IsVisible = MainWindowViewModel.ThreeChannelColorSpaceNames.Contains(comboBox?.SelectedItem);
         }
+    }
+
+    private void InputElement_OnPointerWheelChanged(object sender, PointerWheelEventArgs e)
+    {
+        e.Handled = true;
     }
 }
