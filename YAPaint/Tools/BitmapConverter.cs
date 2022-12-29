@@ -52,4 +52,24 @@ public static class BitmapConverter
 
         return avaloniaBitmap;
     }
+
+    public static AvaloniaBitmap ToAvalonia(this Bitmap bitmap)
+    {
+        var bitmapData = bitmap.LockBits(
+            new Rectangle(0, 0, bitmap.Width, bitmap.Height),
+            ImageLockMode.ReadWrite,
+            PixelFormat.Format32bppArgb);
+
+        var avaloniaBitmap = new AvaloniaBitmap(
+            Avalonia.Platform.PixelFormat.Bgra8888,
+            Avalonia.Platform.AlphaFormat.Premul,
+            bitmapData.Scan0,
+            new Avalonia.PixelSize(bitmapData.Width, bitmapData.Height),
+            new Avalonia.Vector(96, 96),
+            bitmapData.Stride);
+
+        bitmap.UnlockBits(bitmapData);
+
+        return avaloniaBitmap;
+    }
 }

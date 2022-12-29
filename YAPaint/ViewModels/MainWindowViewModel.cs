@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using ScottPlot;
 using YAPaint.Models;
 using YAPaint.Models.ColorSpaces;
 using YAPaint.Models.ExtraColorSpaces;
@@ -98,7 +99,22 @@ public class MainWindowViewModel : ViewModelBase
     [Reactive]
     public float Gamma { get; set; } = 2.0f;
 
+    [Reactive]
+    public bool IsHistogramVisible { get; private set; } = false;
+
     public CultureInfo InvariantCultureInfo { get; } = CultureInfo.InvariantCulture;
+
+    [Reactive]
+    public AvaloniaBitmap Histogram1 { get; set; }
+
+    [Reactive]
+    public AvaloniaBitmap Histogram2 { get; set; }
+
+    [Reactive]
+    public AvaloniaBitmap Histogram3 { get; set; }
+
+    [Reactive]
+    public float Threshold { get; set; }
 
     public async Task Open()
     {
@@ -313,6 +329,46 @@ public class MainWindowViewModel : ViewModelBase
             _operationsCount++;
             Message = $"({_operationsCount}) Toggled in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
             MyFileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void DrawHistograms()
+    {
+        try
+        {
+            var histograms = BarGrapher.CreateBarGraphs(_portableBitmap);
+            var plot = new Plot();
+
+            plot.AddBar(histograms[0]);
+            Histogram1 = plot.Render().ToAvalonia();
+
+            plot.Clear();
+            plot.AddBar(histograms[1]);
+            Histogram2 = plot.Render().ToAvalonia();
+
+            plot.Clear();
+            plot.AddBar(histograms[2]);
+            Histogram3 = plot.Render().ToAvalonia();
+
+            IsHistogramVisible = true;
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void CorrectIntensity()
+    {
+        try
+        {
+            var histograms = BarGrapher.CreateBarGraphs(_portableBitmap);
+            _portableBitmap = IntensityCorrector.CorrectIntensity(_portableBitmap, Threshold, histograms);
+            AvaloniaImage = _portableBitmap.ToAvalonia();
         }
         catch (Exception e)
         {
