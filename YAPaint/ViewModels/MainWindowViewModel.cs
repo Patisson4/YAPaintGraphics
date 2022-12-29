@@ -18,9 +18,15 @@ namespace YAPaint.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
-    private static readonly List<FileDialogFilter> FileFilters = new List<FileDialogFilter>
+    private static readonly List<FileDialogFilter> PnmFileFilters = new List<FileDialogFilter>
     {
-        new FileDialogFilter { Name = "Portable Bitmaps", Extensions = { "pnm", "pbm", "pgm", "ppm" } },
+        new FileDialogFilter { Name = "Portable Bitmap", Extensions = { "pnm", "pbm", "pgm", "ppm" } },
+        new FileDialogFilter { Name = "All", Extensions = { "*" } },
+    };
+    
+    private static readonly List<FileDialogFilter> PngFileFilters = new List<FileDialogFilter>
+    {
+        new FileDialogFilter { Name = "Portable Network Graphics", Extensions = { "png" } },
         new FileDialogFilter { Name = "All", Extensions = { "*" } },
     };
 
@@ -88,15 +94,15 @@ public class MainWindowViewModel : ViewModelBase
     public static IReadOnlyCollection<string> ColorSpaceNames { get; } = SpaceTypes.Select(t => t.Name).ToList();
 
     [Reactive]
-    public float Gamma { get; set; } = 2.0f;
+    public float Gamma { get; set; }
 
     public CultureInfo InvariantCultureInfo { get; } = CultureInfo.InvariantCulture;
 
-    public async Task Open()
+    public async Task OpenPnm()
     {
         try
         {
-            var dialog = new OpenFileDialog { Filters = FileFilters, AllowMultiple = false };
+            var dialog = new OpenFileDialog { Filters = PnmFileFilters, AllowMultiple = false };
             string[] result = await dialog.ShowAsync(new Window()); // TODO: find real parent
 
             if (result is null)
@@ -129,12 +135,52 @@ public class MainWindowViewModel : ViewModelBase
             MyFileLogger.Log("ERR", $"{e}\n");
         }
     }
+    
+    public async Task OpenPng()
+    {
+        try
+        {
+            var dialog = new OpenFileDialog { Filters = PngFileFilters, AllowMultiple = false };
+            string[] result = await dialog.ShowAsync(new Window()); // TODO: find real parent
+
+            if (result is null)
+            {
+                return;
+            }
+
+            MyFileLogger.SharedTimer.Restart();
+
+            await using var stream = new FileStream(result[0], FileMode.Open);
+
+            MyFileLogger.Log("DBG", $"Stream created at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
+
+            _portableBitmap = new PortableBitmap(
+                PngConverter.ReadPng(stream, out float gamma),
+                CurrentColorConverter,
+                _isFirstChannelVisible,
+                _isSecondChannelVisible,
+                _isThirdChannelVisible);
+
+            Gamma = float.Abs(gamma + 1) < float.Epsilon ? 0f : gamma;
+            
+            AvaloniaImage = _portableBitmap.ToAvalonia();
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Opened in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
+    }
 
     public async Task SaveRaw()
     {
         try
         {
-            var dialog = new SaveFileDialog { Filters = FileFilters };
+            var dialog = new SaveFileDialog { Filters = PnmFileFilters };
             string result = await dialog.ShowAsync(new Window()); // TODO: find real parent
 
             if (result is null)
@@ -162,7 +208,7 @@ public class MainWindowViewModel : ViewModelBase
     {
         try
         {
-            var dialog = new SaveFileDialog { Filters = FileFilters };
+            var dialog = new SaveFileDialog { Filters = PnmFileFilters };
             string result = await dialog.ShowAsync(new Window()); // TODO: find real parent
 
             if (result is null)
@@ -174,6 +220,34 @@ public class MainWindowViewModel : ViewModelBase
 
             await using var stream = new FileStream(result, FileMode.Create);
             _portableBitmap.SavePlain(stream);
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Saved in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public async Task SavePng()
+    {
+        try
+        {
+            var dialog = new SaveFileDialog { Filters = PngFileFilters };
+            string result = await dialog.ShowAsync(new Window()); // TODO: find real parent
+
+            if (result is null)
+            {
+                return;
+            }
+
+            MyFileLogger.SharedTimer.Restart();
+
+            await using var stream = new FileStream(result, FileMode.Create);
+            _portableBitmap.WritePng(stream, -1);
 
             MyFileLogger.SharedTimer.Stop();
             _operationsCount++;
@@ -217,11 +291,12 @@ public class MainWindowViewModel : ViewModelBase
             MyFileLogger.SharedTimer.Restart();
 
             _portableBitmap = new PortableBitmap(
-                _portableBitmap.ApplyGamma(1 / Gamma),
+                _portableBitmap.ApplyGamma(Gamma),
                 _portableBitmap.ColorConverter,
                 _isFirstChannelVisible,
                 _isSecondChannelVisible,
                 _isThirdChannelVisible);
+            AvaloniaImage = _portableBitmap.ToAvalonia();
 
             MyFileLogger.SharedTimer.Stop();
             _operationsCount++;

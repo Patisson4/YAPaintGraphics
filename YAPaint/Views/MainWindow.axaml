@@ -15,10 +15,16 @@
     <DockPanel LastChildFill="True">
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="File">
-                <MenuItem Header="Open" Command="{Binding Open}" />
-                <MenuItem Header="Save As...">
-                    <MenuItem Header="Raw" Command="{Binding SaveRaw}" />
-                    <MenuItem Header="Plain" Command="{Binding SavePlain}" />
+                <MenuItem Header="Open...">
+                    <MenuItem Header="PNG" Command="{Binding OpenPng}" />
+                    <MenuItem Header="PNM" Command="{Binding OpenPnm}" />
+                </MenuItem>
+                <MenuItem Header="Save...">
+                    <MenuItem Header="PNG" Command="{Binding SavePng}" />
+                    <MenuItem Header="PNM...">
+                        <MenuItem Header="Raw" Command="{Binding SaveRaw}" />
+                        <MenuItem Header="Plain" Command="{Binding SavePlain}" />
+                    </MenuItem>
                 </MenuItem>
                 <Separator />
                 <MenuItem Header="Exit" Click="Exit" />
@@ -33,7 +39,7 @@
             <TextBlock Text="ColorSpace:" VerticalAlignment="Center" />
             <ComboBox SelectedItem="{Binding SelectedColorSpace}"
                       Items="{Binding ColorSpaceNames}"
-                      AutoScrollToSelectedItem="False"
+                      PointerWheelChanged="InputElement_OnPointerWheelChanged"
                       SelectionChanged="ColorSpacesComboBox_OnSelectionChanged" />
             <CheckBox IsChecked="True" Content="1" Command="{Binding ToggleFirstChannel}" />
             <CheckBox IsChecked="True" Content="2" Command="{Binding ToggleSecondChannel}" />
@@ -45,7 +51,7 @@
                            Maximum="5.0"
                            Increment="0.01"
                            FormatString="{}{0:#,0.00}" />
-            <Button Content="Apply" Command="{Binding ApplyGamma}" />
+            <Button Content="Preview" Command="{Binding ApplyGamma}" />
             <Button Content="Convert" Command="{Binding ConvertToGamma}" />
         </StackPanel>
         <TextBlock DockPanel.Dock="Bottom"
