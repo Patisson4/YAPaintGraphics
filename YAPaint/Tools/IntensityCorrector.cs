@@ -7,62 +7,49 @@ public class IntensityCorrector
 {
     public static PortableBitmap CorrectIntensity(PortableBitmap bitmap, double ignoreProportion, double[][] histograms)
     {
-        // Determine the minimum and maximum values in each histogram, ignoring the specified proportion of the brightest and darkest pixels
-        var minValues = new double[3];
-        var maxValues = new double[3];
-
-        for (var c = 0; c < 3; c++)
+        var currentBack = 0d;
+        int i;
+        var threshold = ignoreProportion * bitmap.Width * bitmap.Height * 3;
+        for (i = 0; i < 256; i++)
         {
-            // Set the minimum and maximum values to the maximum and minimum possible values, respectively
-            minValues[c] = 255;
-            maxValues[c] = 0;
-
-            // Calculate the threshold based on the number of pixels to ignore
-            var threshold = ignoreProportion * bitmap.Width * bitmap.Height;
-
-            // Find the minimum and maximum values above and below the threshold
-            var countAboveThreshold = 0d;
-            var countBelowThreshold = 0d;
-            for (var v = 0; v < 256; v++)
+            for (var c = 0; c < 3; c++)
             {
-                if (histograms[c][v] <= 0) continue;
-                if (countAboveThreshold < threshold)
-                {
-                    minValues[c] = v;
-                    countAboveThreshold += histograms[c][v];
-                }
-
-                if (countBelowThreshold < threshold)
-                {
-                    maxValues[c] = v;
-                    countBelowThreshold += histograms[c][v];
-                }
+                currentBack += histograms[c][i];
             }
+            if (currentBack >= threshold)
+                break;
         }
 
-// Calculate the scaling and shifting factors for each color channel
-        var scalingFactors = new double[3];
-        var shiftingFactors = new double[3];
-
-        for (int c = 0; c < 3; c++)
+        if (i >= 256)
+            i = 255;
+        double leftEdge = i / 255d;
+        Console.WriteLine("leftedge:" + leftEdge);
+        
+        currentBack = threshold;
+        for (i = 255; i >= 0; i--)
         {
-            scalingFactors[c] = (maxValues[c] - minValues[c]) / 255.0;
-            shiftingFactors[c] = minValues[c];
+            for (int c = 0; c < 3; c++)
+            {
+                currentBack -= histograms[c][i];
+            }
+            if (currentBack <= 0)
+                break;
         }
 
-// Apply the scaling and shifting factors to each pixel in the image
+        if (i < 0)
+            i = 0;
+        double rightEdge = i / 255d;
+        Console.WriteLine("rightedge:" + rightEdge);
+        
         for (var y = 0; y < bitmap.Height; y++)
         {
             for (var x = 0; x < bitmap.Width; x++)
             {
                 var pixel = bitmap.GetPixel(x, y);
-                var newPixelFirst = Coefficient.Normalize((byte)Math.Min(
-                    Math.Max((Coefficient.Denormalize(pixel.First) * scalingFactors[0]) + shiftingFactors[0], 0), 255));
-                var newPixelSecond = Coefficient.Normalize((byte)Math.Min(
-                    Math.Max((Coefficient.Denormalize(pixel.Second) * scalingFactors[1]) + shiftingFactors[1], 0),
-                    255));
-                var newPixelThird = Coefficient.Normalize((byte)Math.Min(
-                    Math.Max((Coefficient.Denormalize(pixel.Third) * scalingFactors[2]) + shiftingFactors[2], 0), 255));
+                var newPixelFirst = Coefficient.Normalize(Coefficient.Denormalize((float)Math.Clamp((pixel.First - leftEdge) / (rightEdge - leftEdge), 0d, 1.0d)));
+                var newPixelSecond = Coefficient.Normalize(Coefficient.Denormalize((float)Math.Clamp((pixel.Second - leftEdge) / (rightEdge - leftEdge), 0d,
+                    1.0d)));
+                var newPixelThird = Coefficient.Normalize(Coefficient.Denormalize((float)Math.Clamp((pixel.Third - leftEdge) / (rightEdge - leftEdge), 0d, 1.0d)));
                 var newPixel = new ColorSpace(newPixelFirst, newPixelSecond, newPixelThird);
                 bitmap.SetPixel(x, y, newPixel);
             }
