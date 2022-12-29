@@ -40,23 +40,30 @@ public static class BitmapConverter
         return writeableBitmap;
     }
 
-    public static AvaloniaBitmap ToAvalonia(this Bitmap bitmap)
+    public static unsafe WriteableBitmap ToAvalonia(this System.Drawing.Bitmap bitmap)
     {
-        var bitmapData = bitmap.LockBits(
-            new Rectangle(0, 0, bitmap.Width, bitmap.Height),
-            ImageLockMode.ReadWrite,
-            PixelFormat.Format32bppArgb);
+        var writeableBitmap = new WriteableBitmap(
+            new PixelSize(bitmap.Width, bitmap.Height),
+            Dpi96,
+            PixelFormat.Rgba8888,
+            AlphaFormat.Unpremul);
 
-        var avaloniaBitmap = new AvaloniaBitmap(
-            Avalonia.Platform.PixelFormat.Bgra8888,
-            Avalonia.Platform.AlphaFormat.Premul,
-            bitmapData.Scan0,
-            new Avalonia.PixelSize(bitmapData.Width, bitmapData.Height),
-            new Avalonia.Vector(96, 96),
-            bitmapData.Stride);
+        using var bitmapLock = writeableBitmap.Lock();
+        int* pointer = (int*)bitmapLock.Address.ToPointer();
 
-        bitmap.UnlockBits(bitmapData);
+        for (int j = 0; j < bitmap.Height; j++)
+        {
+            for (int i = 0; i < bitmap.Width; i++)
+            {
+                var color = bitmap.GetPixel(i, j);
 
-        return avaloniaBitmap;
+                // opposite left shifts because of reverse endianness
+                pointer[j * bitmap.Width + i] = color.R + (color.G << 8) + (color.B << 16) + (byte.MaxValue << 24);
+            }
+        }
+
+        MyFileLogger.Log("DBG", $"Converted to AvaloniaBitmap at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
+
+        return writeableBitmap;
     }
 }

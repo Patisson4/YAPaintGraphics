@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Media.Imaging;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using ScottPlot;
@@ -14,7 +15,6 @@ using YAPaint.Models.ColorSpaces;
 using YAPaint.Models.ExtraColorSpaces;
 using YAPaint.Tools;
 using YAPaint.Views;
-using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
 
 namespace YAPaint.ViewModels;
 
@@ -25,7 +25,7 @@ public class MainWindowViewModel : ViewModelBase
         new FileDialogFilter { Name = "Portable Bitmap", Extensions = { "pnm", "pbm", "pgm", "ppm" } },
         new FileDialogFilter { Name = "All", Extensions = { "*" } },
     };
-    
+
     private static readonly List<FileDialogFilter> PngFileFilters = new List<FileDialogFilter>
     {
         new FileDialogFilter { Name = "Portable Network Graphics", Extensions = { "png" } },
@@ -93,7 +93,7 @@ public class MainWindowViewModel : ViewModelBase
     }
 
     [Reactive]
-    public AvaloniaBitmap AvaloniaImage { get; set; }
+    public WriteableBitmap AvaloniaImage { get; set; }
 
     public static IReadOnlyCollection<string> ThreeChannelColorSpaceNames { get; } = SpaceTypes
         .Where(t => t.GetInterfaces().Contains(typeof(IColorConverter)))
@@ -111,13 +111,13 @@ public class MainWindowViewModel : ViewModelBase
     public CultureInfo InvariantCultureInfo { get; } = CultureInfo.InvariantCulture;
 
     [Reactive]
-    public AvaloniaBitmap Histogram1 { get; set; }
+    public WriteableBitmap Histogram1 { get; set; }
 
     [Reactive]
-    public AvaloniaBitmap Histogram2 { get; set; }
+    public WriteableBitmap Histogram2 { get; set; }
 
     [Reactive]
-    public AvaloniaBitmap Histogram3 { get; set; }
+    public WriteableBitmap Histogram3 { get; set; }
 
     [Reactive]
     public float Threshold { get; set; }
@@ -159,7 +159,7 @@ public class MainWindowViewModel : ViewModelBase
             MyFileLogger.Log("ERR", $"{e}\n");
         }
     }
-    
+
     public async Task OpenPng()
     {
         try
@@ -186,7 +186,7 @@ public class MainWindowViewModel : ViewModelBase
                 _isThirdChannelVisible);
 
             Gamma = float.Abs(gamma + 1) < float.Epsilon ? 0f : gamma;
-            
+
             AvaloniaImage = _portableBitmap.ToAvalonia();
 
             MyFileLogger.SharedTimer.Stop();
