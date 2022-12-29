@@ -367,8 +367,7 @@ public class MainWindowViewModel : ViewModelBase
         try
         {
             var histograms = BarGrapher.CreateBarGraphs(_portableBitmap);
-            _portableBitmap = IntensityCorrector.CorrectIntensity(_portableBitmap, Threshold, histograms);
-            AvaloniaImage = _portableBitmap.ToAvalonia();
+            AvaloniaImage = IntensityCorrector.CorrectIntensity(_portableBitmap, Threshold, histograms).ToAvalonia();
         }
         catch (Exception e)
         {
