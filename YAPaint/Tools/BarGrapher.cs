@@ -1,18 +1,16 @@
-﻿using System;
-using YAPaint.Models;
-using YAPaint.Models.ExtraColorSpaces;
+﻿using YAPaint.Models;
 
 namespace YAPaint.Tools;
 
-public class BarGrapher
+public static class BarGrapher
 {
-    static int[][] CreateBarGraphs(PortableBitmap bitmap)
+    public static double[][] CreateBarGraphs(PortableBitmap bitmap)
     {
         // Create an array to hold the histogram data for each color channel
-        var histograms = new int[3][];
+        var histograms = new double[3][];
         for (var i = 0; i < 3; i++)
         {
-            histograms[i] = new int[256];
+            histograms[i] = new double[256];
         }
 
         // Generate the histogram data
@@ -28,7 +26,5 @@ public class BarGrapher
         }
 
         return histograms;
-
     }
-
 }

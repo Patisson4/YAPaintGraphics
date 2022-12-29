@@ -5,12 +5,11 @@ namespace YAPaint.Tools;
 
 public class IntensityCorrector
 {
-    public static PortableBitmap CorrectIntensity(PortableBitmap bitmap, double ignoreProportion, int[][] histograms)
+    public static PortableBitmap CorrectIntensity(PortableBitmap bitmap, double ignoreProportion, double[][] histograms)
     {
-
         // Determine the minimum and maximum values in each histogram, ignoring the specified proportion of the brightest and darkest pixels
-        var minValues = new int[3];
-        var maxValues = new int[3];
+        var minValues = new double[3];
+        var maxValues = new double[3];
 
         for (var c = 0; c < 3; c++)
         {
@@ -19,11 +18,11 @@ public class IntensityCorrector
             maxValues[c] = 0;
 
             // Calculate the threshold based on the number of pixels to ignore
-            var threshold = (int)(ignoreProportion * bitmap.Width * bitmap.Height);
+            var threshold = ignoreProportion * bitmap.Width * bitmap.Height;
 
             // Find the minimum and maximum values above and below the threshold
-            var countAboveThreshold = 0;
-            var countBelowThreshold = 0;
+            var countAboveThreshold = 0d;
+            var countBelowThreshold = 0d;
             for (var v = 0; v < 256; v++)
             {
                 if (histograms[c][v] <= 0) continue;
@@ -64,7 +63,7 @@ public class IntensityCorrector
                     255));
                 var newPixelThird = Coefficient.Normalize((byte)Math.Min(
                     Math.Max((Coefficient.Denormalize(pixel.Third) * scalingFactors[2]) + shiftingFactors[2], 0), 255));
-                ColorSpace newPixel = new ColorSpace(newPixelFirst, newPixelSecond, newPixelThird);
+                var newPixel = new ColorSpace(newPixelFirst, newPixelSecond, newPixelThird);
                 bitmap.SetPixel(x, y, newPixel);
             }
         }
