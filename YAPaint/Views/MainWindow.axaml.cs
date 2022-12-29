@@ -10,10 +10,11 @@ public partial class MainWindow : Window
 {
     public MainWindow()
     {
+        DataContext = new MainWindowViewModel(this);
         InitializeComponent();
     }
 
-    public void Exit(object sender, RoutedEventArgs e)
+    private void Exit(object sender, RoutedEventArgs e)
     {
         Close();
     }

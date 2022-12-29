@@ -12,6 +12,7 @@ using YAPaint.Models;
 using YAPaint.Models.ColorSpaces;
 using YAPaint.Models.ExtraColorSpaces;
 using YAPaint.Tools;
+using YAPaint.Views;
 using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
 
 namespace YAPaint.ViewModels;
@@ -50,6 +51,13 @@ public class MainWindowViewModel : ViewModelBase
     private bool _isFirstChannelVisible = true;
     private bool _isSecondChannelVisible = true;
     private bool _isThirdChannelVisible = true;
+
+    private readonly MainWindow _view;
+
+    public MainWindowViewModel(MainWindow view)
+    {
+        _view = view;
+    }
 
     [Reactive]
     public string Message { get; set; } = "Timings will be displayed here";
