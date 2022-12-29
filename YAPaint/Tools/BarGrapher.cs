@@ -6,14 +6,12 @@ public static class BarGrapher
 {
     public static double[][] CreateBarGraphs(PortableBitmap bitmap)
     {
-        // Create an array to hold the histogram data for each color channel
         var histograms = new double[3][];
         for (var i = 0; i < 3; i++)
         {
             histograms[i] = new double[256];
         }
 
-        // Generate the histogram data
         for (var y = 0; y < bitmap.Height; y++)
         {
             for (var x = 0; x < bitmap.Width; x++)
