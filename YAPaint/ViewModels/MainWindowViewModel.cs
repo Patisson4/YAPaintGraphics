@@ -106,7 +106,7 @@ public class MainWindowViewModel : ViewModelBase
     public float Gamma { get; set; }
 
     [Reactive]
-    public bool IsHistogramVisible { get; private set; } = false;
+    public bool IsHistogramVisible { get; private set; }
 
     public CultureInfo InvariantCultureInfo { get; } = CultureInfo.InvariantCulture;
 
@@ -415,7 +415,7 @@ public class MainWindowViewModel : ViewModelBase
     {
         try
         {
-            var histograms = BarGrapher.CreateBarGraphs(_portableBitmap);
+            double[][] histograms = BarGrapher.CreateBarGraphs(_portableBitmap);
             var plot = new Plot();
 
             plot.AddBar(histograms[0]);
@@ -457,6 +457,102 @@ public class MainWindowViewModel : ViewModelBase
 
             IntensityCorrector.CorrectIntensity(ref _portableBitmap, Threshold);
             AvaloniaImage = _portableBitmap.ToAvalonia();
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    [Reactive]
+    public int FilterThreshold { get; set; } = 10;
+
+    public void ThresholdFilter()
+    {
+        try
+        {
+            AvaloniaImage = _portableBitmap.ThresholdFilter(FilterThreshold).ToAvalonia();
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void OtsuFilter()
+    {
+        try
+        {
+            AvaloniaImage = _portableBitmap.OtsuThresholdFilter().ToAvalonia();
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    [Reactive]
+    public int KernelRadius { get; set; }
+
+    public void MedianFilter()
+    {
+        try
+        {
+            AvaloniaImage = _portableBitmap.MedianFilter(KernelRadius).ToAvalonia();
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    [Reactive]
+    public float Sigma { get; set; }
+
+    public void GaussianFilter()
+    {
+        try
+        {
+            AvaloniaImage = _portableBitmap.GaussianFilter(Sigma).ToAvalonia();
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void BoxBlurFilter()
+    {
+        try
+        {
+            AvaloniaImage = _portableBitmap.BoxBlur(KernelRadius).ToAvalonia();
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void SobelFilter()
+    {
+        try
+        {
+            AvaloniaImage = _portableBitmap.SobelFilter().ToAvalonia();
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+    
+    [Reactive]
+    public float Sharpness { get; set; }
+
+    public void SharpFilter()
+    {
+        try
+        {
+            AvaloniaImage = _portableBitmap.ContrastAdaptiveSharpening(Sharpness).ToAvalonia();
         }
         catch (Exception e)
         {

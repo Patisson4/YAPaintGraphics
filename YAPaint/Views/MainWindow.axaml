@@ -27,6 +27,15 @@
                 <Separator />
                 <MenuItem Header="Exit" Click="Exit" />
             </MenuItem>
+            <MenuItem Header="Filters">
+                <MenuItem Header="Threshold" Command="{Binding ThresholdFilter}" />
+                <MenuItem Header="Otsu" Command="{Binding OtsuFilter}" />
+                <MenuItem Header="Median" Command="{Binding MedianFilter}"/>
+                <MenuItem Header="Gaussian" Command="{Binding GaussianFilter}"/>
+                <MenuItem Header="Box Blur" Command="{Binding BoxBlurFilter}"/>
+                <MenuItem Header="Sobel" Command="{Binding SobelFilter}"/>
+                <MenuItem Header="Sharpening" Command="{Binding SharpFilter}"/>
+            </MenuItem>
         </Menu>
         <StackPanel DockPanel.Dock="Right"
                     VerticalAlignment="Top"
