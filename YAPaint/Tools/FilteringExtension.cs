@@ -18,7 +18,10 @@ public static class FilteringExtension
             for (int y = 0; y < bitmap.Height; y++)
             {
                 var color = bitmap.GetPixel(x, y);
-                var averageColor = (color.First + color.Second + color.Third) / 3;
+                var averageColor = (Coefficient.Denormalize(color.First)
+                                  + Coefficient.Denormalize(color.Second)
+                                  + Coefficient.Denormalize(color.Third))
+                                 / 3;
                 if (averageColor >= threshold)
                 {
                     filteredMap[x, y] = new ColorSpace(1, 1, 1); //TODO: use static black&white colors
@@ -40,44 +43,38 @@ public static class FilteringExtension
 
     public static PortableBitmap OtsuThresholdFilter(this PortableBitmap bitmap)
     {
-        var histograms = BarGrapher.CreateBarGraphs(bitmap);
+        var histogram = BarGrapher.CreateGreyBarGraph(bitmap);
 
         double sum = 0;
-        for (int j = 0; j < 3; j++)
+        for (int i = 0; i < 256; i++)
         {
-            for (int i = 0; i < 256; i++)
-            {
-                sum += i * histograms[j][i];
-            }
+            sum += i * histogram[i];
         }
 
         double sumB = 0;
         double wB = 0;
         var maxVariance = 0.0;
         var threshold = 0;
-        for (int j = 0; j < 3; j++)
+        for (int i = 0; i < 256; i++)
         {
-            for (int i = 0; i < 256; i++)
+            wB += histogram[i];
+            if (wB == 0) continue;
+
+            double wF = bitmap.Width * bitmap.Height - wB;
+            if (wF == 0) break;
+
+            sumB += i * histogram[i];
+            var meanB = sumB / wB;
+            var meanF = (sum - sumB) / wF;
+            var variance = wB * wF * (meanB - meanF) * (meanB - meanF);
+
+            if (!(variance > maxVariance))
             {
-                wB += histograms[j][i];
-                if (wB == 0) continue;
-
-                double wF = bitmap.Width * bitmap.Height - wB;
-                if (wF == 0) break;
-
-                sumB += i * histograms[j][i];
-                var meanB = sumB / wB;
-                var meanF = (sum - sumB) / wF;
-                var variance = wB * wF * (meanB - meanF) * (meanB - meanF);
-
-                if (!(variance > maxVariance))
-                {
-                    continue;
-                }
-
-                maxVariance = variance;
-                threshold = i;
+                continue;
             }
+
+            maxVariance = variance;
+            threshold = i;
         }
 
         return bitmap.ThresholdFilter(threshold);
@@ -94,16 +91,14 @@ public static class FilteringExtension
         }
 
         var filteredMap = new ColorSpace[bitmap.Width, bitmap.Height];
+        _kernelBuffer = new ColorSpace[kernelRadius * 2 + 1, kernelRadius * 2 + 1];
         for (int x = 0; x < bitmap.Width; x++)
         {
             for (int y = 0; y < bitmap.Height; y++)
             {
-                var neighbors = bitmap.GetNeighbors(x, y, kernelRadius);
-                var sortedNeighbors = new int[neighbors.Length];
-                Array.Copy(neighbors, sortedNeighbors, neighbors.Length);
-                Array.Sort(sortedNeighbors);
-                var median = sortedNeighbors[sortedNeighbors.Length / 2];
-                filteredMap[x, y] = new ColorSpace(median, median, median);
+                var neighbors = bitmap.GetNeighborsColorSpaces(x, y, kernelRadius);
+                var median = FindMedian(neighbors);
+                filteredMap[x, y] = new ColorSpace(median.First, median.Second, median.Third);
             }
         }
 
@@ -115,24 +110,50 @@ public static class FilteringExtension
             bitmap.IsThirdVisible);
     }
 
-    public static PortableBitmap GaussianFilter(this PortableBitmap bitmap, double sigma)
+    private static ColorSpace FindMedian(ColorSpace[,] matrix)
     {
-        if (sigma <= 0)
+        Span<ColorSpace> span = stackalloc ColorSpace[matrix.GetLength(0) * matrix.GetLength(1)];
+
+        var index = 0;
+        for (int i = 0; i < matrix.GetLength(0); i++)
+        {
+            for (int j = 0; j < matrix.GetLength(1); j++)
+            {
+                span[index++] = matrix[i, j];
+            }
+        }
+
+        span.Sort(
+            (color, other) =>
+                (Coefficient.Denormalize(color.First)
+               + Coefficient.Denormalize(color.Second)
+               + Coefficient.Denormalize(color.Third))
+              / 3
+              - (Coefficient.Denormalize(other.First)
+               + Coefficient.Denormalize(other.Second)
+               + Coefficient.Denormalize(other.Third))
+              / 3);
+        return span[span.Length / 2];
+    }
+
+    public static PortableBitmap GaussianFilter(this PortableBitmap bitmap, int sigma)
+    {
+        if (sigma < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(sigma), sigma, "Sigma must be positive");
         }
 
-        var kernelRadius = (int)Math.Ceiling(3 * sigma);
+        var kernelRadius = 3 * sigma;
         var kernelSize = kernelRadius * 2 + 1;
-        var kernel = new double[kernelSize, kernelSize];
-        var sum = 0.0;
+        var kernel = new float[kernelSize, kernelSize];
+        var sum = 0.0f;
         for (int x = 0; x < kernelSize; x++)
 
         for (int y = 0; y < kernelSize; y++)
         {
             var dx = x - kernelRadius;
             var dy = y - kernelRadius;
-            kernel[x, y] = Math.Exp(-0.5 * (dx * dx + dy * dy) / (sigma * sigma)) / (2 * Math.PI * sigma * sigma);
+            kernel[x, y] = float.Exp(-0.5f * (dx * dx + dy * dy) / (sigma * sigma)) / (2 * float.Pi * sigma * sigma);
             sum += kernel[x, y];
         }
 
@@ -144,15 +165,16 @@ public static class FilteringExtension
             }
         }
 
+        _kernelBuffer = new ColorSpace[kernelSize, kernelSize];
         var filteredMap = new ColorSpace[bitmap.Width, bitmap.Height];
         for (int x = 0; x < bitmap.Width; x++)
         {
             for (int y = 0; y < bitmap.Height; y++)
             {
                 var neighbors = bitmap.GetNeighborsColorSpaces(x, y, kernelRadius);
-                var color1 = 0.0;
-                var color2 = 0.0;
-                var color3 = 0.0;
+                var color1 = 0.0f;
+                var color2 = 0.0f;
+                var color3 = 0.0f;
                 for (int i = 0; i < kernelSize; i++)
                 {
                     for (int j = 0; j < kernelSize; j++)
@@ -164,7 +186,10 @@ public static class FilteringExtension
                     }
                 }
 
-                filteredMap[x, y] = new ColorSpace((int)color1, (int)color2, (int)color3);
+                filteredMap[x, y] = new ColorSpace(
+                    float.Clamp(color1, 0, 1),
+                    float.Clamp(color2, 0, 1),
+                    float.Clamp(color3, 0, 1));
             }
         }
 
@@ -187,6 +212,7 @@ public static class FilteringExtension
         }
 
         var kernelSize = kernelRadius * 2 + 1;
+        _kernelBuffer = new ColorSpace[kernelSize, kernelSize];
         var filteredMap = new ColorSpace[bitmap.Width, bitmap.Height];
         for (int x = 0; x < bitmap.Width; x++)
         {
@@ -223,6 +249,7 @@ public static class FilteringExtension
 
     public static PortableBitmap SobelFilter(this PortableBitmap bitmap)
     {
+        _kernelBuffer = new ColorSpace[3, 3];
         var filteredMap = new ColorSpace[bitmap.Width, bitmap.Height];
         for (int x = 0; x < bitmap.Width; x++)
         {
@@ -230,24 +257,24 @@ public static class FilteringExtension
             {
                 var neighbors = bitmap.GetNeighborsColorSpaces(x, y, 1);
                 var gx = neighbors[0, 0].First * -1
-                         + neighbors[0, 2].First * 1
-                         + neighbors[1, 0].First * -2
-                         + neighbors[1, 2].First * 2
-                         + neighbors[2, 0].First * -1
-                         + neighbors[2, 2].First * 1;
+                       + neighbors[0, 2].First * 1
+                       + neighbors[1, 0].First * -2
+                       + neighbors[1, 2].First * 2
+                       + neighbors[2, 0].First * -1
+                       + neighbors[2, 2].First * 1;
                 var gy = neighbors[0, 0].First * -1
-                         + neighbors[2, 0].First * 1
-                         + neighbors[0, 1].First * -2
-                         + neighbors[2, 1].First * 2
-                         + neighbors[0, 2].First * -1
-                         + neighbors[2, 2].First * 1;
-                var g = Math.Sqrt(gx * gx + gy * gy);
-                if (g > 255)
+                       + neighbors[2, 0].First * 1
+                       + neighbors[0, 1].First * -2
+                       + neighbors[2, 1].First * 2
+                       + neighbors[0, 2].First * -1
+                       + neighbors[2, 2].First * 1;
+                var g = float.Sqrt(gx * gx + gy * gy);
+                if (g > 1)
                 {
-                    g = 255;
+                    g = 1;
                 }
 
-                filteredMap[x, y] = new ColorSpace((int)g, (int)g, (int)g);
+                filteredMap[x, y] = new ColorSpace(g, g, g);
             }
         }
 
@@ -266,6 +293,7 @@ public static class FilteringExtension
             throw new ArgumentOutOfRangeException(nameof(sharpness), sharpness, "Sharpness must be between 0 and 1");
         }
 
+        _kernelBuffer = new ColorSpace[3, 3];
         var weights = new float[3, bitmap.Width, bitmap.Height];
         var filteredMap = new ColorSpace[bitmap.Width, bitmap.Height];
         for (int x = 0; x < bitmap.Width; x++)
@@ -326,56 +354,29 @@ public static class FilteringExtension
             bitmap.IsThirdVisible);
     }
 
-    private static int[] GetNeighbors(this PortableBitmap bitmap, int x, int y, int kernelRadius)
-    {
-        var kernelSize = kernelRadius * 2 + 1;
-        var neighbors = new int[kernelSize * kernelSize];
-        var index = 0;
-        for (int i = x - kernelRadius; i <= x + kernelRadius; i++)
-        {
-            for (int j = y - kernelRadius; j <= y + kernelRadius; j++)
-            {
-                if (i < 0 || i >= bitmap.Width || j < 0 || j >= bitmap.Height)
-                {
-                    neighbors[index++] = bitmap.GetBorderColor(i, j);
-                }
-                else
-                {
-                    var color = bitmap.GetPixel(i, j);
-                    var averageColor = (int)(color.First + color.Second + color.Third) / 3;
-                    neighbors[index++] = averageColor;
-                }
-            }
-        }
-
-        return neighbors;
-    }
+    private static ColorSpace[,] _kernelBuffer;
 
     private static ColorSpace[,] GetNeighborsColorSpaces(this PortableBitmap bitmap, int x, int y, int kernelRadius)
     {
-        var kernelSize = kernelRadius * 2 + 1;
-        var neighbors = new ColorSpace[kernelSize, kernelSize];
         for (int i = x - kernelRadius; i <= x + kernelRadius; i++)
         {
             for (int j = y - kernelRadius; j <= y + kernelRadius; j++)
             {
                 if (i < 0 || i >= bitmap.Width || j < 0 || j >= bitmap.Height)
                 {
-                    neighbors[i - (x - kernelRadius), j - (y - kernelRadius)] =
-                        new ColorSpace(bitmap.GetBorderColor(i, j), bitmap.GetBorderColor(i, j),
-                            bitmap.GetBorderColor(i, j));
+                    _kernelBuffer[i - (x - kernelRadius), j - (y - kernelRadius)] = bitmap.GetBorderColor(i, j);
                 }
                 else
                 {
-                    neighbors[i - (x - kernelRadius), j - (y - kernelRadius)] = bitmap.GetPixel(i, j);
+                    _kernelBuffer[i - (x - kernelRadius), j - (y - kernelRadius)] = bitmap.GetPixel(i, j);
                 }
             }
         }
 
-        return neighbors;
+        return _kernelBuffer;
     }
 
-    private static int GetBorderColor(this PortableBitmap bitmap, int x, int y)
+    private static ColorSpace GetBorderColor(this PortableBitmap bitmap, int x, int y)
     {
         if (x < 0)
         {
@@ -395,8 +396,6 @@ public static class FilteringExtension
             y = bitmap.Height - 1;
         }
 
-        var color = bitmap.GetPixel(x, y);
-
-        return (int)(color.First + color.Second + color.Third) / 3;
+        return bitmap.GetPixel(x, y);
     }
 }
