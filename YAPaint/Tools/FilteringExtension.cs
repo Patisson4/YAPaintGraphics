@@ -376,7 +376,6 @@ public static class FilteringExtension
                 float minB = float.MaxValue;
                 float maxB = 0.0f;
 
-                float contrastWeight = 0f;
                 for (int i = 1; i < 4; i++)
                 {
                     for (int j = 1; j < 4; j++)
@@ -384,14 +383,19 @@ public static class FilteringExtension
                         if (i == 2 && j == 1 || i == 1 && j == 2 || i == 2 && j == 3 || i == 3 && j == 2 ||
                             i == 2 && j == 2)
                         {
+                            minR = Math.Min(minG, neighbors[i, j].First);
+                            maxR = Math.Max(maxG, neighbors[i, j].First);
                             minG = Math.Min(minG, neighbors[i, j].Second);
                             maxG = Math.Max(maxG, neighbors[i, j].Second);
+                            minB = Math.Min(minG, neighbors[i, j].Third);
+                            maxB = Math.Max(maxG, neighbors[i, j].Third);
                         }
                     }
                 }
                 
-                contrastWeight = 1f / (1.0f / 32.0f + maxG - maxG);
-                s *= contrastWeight;
+                float sR = s * (1.0f / 32.0f + maxR - maxR);
+                float sG = s * (1.0f / 32.0f + maxG - maxG);
+                float sB = s * (1.0f / 32.0f + maxB - maxB);
                 
                 for (int i = 2; i < 5; i++)
                 {
@@ -400,14 +404,19 @@ public static class FilteringExtension
                         if (i == 3 && j == 1 || i == 2 && j == 2 || i == 3 && j == 3 || i == 4 && j == 2 ||
                             i == 3 && j == 2)
                         {
+                            minR = Math.Min(minG, neighbors[i, j].First);
+                            maxR = Math.Max(maxG, neighbors[i, j].First);
                             minG = Math.Min(minG, neighbors[i, j].Second);
                             maxG = Math.Max(maxG, neighbors[i, j].Second);
+                            minB = Math.Min(minG, neighbors[i, j].Third);
+                            maxB = Math.Max(maxG, neighbors[i, j].Third);
                         }
                     }
                 }
                 
-                contrastWeight = 1f / (1.0f / 32.0f + maxG - maxG);
-                t *= contrastWeight;
+                float tR = t * (1.0f / 32.0f + maxR - maxR);
+                float tG = t * (1.0f / 32.0f + maxG - maxG);
+                float tB = t * (1.0f / 32.0f + maxB - maxB);
                 
                 for (int i = 1; i < 4; i++)
                 {
@@ -416,14 +425,19 @@ public static class FilteringExtension
                         if (i == 2 && j == 2 || i == 1 && j == 3 || i == 2 && j == 4 || i == 3 && j == 3 ||
                             i == 2 && j == 3)
                         {
+                            minR = Math.Min(minG, neighbors[i, j].First);
+                            maxR = Math.Max(maxG, neighbors[i, j].First);
                             minG = Math.Min(minG, neighbors[i, j].Second);
                             maxG = Math.Max(maxG, neighbors[i, j].Second);
+                            minB = Math.Min(minG, neighbors[i, j].Third);
+                            maxB = Math.Max(maxG, neighbors[i, j].Third);
                         }
                     }
                 }
                 
-                contrastWeight = 1f / (1.0f / 32.0f + maxG - maxG);
-                u *= contrastWeight;
+                float uR = u * (1.0f / 32.0f + maxR - maxR);
+                float uG = u * (1.0f / 32.0f + maxG - maxG);
+                float uB = u * (1.0f / 32.0f + maxB - maxB);
                 
                 for (int i = 2; i < 5; i++)
                 {
@@ -432,46 +446,51 @@ public static class FilteringExtension
                         if (i == 3 && j == 2 || i == 2 && j == 3 || i == 3 && j == 4 || i == 4 && j == 3 ||
                             i == 3 && j == 3)
                         {
+                            minR = Math.Min(minG, neighbors[i, j].First);
+                            maxR = Math.Max(maxG, neighbors[i, j].First);
                             minG = Math.Min(minG, neighbors[i, j].Second);
                             maxG = Math.Max(maxG, neighbors[i, j].Second);
+                            minB = Math.Min(minG, neighbors[i, j].Third);
+                            maxB = Math.Max(maxG, neighbors[i, j].Third);
                         }
                     }
                 }
                 
-                contrastWeight = 1f / (1.0f / 32.0f + maxG - maxG);
-                v *= contrastWeight;
+                float vR = v * (1.0f / 32.0f + maxR - maxR);
+                float vG = v * (1.0f / 32.0f + maxG - maxG);
+                float vB = v * (1.0f / 32.0f + maxB - maxB);
                 
 
                 float sharpenedColorR =
-                    (neighbors[2, 1].First * wfR * s + neighbors[1, 2].First * wfR * s +
-                     neighbors[3, 1].First * wgR * t + neighbors[4, 2].First * wgR * t +
-                     neighbors[1, 3].First * wjR * u + neighbors[2, 4].First * wjR * u +
-                     neighbors[4, 3].First * wkR * v + neighbors[3, 4].First * wkR * v +
-                     neighbors[2, 2].First * (wgR * t + wjR * u + s) +
-                     neighbors[3, 2].First * (wfR * s + wkR * v + t) + neighbors[2, 3].First * (wfR * s + wkR * v + u) +
-                     neighbors[3, 3].First * (wgR * t + wjR * u + v)) /
-                    (2.0f * wfR * s + 2.0f * wgR * t + 2.0f * wjR * u + 2.0f * wkR * v + wgR * t + wjR * u + s +
-                     wfR * s + wkR * v + t + wfR * s + wkR * v + u + wgR * t + wjR * u + v);
+                    (neighbors[2, 1].First * wfR * sR + neighbors[1, 2].First * wfR * sR +
+                     neighbors[3, 1].First * wgR * tR + neighbors[4, 2].First * wgR * tR +
+                     neighbors[1, 3].First * wjR * uR + neighbors[2, 4].First * wjR * uR +
+                     neighbors[4, 3].First * wkR * vR + neighbors[3, 4].First * wkR * vR +
+                     neighbors[2, 2].First * (wgR * tR + wjR * uR + sR) +
+                     neighbors[3, 2].First * (wfR * sR + wkR * vR + tR) + neighbors[2, 3].First * (wfR * sR + wkR * vR + uR) +
+                     neighbors[3, 3].First * (wgR * tR + wjR * uR + vR)) /
+                    (2.0f * wfR * sR + 2.0f * wgR * tR + 2.0f * wjR * uR + 2.0f * wkR * vR + wgR * tR + wjR * uR + sR +
+                     wfR * sR + wkR * vR + tR + wfR * sR + wkR * vR + uR + wgR * tR + wjR * uR + vR);
                 float sharpenedColorG =
-                    (neighbors[2, 1].Second * wfG * s + neighbors[1, 2].Second * wfG * s +
-                     neighbors[3, 1].Second * wgG * t + neighbors[4, 2].Second * wgG * t +
-                     neighbors[1, 3].Second * wjG * u + neighbors[2, 4].Second * wjG * u +
-                     neighbors[4, 3].Second * wkG * v + neighbors[3, 4].Second * wkG * v +
-                     neighbors[2, 2].Second * (wgG * t + wjG * u + s) +
-                     neighbors[3, 2].Second * (wfG * s + wkG * v + t) + neighbors[2, 3].Second * (wfG * s + wkG * v + u) +
-                     neighbors[3, 3].Second * (wgG * t + wjG * u + v)) /
-                    (2.0f * wfG * s + 2.0f * wgG * t + 2.0f * wjG * u + 2.0f * wkG * v + wgG * t + wjG * u + s +
-                     wfG * s + wkG * v + t + wfG * s + wkG * v + u + wgG * t + wjG * u + v);
+                    (neighbors[2, 1].Second * wfG * sG + neighbors[1, 2].Second * wfG * sG +
+                     neighbors[3, 1].Second * wgG * tG + neighbors[4, 2].Second * wgG * tG +
+                     neighbors[1, 3].Second * wjG * uG + neighbors[2, 4].Second * wjG * uG +
+                     neighbors[4, 3].Second * wkG * vG + neighbors[3, 4].Second * wkG * vG +
+                     neighbors[2, 2].Second * (wgG * tG + wjG * uG + sG) +
+                     neighbors[3, 2].Second * (wfG * sG + wkG * vG + tG) + neighbors[2, 3].Second * (wfG * sG + wkG * vG + uG) +
+                     neighbors[3, 3].Second * (wgG * tG + wjG * uG + vG)) /
+                    (2.0f * wfG * sG + 2.0f * wgG * tG + 2.0f * wjG * uG + 2.0f * wkG * vG + wgG * tG + wjG * uG + sG +
+                     wfG * sG + wkG * vG + tG + wfG * sG + wkG * vG + uG + wgG * tG + wjG * uG + vG);
                 float sharpenedColorB =
-                    (neighbors[2, 1].Third * wfB * s + neighbors[1, 2].Third * wfB * s +
-                     neighbors[3, 1].Third * wgB * t + neighbors[4, 2].Third * wgB * t +
-                     neighbors[1, 3].Third * wjB * u + neighbors[2, 4].Third * wjB * u +
-                     neighbors[4, 3].Third * wkB * v + neighbors[3, 4].Third * wkB * v +
-                     neighbors[2, 2].Third * (wgB * t + wjB * u + s) +
-                     neighbors[3, 2].Third * (wfB * s + wkB * v + t) + neighbors[2, 3].Third * (wfB * s + wkB * v + u) +
-                     neighbors[3, 3].Third * (wgB * t + wjB * u + v)) /
-                    (2.0f * wfB * s + 2.0f * wgB * t + 2.0f * wjB * u + 2.0f * wkB * v + wgB * t + wjB * u + s +
-                     wfB * s + wkB * v + t + wfB * s + wkB * v + u + wgB * t + wjB * u + v);
+                    (neighbors[2, 1].Third * wfB * sB + neighbors[1, 2].Third * wfB * sB +
+                     neighbors[3, 1].Third * wgB * tB + neighbors[4, 2].Third * wgB * tB +
+                     neighbors[1, 3].Third * wjB * uB + neighbors[2, 4].Third * wjB * uB +
+                     neighbors[4, 3].Third * wkB * vB + neighbors[3, 4].Third * wkB * vB +
+                     neighbors[2, 2].Third * (wgB * tB + wjB * uB + sB) +
+                     neighbors[3, 2].Third * (wfB * sB + wkB * vB + tB) + neighbors[2, 3].Third * (wfB * sB + wkB * vB + uB) +
+                     neighbors[3, 3].Third * (wgB * tB + wjB * uB + vB)) /
+                    (2.0f * wfB * sB + 2.0f * wgB * tB + 2.0f * wjB * uB + 2.0f * wkB * vB + wgB * tB + wjB * uB + sB +
+                     wfB * sB + wkB * vB + tB + wfB * sB + wkB * vB + uB + wgB * tB + wjB * uB + vB);
 
                 sharpenedColorR = float.Clamp(sharpenedColorR, 0, 1);
                 sharpenedColorG = float.Clamp(sharpenedColorG, 0, 1);
