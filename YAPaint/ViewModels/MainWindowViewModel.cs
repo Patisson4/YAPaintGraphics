@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -6,13 +6,15 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Media.Imaging;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using ScottPlot;
 using YAPaint.Models;
 using YAPaint.Models.ColorSpaces;
 using YAPaint.Models.ExtraColorSpaces;
 using YAPaint.Tools;
-using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
+using YAPaint.Views;
 
 namespace YAPaint.ViewModels;
 
@@ -23,7 +25,7 @@ public class MainWindowViewModel : ViewModelBase
         new FileDialogFilter { Name = "Portable Bitmap", Extensions = { "pnm", "pbm", "pgm", "ppm" } },
         new FileDialogFilter { Name = "All", Extensions = { "*" } },
     };
-    
+
     private static readonly List<FileDialogFilter> PngFileFilters = new List<FileDialogFilter>
     {
         new FileDialogFilter { Name = "Portable Network Graphics", Extensions = { "png" } },
@@ -57,6 +59,13 @@ public class MainWindowViewModel : ViewModelBase
     private bool _isSecondChannelVisible = true;
     private bool _isThirdChannelVisible = true;
 
+    private readonly MainWindow _view;
+
+    public MainWindowViewModel(MainWindow view)
+    {
+        _view = view;
+    }
+
     [Reactive]
     public string Message { get; set; } = "Timings will be displayed here";
 
@@ -84,7 +93,7 @@ public class MainWindowViewModel : ViewModelBase
     }
 
     [Reactive]
-    public AvaloniaBitmap AvaloniaImage { get; set; }
+    public WriteableBitmap AvaloniaImage { get; set; }
 
     public static IReadOnlyCollection<string> ThreeChannelColorSpaceNames { get; } = SpaceTypes
         .Where(t => t.GetInterfaces().Contains(typeof(IColorConverter)))
@@ -107,7 +116,23 @@ public class MainWindowViewModel : ViewModelBase
     
     [Reactive]
     public float FocalPointY { get; set; }
+
+    [Reactive]
+    public bool IsHistogramVisible { get; private set; } = false;
+
     public CultureInfo InvariantCultureInfo { get; } = CultureInfo.InvariantCulture;
+
+    [Reactive]
+    public WriteableBitmap Histogram1 { get; set; }
+
+    [Reactive]
+    public WriteableBitmap Histogram2 { get; set; }
+
+    [Reactive]
+    public WriteableBitmap Histogram3 { get; set; }
+
+    [Reactive]
+    public float Threshold { get; set; }
 
     public async Task OpenPnm()
     {
@@ -146,7 +171,7 @@ public class MainWindowViewModel : ViewModelBase
             MyFileLogger.Log("ERR", $"{e}\n");
         }
     }
-    
+
     public async Task OpenPng()
     {
         try
@@ -173,7 +198,7 @@ public class MainWindowViewModel : ViewModelBase
                 _isThirdChannelVisible);
 
             Gamma = float.Abs(gamma + 1) < float.Epsilon ? 0f : gamma;
-            
+
             AvaloniaImage = _portableBitmap.ToAvalonia();
 
             MyFileLogger.SharedTimer.Stop();
@@ -402,5 +427,57 @@ public class MainWindowViewModel : ViewModelBase
     {
         _portableBitmap = _portableBitmap.ScaleBSpline(NewWidth, NewHeight, FocalPointX, FocalPointY);
         AvaloniaImage = _portableBitmap.ToAvalonia();
+
+    public void DrawHistograms()
+    {
+        try
+        {
+            var histograms = BarGrapher.CreateBarGraphs(_portableBitmap);
+            var plot = new Plot();
+
+            plot.AddBar(histograms[0]);
+            Histogram1 = plot.Render().ToAvalonia();
+
+            plot.Clear();
+            plot.AddBar(histograms[1]);
+            Histogram2 = plot.Render().ToAvalonia();
+
+            plot.Clear();
+            plot.AddBar(histograms[2]);
+            Histogram3 = plot.Render().ToAvalonia();
+
+            IsHistogramVisible = true;
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void CorrectIntensity()
+    {
+        try
+        {
+            if (Threshold < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(Threshold),
+                    Threshold,
+                    $"{nameof(Threshold)} should be non-negative");
+            }
+
+            if (Threshold < 0.001)
+            {
+                AvaloniaImage = _portableBitmap.ToAvalonia();
+                return;
+            }
+
+            IntensityCorrector.CorrectIntensity(ref _portableBitmap, Threshold);
+            AvaloniaImage = _portableBitmap.ToAvalonia();
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
     }
 }
