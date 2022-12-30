@@ -18,7 +18,10 @@ public class PortableBitmap
         bool isSecondVisible = true,
         bool isThirdVisible = true)
     {
-        if (map.Length <= 0)
+        Width = map.GetLength(0);
+        Height = map.GetLength(1);
+
+        if (Width <= 0 || Height <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(map), map, "Bitmap cannot be empty");
         }
@@ -27,8 +30,6 @@ public class PortableBitmap
         IsSecondVisible = isSecondVisible;
         IsThirdVisible = isThirdVisible;
 
-        Width = map.GetLength(0);
-        Height = map.GetLength(1);
         ColorConverter = colorConverter;
 
         _map = new ColorSpace[Width, Height];

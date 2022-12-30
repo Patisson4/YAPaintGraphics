@@ -1,41 +1,50 @@
 ﻿using System;
-using Avalonia;
+using System.Drawing;
 using YAPaint.Models;
+using Point = Avalonia.Point;
 
 namespace YAPaint.Tools;
 
-public class ImageScaler
+public static class ImageScaler
 {
-    public PortableBitmap ScaleImageNearestNeighbor(PortableBitmap bitmap, int newWidth, int newHeight,
-        Point focalPoint)
+    public static PortableBitmap ScaleNearestNeighbor(this PortableBitmap bitmap, float newWidth, float newHeight, float focalPointX, float focalPointY)
     {
-        var newBitmap = new PortableBitmap(new ColorSpace[newWidth, newHeight],
+        var newBitmap = new PortableBitmap(new ColorSpace[(int)(newWidth * bitmap.Width), (int)(newHeight *
+                bitmap.Height)],
             bitmap.ColorConverter,
             true, true, true);
-        var scaleX = (float)newWidth / bitmap.Width;
-        var scaleY = (float)newHeight / bitmap.Height;
+        
+        var denormalizedNewWidth = Coefficient.Denormalize(newWidth);
+        var denormalizedNewHeight = Coefficient.Denormalize(newHeight);
+        
+        var scaleX = bitmap.Width / denormalizedNewWidth;
+        var scaleY = bitmap.Height / denormalizedNewHeight;
 
-        var newFocalPoint = new Point((int)(focalPoint.X * scaleX), (int)(focalPoint.Y * scaleY));
-
-        for (var x = 0; x < newWidth; x++)
+        var denormalizedFocalPointX = focalPointX * bitmap.Width;
+        var denormalizedFocalPointY = focalPointY * bitmap.Height;
+        
+        for (var j = 0; j < bitmap.Height; j++)
         {
-            for (var y = 0; y < newHeight; y++)
+            for (var i = 0; i < bitmap.Width; i++)
             {
-                var nearestX = (int)((x - newFocalPoint.X) / scaleX + focalPoint.X);
-                var nearestY = (int)((y - newFocalPoint.Y) / scaleY + focalPoint.Y);
+                var x = (int)((i - denormalizedFocalPointX) * scaleX + denormalizedFocalPointX);
+                var y = (int)((j - denormalizedFocalPointY) * scaleY + denormalizedFocalPointY);
 
-                var color = bitmap.GetPixel(nearestX, nearestY);
+                x = Math.Clamp(x, 0, denormalizedNewWidth - 1);
+                y = Math.Clamp(y, 0, denormalizedNewHeight - 1);
 
-                newBitmap.SetPixel(x, y, color);
+                newBitmap.SetPixel(i, j, bitmap.GetPixel(x, y));
             }
         }
 
         return newBitmap;
     }
 
-    public static PortableBitmap ScaleBilinear(PortableBitmap bitmap, int newWidth, int newHeight, Point focalPoint)
+
+    public static PortableBitmap ScaleBilinear(this PortableBitmap bitmap, float newWidth, float newHeight,
+        Point focalPoint)
     {
-        var newBitmap = new PortableBitmap(new ColorSpace[newWidth, newHeight],
+        var newBitmap = new PortableBitmap(new ColorSpace[(int)newWidth * bitmap.Width, (int)newHeight * bitmap.Height],
             bitmap.ColorConverter,
             true, true, true);
 
@@ -52,7 +61,7 @@ public class ImageScaler
                 var srcY = (float)((x - newFocalPoint.X) / scaleX + focalPoint.X);
                 var srcX1 = srcX;
                 var srcX2 = srcX1 + 1;
-                var srcY1 = (int)srcY;
+                var srcY1 = srcY;
                 var srcY2 = srcY1 + 1;
 
                 if (srcX2 >= bitmap.Width || srcY2 >= bitmap.Height)
@@ -60,10 +69,10 @@ public class ImageScaler
                     continue;
                 }
 
-                var c1 = bitmap.GetPixel((int)(srcX1 * bitmap.Width), srcY1 * bitmap.Height);
-                var c2 = bitmap.GetPixel((int)(srcX2 * bitmap.Width), srcY1 * bitmap.Height);
-                var c3 = bitmap.GetPixel((int)(srcX1 * bitmap.Width), srcY2 * bitmap.Height);
-                var c4 = bitmap.GetPixel((int)(srcX2 * bitmap.Width), srcY2 * bitmap.Height);
+                var c1 = bitmap.GetPixel((int)(srcX1 * bitmap.Width), (int)srcY1 * bitmap.Height);
+                var c2 = bitmap.GetPixel((int)(srcX2 * bitmap.Width), (int)srcY1 * bitmap.Height);
+                var c3 = bitmap.GetPixel((int)(srcX1 * bitmap.Width), (int)srcY2 * bitmap.Height);
+                var c4 = bitmap.GetPixel((int)(srcX2 * bitmap.Width), (int)srcY2 * bitmap.Height);
 
                 var w1 = (srcX2 - srcX) * (srcY2 - srcY);
                 var w2 = (srcX - srcX1) * (srcY2 - srcY);
@@ -83,9 +92,10 @@ public class ImageScaler
         return newBitmap;
     }
 
-    public PortableBitmap ScaleLanczos3(PortableBitmap bitmap, int newWidth, int newHeight, Point focalPoint)
+    public static PortableBitmap ScaleLanczos3(this PortableBitmap bitmap, float newWidth, float newHeight,
+        Point focalPoint)
     {
-        var result = new PortableBitmap(new ColorSpace[newWidth, newHeight],
+        var newBitmap = new PortableBitmap(new ColorSpace[(int)newWidth * bitmap.Width, (int)newHeight * bitmap.Height],
             bitmap.ColorConverter,
             true, true, true);
 
@@ -111,20 +121,26 @@ public class ImageScaler
 
                 var sourceColor = bitmap.GetPixel((int)sourceX, (int)sourceY);
 
-                var currentColor = result.GetPixel(x, y);
+                var currentColor = newBitmap.GetPixel(x, y);
 
-                var newR = (float)Math.Clamp(Coefficient.Denormalize(currentColor.First) + Coefficient.Denormalize(sourceColor.First) * filter, 0, 255);
-                var newG = (float)Math.Clamp(Coefficient.Denormalize(currentColor.Second) + Coefficient.Denormalize(sourceColor.Second) * filter, 0, 255);
-                var newB = (float)Math.Clamp(Coefficient.Denormalize(currentColor.Third) + Coefficient.Denormalize(sourceColor.Third) * filter, 0, 255);
+                var newR = (float)Math.Clamp(
+                    Coefficient.Denormalize(currentColor.First) + Coefficient.Denormalize(sourceColor.First) * filter,
+                    0, 255);
+                var newG = (float)Math.Clamp(
+                    Coefficient.Denormalize(currentColor.Second) + Coefficient.Denormalize(sourceColor.Second) * filter,
+                    0, 255);
+                var newB = (float)Math.Clamp(
+                    Coefficient.Denormalize(currentColor.Third) + Coefficient.Denormalize(sourceColor.Third) * filter,
+                    0, 255);
 
-                result.SetPixel(x, y, new ColorSpace(newR, newG, newB));
+                newBitmap.SetPixel(x, y, new ColorSpace(newR, newG, newB));
             }
         }
 
-        return result;
+        return newBitmap;
     }
 
-    private double Lanczos3(double x)
+    private static double Lanczos3(double x)
     {
         return x switch
         {

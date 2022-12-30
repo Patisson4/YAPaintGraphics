@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -95,7 +96,18 @@ public class MainWindowViewModel : ViewModelBase
 
     [Reactive]
     public float Gamma { get; set; }
-
+    
+    [Reactive]
+    public float NewWidth { get; set; }
+    
+    [Reactive]
+    public float NewHeight { get; set; }
+    
+    [Reactive]
+    public float FocalPointX { get; set; }
+    
+    [Reactive]
+    public float FocalPointY { get; set; }
     public CultureInfo InvariantCultureInfo { get; } = CultureInfo.InvariantCulture;
 
     public async Task OpenPnm()
@@ -385,5 +397,10 @@ public class MainWindowViewModel : ViewModelBase
         {
             MyFileLogger.Log("ERR", $"{e}\n");
         }
+    }
+
+    public void Rescale()
+    {
+        AvaloniaImage = _portableBitmap.ScaleNearestNeighbor(NewWidth, NewHeight, FocalPointX, FocalPointY).ToAvalonia();
     }
 }
