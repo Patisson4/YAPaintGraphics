@@ -14,8 +14,8 @@ public static class ImageScaler
             bitmap.ColorConverter,
             true, true, true);
         
-        var denormalizedNewWidth = Coefficient.Denormalize(newWidth);
-        var denormalizedNewHeight = Coefficient.Denormalize(newHeight);
+        var denormalizedNewWidth = (int)(newWidth * bitmap.Width);
+        var denormalizedNewHeight = (int)(newHeight * bitmap.Height);
         
         var scaleX = bitmap.Width / denormalizedNewWidth;
         var scaleY = bitmap.Height / denormalizedNewHeight;
@@ -33,7 +33,7 @@ public static class ImageScaler
                 x = Math.Clamp(x, 0, denormalizedNewWidth - 1);
                 y = Math.Clamp(y, 0, denormalizedNewHeight - 1);
 
-                newBitmap.SetPixel(i, j, bitmap.GetPixel(x, y));
+                newBitmap.SetPixel(x, y, bitmap.GetPixel(i, j));
             }
         }
 
