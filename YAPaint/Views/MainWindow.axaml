@@ -1,9 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:YAPaint.ViewModels"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        WindowState="Maximized"
         x:Class="YAPaint.Views.MainWindow"
         Icon="/Assets/1158164.png"
         Title="YAPaint">
@@ -35,30 +33,54 @@
                     HorizontalAlignment="Right"
                     Spacing="10"
                     Margin="5"
-                    Width="150">
+                    Width="300">
             <TextBlock Text="ColorSpace:" VerticalAlignment="Center" />
-            <ComboBox SelectedItem="{Binding SelectedColorSpace}"
-                      Items="{Binding ColorSpaceNames}"
-                      PointerWheelChanged="InputElement_OnPointerWheelChanged"
-                      SelectionChanged="ColorSpacesComboBox_OnSelectionChanged" />
-            <CheckBox IsChecked="True" Content="1" Command="{Binding ToggleFirstChannel}" />
-            <CheckBox IsChecked="True" Content="2" Command="{Binding ToggleSecondChannel}" />
-            <CheckBox IsChecked="True" Content="3" Command="{Binding ToggleThirdChannel}" />
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <ComboBox SelectedItem="{Binding SelectedColorSpace}"
+                          Items="{Binding ColorSpaceNames}"
+                          PointerWheelChanged="InputElement_OnPointerWheelChanged"
+                          SelectionChanged="ColorSpacesComboBox_OnSelectionChanged" />
+                <CheckBox IsChecked="True" Content="1" Command="{Binding ToggleFirstChannel}" />
+                <CheckBox IsChecked="True" Content="2" Command="{Binding ToggleSecondChannel}" />
+                <CheckBox IsChecked="True" Content="3" Command="{Binding ToggleThirdChannel}" />
+            </StackPanel>
             <TextBlock Text="Gamma:" VerticalAlignment="Center" />
-            <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
-                           Value="{Binding Gamma}"
-                           Minimum="0.0"
-                           Maximum="5.0"
-                           Increment="0.01"
-                           FormatString="{}{0:#,0.00}" />
-            <Button Content="Preview" Command="{Binding ApplyGamma}" />
-            <Button Content="Convert" Command="{Binding ConvertToGamma}" />
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
+                               Value="{Binding Gamma}"
+                               Minimum="0.0"
+                               Maximum="5.0"
+                               Increment="0.01"
+                               FormatString="{}{0:#,0.00}" />
+                <Button Content="Preview" Command="{Binding ApplyGamma}" />
+                <Button Content="Convert" Command="{Binding ConvertToGamma}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <TextBlock Text="Histograms:" VerticalAlignment="Center" />
+                <Button Content="Generate" Command="{Binding DrawHistograms}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
+                               Value="{Binding Threshold}"
+                               Minimum="0.0"
+                               Maximum="0.5"
+                               Increment="0.01"
+                               FormatString="{}{0:#,0.00}" />
+                <Button Content="Correct Intensity" Command="{Binding CorrectIntensity}" />
+            </StackPanel>
+            <StackPanel Orientation="Vertical" IsVisible="{Binding IsHistogramVisible}">
+                <Image Width="300" Source="{Binding Histogram1}" RenderOptions.BitmapInterpolationMode="Default" />
+                <Image Width="300" Source="{Binding Histogram2}" RenderOptions.BitmapInterpolationMode="Default" />
+                <Image Width="300" Source="{Binding Histogram3}" RenderOptions.BitmapInterpolationMode="Default" />
+            </StackPanel>
         </StackPanel>
         <TextBlock DockPanel.Dock="Bottom"
                    Margin="10"
                    HorizontalAlignment="Left"
                    Text="{Binding Message}" />
-        <Image Source="{Binding AvaloniaImage}" RenderOptions.BitmapInterpolationMode="Default" />
+        <Image Source="{Binding AvaloniaImage}"
+               RenderOptions.BitmapInterpolationMode="Default"
+               Margin="5" />
     </DockPanel>
 
 </Window>

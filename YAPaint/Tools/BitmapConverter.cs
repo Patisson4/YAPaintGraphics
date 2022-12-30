@@ -39,4 +39,31 @@ public static class BitmapConverter
 
         return writeableBitmap;
     }
+
+    public static unsafe WriteableBitmap ToAvalonia(this System.Drawing.Bitmap bitmap)
+    {
+        var writeableBitmap = new WriteableBitmap(
+            new PixelSize(bitmap.Width, bitmap.Height),
+            Dpi96,
+            PixelFormat.Rgba8888,
+            AlphaFormat.Unpremul);
+
+        using var bitmapLock = writeableBitmap.Lock();
+        int* pointer = (int*)bitmapLock.Address.ToPointer();
+
+        for (int j = 0; j < bitmap.Height; j++)
+        {
+            for (int i = 0; i < bitmap.Width; i++)
+            {
+                var color = bitmap.GetPixel(i, j);
+
+                // opposite left shifts because of reverse endianness
+                pointer[j * bitmap.Width + i] = color.R + (color.G << 8) + (color.B << 16) + (byte.MaxValue << 24);
+            }
+        }
+
+        MyFileLogger.Log("DBG", $"Converted to AvaloniaBitmap at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
+
+        return writeableBitmap;
+    }
 }
