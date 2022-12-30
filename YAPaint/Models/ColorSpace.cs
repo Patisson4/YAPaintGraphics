@@ -16,4 +16,9 @@ public readonly record struct ColorSpace(Coefficient First, Coefficient Second, 
     {
         return $"{Coefficient.Denormalize(First)} {Coefficient.Denormalize(Second)} {Coefficient.Denormalize(Third)}";
     }
+
+    public override string ToString()
+    {
+        return ToPlain();
+    }
 }
