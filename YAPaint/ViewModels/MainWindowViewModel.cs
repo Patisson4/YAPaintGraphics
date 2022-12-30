@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -104,6 +104,18 @@ public class MainWindowViewModel : ViewModelBase
 
     [Reactive]
     public float Gamma { get; set; }
+    
+    [Reactive]
+    public float NewWidth { get; set; }
+    
+    [Reactive]
+    public float NewHeight { get; set; }
+    
+    [Reactive]
+    public float FocalPointX { get; set; }
+    
+    [Reactive]
+    public float FocalPointY { get; set; }
 
     [Reactive]
     public bool IsHistogramVisible { get; private set; }
@@ -410,6 +422,11 @@ public class MainWindowViewModel : ViewModelBase
             MyFileLogger.Log("ERR", $"{e}\n");
         }
     }
+
+    public void Rescale()
+    {
+        _portableBitmap = _portableBitmap.ScaleBSpline(NewWidth, NewHeight, FocalPointX, FocalPointY);
+        AvaloniaImage = _portableBitmap.ToAvalonia();
 
     public void DrawHistograms()
     {
