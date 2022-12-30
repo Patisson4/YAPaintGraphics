@@ -230,17 +230,17 @@ public static class FilteringExtension
             {
                 var neighbors = bitmap.GetNeighborsColorSpaces(x, y, 1);
                 var gx = neighbors[0, 0].First * -1
-                       + neighbors[0, 2].First * 1
-                       + neighbors[1, 0].First * -2
-                       + neighbors[1, 2].First * 2
-                       + neighbors[2, 0].First * -1
-                       + neighbors[2, 2].First * 1;
+                         + neighbors[0, 2].First * 1
+                         + neighbors[1, 0].First * -2
+                         + neighbors[1, 2].First * 2
+                         + neighbors[2, 0].First * -1
+                         + neighbors[2, 2].First * 1;
                 var gy = neighbors[0, 0].First * -1
-                       + neighbors[2, 0].First * 1
-                       + neighbors[0, 1].First * -2
-                       + neighbors[2, 1].First * 2
-                       + neighbors[0, 2].First * -1
-                       + neighbors[2, 2].First * 1;
+                         + neighbors[2, 0].First * 1
+                         + neighbors[0, 1].First * -2
+                         + neighbors[2, 1].First * 2
+                         + neighbors[0, 2].First * -1
+                         + neighbors[2, 2].First * 1;
                 var g = Math.Sqrt(gx * gx + gy * gy);
                 if (g > 255)
                 {
@@ -259,51 +259,62 @@ public static class FilteringExtension
             bitmap.IsThirdVisible);
     }
 
-    public static PortableBitmap ContrastAdaptiveSharpening(this PortableBitmap bitmap, double sharpness)
+    public static PortableBitmap ContrastAdaptiveSharpening(this PortableBitmap bitmap, float sharpness)
     {
         if (sharpness is < 0 or > 1)
         {
             throw new ArgumentOutOfRangeException(nameof(sharpness), sharpness, "Sharpness must be between 0 and 1");
         }
 
+        var weights = new float[3, bitmap.Width, bitmap.Height];
         var filteredMap = new ColorSpace[bitmap.Width, bitmap.Height];
         for (int x = 0; x < bitmap.Width; x++)
         {
             for (int y = 0; y < bitmap.Height; y++)
             {
                 var neighbors = bitmap.GetNeighborsColorSpaces(x, y, 1);
-                var color1 = 0.0;
-                var color2 = 0.0;
-                var color3 = 0.0;
+                float minR = float.MaxValue;
+                float maxR = 0.0f;
+                float minG = float.MaxValue;
+                float maxG = 0.0f;
+                float minB = float.MaxValue;
+                float maxB = 0.0f;
                 for (int i = 0; i < 3; i++)
                 {
                     for (int j = 0; j < 3; j++)
                     {
-                        color1 += neighbors[i, j].First;
-                        color2 += neighbors[i, j].Second;
-                        color3 += neighbors[i, j].Third;
+                        if (i == 1 && j == 0 || i == 0 && j == 1 || i == 1 && j == 1 || i == 2 && j == 1 ||
+                            i == 1 && j == 2)
+                        {
+                            minR = Math.Min(minR, neighbors[i, j].First);
+                            maxR = Math.Max(maxR, neighbors[i, j].First);
+                            minG = Math.Min(minG, neighbors[i, j].Second);
+                            maxG = Math.Max(maxG, neighbors[i, j].Second);
+                            minB = Math.Min(minB, neighbors[i, j].Third);
+                            maxB = Math.Max(maxB, neighbors[i, j].Third);
+                        }
                     }
                 }
 
-                color1 /= 9;
-                color2 /= 9;
-                color3 /= 9;
-                var originalColor = bitmap.GetPixel(x, y);
-                var contrast = Math.Max(
-                    Math.Abs(originalColor.First - color1),
-                    Math.Abs(originalColor.Second - color2));
-                contrast = Math.Max(contrast, Math.Abs(originalColor.Third - color3));
-                var adjustedSharpness = sharpness * (contrast / 255);
-                var sharpenedColor1 = originalColor.First + (originalColor.First - color1) * adjustedSharpness;
-                var sharpenedColor2 = originalColor.Second + (originalColor.Second - color2) * adjustedSharpness;
-                var sharpenedColor3 = originalColor.Third + (originalColor.Third - color3) * adjustedSharpness;
-                if (sharpenedColor1 > 255) sharpenedColor1 = 255;
-                if (sharpenedColor2 > 255) sharpenedColor2 = 255;
-                if (sharpenedColor3 > 255) sharpenedColor3 = 255;
-                if (sharpenedColor1 < 0) sharpenedColor1 = 0;
-                if (sharpenedColor2 < 0) sharpenedColor2 = 0;
-                if (sharpenedColor3 < 0) sharpenedColor3 = 0;
-                filteredMap[x, y] = new ColorSpace((int)sharpenedColor1, (int)sharpenedColor2, (int)sharpenedColor3);
+                float knob = -0.125f * (1 - sharpness) + -0.2f * sharpness;
+                float w_R = float.Sqrt(float.Min(0 + minR, 1 - maxR) / maxR) * knob;
+                float w_G = float.Sqrt(float.Min(0 + minG, 1 - maxG) / maxG) * knob;
+                float w_B = float.Sqrt(float.Min(0 + minB, 1 - maxB) / maxB) * knob;
+                weights[0, x, y] = w_R;
+                weights[1, x, y] = w_G;
+                weights[2, x, y] = w_B;
+
+                float sharpenedColorR = float.Clamp((w_R * neighbors[1, 0].First + w_R * neighbors[0, 1].First +
+                                                     1 * neighbors[1, 1].First + w_R * neighbors[2, 1].First +
+                                                     w_R * neighbors[1, 2].First) / (w_R * 4 + 1), 0, 1);
+                float sharpenedColorG = float.Clamp((w_G * neighbors[1, 0].Second + w_G * neighbors[0, 1].Second +
+                                                     1 * neighbors[1, 1].Second + w_G * neighbors[2, 1].Second +
+                                                     w_G * neighbors[1, 2].Second) / (w_G * 4 + 1), 0, 1);
+                float sharpenedColorB = float.Clamp((w_B * neighbors[1, 0].Third + w_B * neighbors[0, 1].Third +
+                                                     1 * neighbors[1, 1].Third + w_B * neighbors[2, 1].Third +
+                                                     w_B * neighbors[1, 2].Third) / (w_B * 4 + 1), 0, 1);
+
+                filteredMap[x, y] = new ColorSpace(sharpenedColorR, sharpenedColorG, sharpenedColorB);
             }
         }
 
@@ -351,7 +362,8 @@ public static class FilteringExtension
                 if (i < 0 || i >= bitmap.Width || j < 0 || j >= bitmap.Height)
                 {
                     neighbors[i - (x - kernelRadius), j - (y - kernelRadius)] =
-                        new ColorSpace(bitmap.GetBorderColor(i, j), bitmap.GetBorderColor(i, j), bitmap.GetBorderColor(i, j));
+                        new ColorSpace(bitmap.GetBorderColor(i, j), bitmap.GetBorderColor(i, j),
+                            bitmap.GetBorderColor(i, j));
                 }
                 else
                 {
