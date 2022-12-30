@@ -345,6 +345,140 @@ public static class FilteringExtension
                 filteredMap[x, y] = new ColorSpace(sharpenedColorR, sharpenedColorG, sharpenedColorB);
             }
         }
+        
+        _kernelBuffer = new ColorSpace[5, 5];
+
+        for (int x = 0; x < bitmap.Width - 1; x++)
+        {
+            for (int y = 0; y < bitmap.Height - 1; y++)
+            {
+                var wfR = weights[0, x, y];
+                var wfG = weights[1, x, y];
+                var wfB = weights[2, x, y];
+                var wgR = weights[0, x + 1, y];
+                var wgG = weights[1, x + 1, y];
+                var wgB = weights[2, x + 1, y];
+                var wjR = weights[0, x, y + 1];
+                var wjG = weights[1, x, y + 1];
+                var wjB = weights[2, x, y + 1];
+                var wkR = weights[0, x + 1, y + 1];
+                var wkG = weights[1, x + 1, y + 1];
+                var wkB = weights[2, x + 1, y + 1];
+                float s = (1.0f - (float)x / bitmap.Width) * (1.0f - (float)y / bitmap.Height);
+                float t = (float)x / bitmap.Width * (1.0f - (float)y / bitmap.Height);
+                float u = (1.0f - (float)x / bitmap.Width) * (float)y / bitmap.Height;
+                float v = (float)x / bitmap.Width * (float)y / bitmap.Height;
+                var neighbors = bitmap.GetNeighborsColorSpaces(x, y, 2);
+                float minR = float.MaxValue;
+                float maxR = 0.0f;
+                float minG = float.MaxValue;
+                float maxG = 0.0f;
+                float minB = float.MaxValue;
+                float maxB = 0.0f;
+
+                float contrastWeight = 0f;
+                for (int i = 1; i < 4; i++)
+                {
+                    for (int j = 1; j < 4; j++)
+                    {
+                        if (i == 2 && j == 1 || i == 1 && j == 2 || i == 2 && j == 3 || i == 3 && j == 2 ||
+                            i == 2 && j == 2)
+                        {
+                            minG = Math.Min(minG, neighbors[i, j].Second);
+                            maxG = Math.Max(maxG, neighbors[i, j].Second);
+                        }
+                    }
+                }
+                
+                contrastWeight = 1f / (1.0f / 32.0f + maxG - maxG);
+                s *= contrastWeight;
+                
+                for (int i = 2; i < 5; i++)
+                {
+                    for (int j = 1; j < 4; j++)
+                    {
+                        if (i == 3 && j == 1 || i == 2 && j == 2 || i == 3 && j == 3 || i == 4 && j == 2 ||
+                            i == 3 && j == 2)
+                        {
+                            minG = Math.Min(minG, neighbors[i, j].Second);
+                            maxG = Math.Max(maxG, neighbors[i, j].Second);
+                        }
+                    }
+                }
+                
+                contrastWeight = 1f / (1.0f / 32.0f + maxG - maxG);
+                t *= contrastWeight;
+                
+                for (int i = 1; i < 4; i++)
+                {
+                    for (int j = 2; j < 5; j++)
+                    {
+                        if (i == 2 && j == 2 || i == 1 && j == 3 || i == 2 && j == 4 || i == 3 && j == 3 ||
+                            i == 2 && j == 3)
+                        {
+                            minG = Math.Min(minG, neighbors[i, j].Second);
+                            maxG = Math.Max(maxG, neighbors[i, j].Second);
+                        }
+                    }
+                }
+                
+                contrastWeight = 1f / (1.0f / 32.0f + maxG - maxG);
+                u *= contrastWeight;
+                
+                for (int i = 2; i < 5; i++)
+                {
+                    for (int j = 2; j < 5; j++)
+                    {
+                        if (i == 3 && j == 2 || i == 2 && j == 3 || i == 3 && j == 4 || i == 4 && j == 3 ||
+                            i == 3 && j == 3)
+                        {
+                            minG = Math.Min(minG, neighbors[i, j].Second);
+                            maxG = Math.Max(maxG, neighbors[i, j].Second);
+                        }
+                    }
+                }
+                
+                contrastWeight = 1f / (1.0f / 32.0f + maxG - maxG);
+                v *= contrastWeight;
+                
+
+                float sharpenedColorR =
+                    (neighbors[2, 1].First * wfR * s + neighbors[1, 2].First * wfR * s +
+                     neighbors[3, 1].First * wgR * t + neighbors[4, 2].First * wgR * t +
+                     neighbors[1, 3].First * wjR * u + neighbors[2, 4].First * wjR * u +
+                     neighbors[4, 3].First * wkR * v + neighbors[3, 4].First * wkR * v +
+                     neighbors[2, 2].First * (wgR * t + wjR * u + s) +
+                     neighbors[3, 2].First * (wfR * s + wkR * v + t) + neighbors[2, 3].First * (wfR * s + wkR * v + u) +
+                     neighbors[3, 3].First * (wgR * t + wjR * u + v)) /
+                    (2.0f * wfR * s + 2.0f * wgR * t + 2.0f * wjR * u + 2.0f * wkR * v + wgR * t + wjR * u + s +
+                     wfR * s + wkR * v + t + wfR * s + wkR * v + u + wgR * t + wjR * u + v);
+                float sharpenedColorG =
+                    (neighbors[2, 1].Second * wfG * s + neighbors[1, 2].Second * wfG * s +
+                     neighbors[3, 1].Second * wgG * t + neighbors[4, 2].Second * wgG * t +
+                     neighbors[1, 3].Second * wjG * u + neighbors[2, 4].Second * wjG * u +
+                     neighbors[4, 3].Second * wkG * v + neighbors[3, 4].Second * wkG * v +
+                     neighbors[2, 2].Second * (wgG * t + wjG * u + s) +
+                     neighbors[3, 2].Second * (wfG * s + wkG * v + t) + neighbors[2, 3].Second * (wfG * s + wkG * v + u) +
+                     neighbors[3, 3].Second * (wgG * t + wjG * u + v)) /
+                    (2.0f * wfG * s + 2.0f * wgG * t + 2.0f * wjG * u + 2.0f * wkG * v + wgG * t + wjG * u + s +
+                     wfG * s + wkG * v + t + wfG * s + wkG * v + u + wgG * t + wjG * u + v);
+                float sharpenedColorB =
+                    (neighbors[2, 1].Third * wfB * s + neighbors[1, 2].Third * wfB * s +
+                     neighbors[3, 1].Third * wgB * t + neighbors[4, 2].Third * wgB * t +
+                     neighbors[1, 3].Third * wjB * u + neighbors[2, 4].Third * wjB * u +
+                     neighbors[4, 3].Third * wkB * v + neighbors[3, 4].Third * wkB * v +
+                     neighbors[2, 2].Third * (wgB * t + wjB * u + s) +
+                     neighbors[3, 2].Third * (wfB * s + wkB * v + t) + neighbors[2, 3].Third * (wfB * s + wkB * v + u) +
+                     neighbors[3, 3].Third * (wgB * t + wjB * u + v)) /
+                    (2.0f * wfB * s + 2.0f * wgB * t + 2.0f * wjB * u + 2.0f * wkB * v + wgB * t + wjB * u + s +
+                     wfB * s + wkB * v + t + wfB * s + wkB * v + u + wgB * t + wjB * u + v);
+
+                sharpenedColorR = float.Clamp(sharpenedColorR, 0, 1);
+                sharpenedColorG = float.Clamp(sharpenedColorG, 0, 1);
+                sharpenedColorB = float.Clamp(sharpenedColorB, 0, 1);
+                filteredMap[x, y] = new ColorSpace(sharpenedColorR, sharpenedColorG, sharpenedColorB);
+            }
+        }
 
         return new PortableBitmap(
             filteredMap,
