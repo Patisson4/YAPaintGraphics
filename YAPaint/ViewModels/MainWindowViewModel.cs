@@ -465,13 +465,20 @@ public class MainWindowViewModel : ViewModelBase
     }
 
     [Reactive]
-    public int FilterThreshold { get; set; } = 10;
+    public int FilterThreshold { get; set; } = 100;
 
     public void ThresholdFilter()
     {
         try
         {
+            MyFileLogger.SharedTimer.Restart();
+
             AvaloniaImage = _portableBitmap.ThresholdFilter(FilterThreshold).ToAvalonia();
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Filtered in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
@@ -483,7 +490,14 @@ public class MainWindowViewModel : ViewModelBase
     {
         try
         {
+            MyFileLogger.SharedTimer.Restart();
+
             AvaloniaImage = _portableBitmap.OtsuThresholdFilter().ToAvalonia();
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Filtered in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
@@ -492,13 +506,20 @@ public class MainWindowViewModel : ViewModelBase
     }
 
     [Reactive]
-    public int KernelRadius { get; set; }
+    public int KernelRadius { get; set; } = 2;
 
     public void MedianFilter()
     {
         try
         {
+            MyFileLogger.SharedTimer.Restart();
+
             AvaloniaImage = _portableBitmap.MedianFilter(KernelRadius).ToAvalonia();
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Filtered in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
@@ -507,13 +528,20 @@ public class MainWindowViewModel : ViewModelBase
     }
 
     [Reactive]
-    public int Sigma { get; set; }
+    public int Sigma { get; set; } = 1;
 
     public void GaussianFilter()
     {
         try
         {
+            MyFileLogger.SharedTimer.Restart();
+
             AvaloniaImage = _portableBitmap.GaussianFilter(Sigma).ToAvalonia();
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Filtered in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
@@ -525,7 +553,14 @@ public class MainWindowViewModel : ViewModelBase
     {
         try
         {
+            MyFileLogger.SharedTimer.Restart();
+
             AvaloniaImage = _portableBitmap.BoxBlur(KernelRadius).ToAvalonia();
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Filtered in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
@@ -537,22 +572,36 @@ public class MainWindowViewModel : ViewModelBase
     {
         try
         {
+            MyFileLogger.SharedTimer.Restart();
+
             AvaloniaImage = _portableBitmap.SobelFilter().ToAvalonia();
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Filtered in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
             MyFileLogger.Log("ERR", $"{e}\n");
         }
     }
-    
+
     [Reactive]
-    public float Sharpness { get; set; }
+    public float Sharpness { get; set; } = 1;
 
     public void SharpFilter()
     {
         try
         {
+            MyFileLogger.SharedTimer.Restart();
+
             AvaloniaImage = _portableBitmap.ContrastAdaptiveSharpening(Sharpness).ToAvalonia();
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Filtered in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
