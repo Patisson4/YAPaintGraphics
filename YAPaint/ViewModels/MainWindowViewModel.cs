@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -401,7 +400,7 @@ public class MainWindowViewModel : ViewModelBase
 
     public void Rescale()
     {
-        _portableBitmap = _portableBitmap.ScaleLanczos3(NewWidth, NewHeight, FocalPointX, FocalPointY);
+        _portableBitmap = _portableBitmap.ScaleBSpline(NewWidth, NewHeight, FocalPointX, FocalPointY);
         AvaloniaImage = _portableBitmap.ToAvalonia();
     }
 }

@@ -10,8 +10,7 @@ public static class ImageScaler
     {
         var newBitmap = new PortableBitmap(new ColorSpace[(int)(scaleX * bitmap.Width), (int)(scaleY *
                 bitmap.Height)],
-            bitmap.ColorConverter,
-            true, true, true);
+            bitmap.ColorConverter);
 
         var denormalizedFocalPointX = focalPointX * scaleX * bitmap.Width;
         var denormalizedFocalPointY = focalPointY * scaleY * bitmap.Height;
@@ -149,83 +148,80 @@ public static class ImageScaler
         return new PortableBitmap(newMap, bitmap.ColorConverter);
     }
 
-    public static PortableBitmap Scale(this PortableBitmap bitmap, float scaleX, float scaleY, float focalPointX,
-        float focalPointY, float B = 0, float C = 0.5f)
+    public static PortableBitmap ScaleBSpline(this
+            PortableBitmap bitmap,
+        float scaleX,
+        float scaleY,
+        float focusX,
+        float focusY,
+        float B = 0,
+        float C = 0.5f)
     {
-        int newWidth = (int)Math.Round(bitmap.Width * scaleX);
-        int newHeight = (int)Math.Round(bitmap.Height * scaleY);
+        int newWidth = (int)(bitmap.Width * scaleX);
+        int newHeight = (int)(bitmap.Height * scaleY);
 
-        var scaledMap = new ColorSpace[newWidth, newHeight];
+        var newMap = new ColorSpace[newWidth, newHeight];
 
-        float sx = bitmap.Width / (float)newWidth;
-        float sy = bitmap.Height / (float)newHeight;
+        float focusOffsetX = focusX * newWidth;
+        float focusOffsetY = focusY * newHeight;
 
-        float centerX = bitmap.Width / 2f;
-        float centerY = bitmap.Height / 2f;
-
-        float focalPointOffsetX = focalPointX - centerX;
-        float focalPointOffsetY = focalPointY - centerY;
-
-        for (int x = 0; x < newWidth; x++)
+        for (int y = 0; y < newHeight; y++)
         {
-            for (int y = 0; y < newHeight; y++)
+            for (int x = 0; x < newWidth; x++)
             {
-                float pixelX = (x + focalPointOffsetX) * sx;
-                float pixelY = (y + focalPointOffsetY) * sy;
+                float xCoord = (x - focusOffsetX) / scaleX;
+                float yCoord = (y - focusOffsetY) / scaleY;
 
-                float[] weightsX = GetBSplineWeights(pixelX, B, C);
-                float[] weightsY = GetBSplineWeights(pixelY, B, C);
+                float red = 0;
+                float green = 0;
+                float blue = 0;
 
-                float r = 0, g = 0, b = 0;
-
-                for (int i = 0; i < weightsX.Length; i++)
+                for (int j = -1; j <= 2; j++)
                 {
-                    for (int j = 0; j < weightsY.Length; j++)
+                    for (int i = -1; i <= 2; i++)
                     {
-                        int px = (int)Math.Floor(pixelX) - 1 + i;
-                        int py = (int)Math.Floor(pixelY) - 1 + j;
+                        int x2 = (int)(xCoord + i);
+                        int y2 = (int)(yCoord + j);
 
-                        if (px >= 0 && px < bitmap.Width && py >= 0 && py < bitmap.Height)
+                        if (x2 < 0 || x2 >= bitmap.Width || y2 < 0 || y2 >= bitmap.Height)
                         {
-                            ColorSpace colorSpace = bitmap.GetPixel(px, py);
-
-                            r += weightsX[i] * weightsY[j] * colorSpace.First;
-                            g += weightsX[i] * weightsY[j] * colorSpace.Second;
-                            b += weightsX[i] * weightsY[j] * colorSpace.Third;
+                            continue;
                         }
+
+                        float kernelValue = BSplineKernel(i, B, C) * BSplineKernel(j, B, C);
+
+                        ColorSpace color = bitmap.GetPixel(x2, y2);
+
+                        red += kernelValue * color.First;
+                        green += kernelValue * color.Second;
+                        blue += kernelValue * color.Third;
                     }
                 }
 
-                ColorSpace scaledColorSpace = new ColorSpace(r, g, b);
-
-                scaledMap[x, y] = scaledColorSpace;
+                newMap[x, y] = new ColorSpace(
+                    float.Clamp(red, 0, 1),
+                    float.Clamp(green, 0, 1),
+                    float.Clamp(blue, 0, 1));
             }
         }
 
-        return new PortableBitmap(scaledMap, bitmap.ColorConverter, true, true, true);
+        return new PortableBitmap(newMap, bitmap.ColorConverter);
     }
 
-    private static float[] GetBSplineWeights(float x, float B, float C)
+    private static float BSplineKernel(float x, float B, float C)
     {
-        int floorX = (int)Math.Floor(x);
-
-        float[] weights = new float[4];
-
-        for (int i = 0; i < weights.Length; i++)
+        if (x < 0)
         {
-            float distance = x - (floorX - 1 + i);
-
-            weights[i] = (float)(
-                Math.Pow(1 + distance, 3) * (B + 2) -
-                Math.Pow(1 + distance, 2) * distance * (B + 3) +
-                (1 + distance) * Math.Pow(distance, 2) * (B * 2 + 3) -
-                Math.Pow(distance, 3) * (B + 1)
-            ) / 6f;
-
-            weights[i] = Math.Min(Math.Max(weights[i], 0), 1);
+            x = -x;
         }
 
-        return weights;
+        return x switch
+        {
+            < 1 => ((12 - 9 * B - 6 * C) * x * x * x + (-18 + 12 * B + 6 * C) * x * x + (6 - 2 * B)) / 6,
+            < 2 => ((-B - 6 * C) * x * x * x + (6 * B + 30 * C) * x * x + (-12 * B - 48 * C) * x + (8 * B + 24 * C))
+                   / 6,
+            _ => 0,
+        };
     }
 
     private static float Lanczos3Kernel(float x)
