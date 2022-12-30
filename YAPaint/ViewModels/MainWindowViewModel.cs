@@ -118,7 +118,7 @@ public class MainWindowViewModel : ViewModelBase
     public float FocalPointY { get; set; }
 
     [Reactive]
-    public bool IsHistogramVisible { get; private set; } = false;
+    public bool IsHistogramVisible { get; private set; }
 
     public CultureInfo InvariantCultureInfo { get; } = CultureInfo.InvariantCulture;
 
@@ -432,7 +432,7 @@ public class MainWindowViewModel : ViewModelBase
     {
         try
         {
-            var histograms = BarGrapher.CreateBarGraphs(_portableBitmap);
+            double[][] histograms = BarGrapher.CreateBarGraphs(_portableBitmap);
             var plot = new Plot();
 
             plot.AddBar(histograms[0]);
@@ -474,6 +474,151 @@ public class MainWindowViewModel : ViewModelBase
 
             IntensityCorrector.CorrectIntensity(ref _portableBitmap, Threshold);
             AvaloniaImage = _portableBitmap.ToAvalonia();
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    [Reactive]
+    public int FilterThreshold { get; set; } = 100;
+
+    public void ThresholdFilter()
+    {
+        try
+        {
+            MyFileLogger.SharedTimer.Restart();
+
+            AvaloniaImage = _portableBitmap.ThresholdFilter(FilterThreshold).ToAvalonia();
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Filtered in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void OtsuFilter()
+    {
+        try
+        {
+            MyFileLogger.SharedTimer.Restart();
+
+            AvaloniaImage = _portableBitmap.OtsuThresholdFilter().ToAvalonia();
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Filtered in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    [Reactive]
+    public int KernelRadius { get; set; } = 2;
+
+    public void MedianFilter()
+    {
+        try
+        {
+            MyFileLogger.SharedTimer.Restart();
+
+            AvaloniaImage = _portableBitmap.MedianFilter(KernelRadius).ToAvalonia();
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Filtered in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    [Reactive]
+    public int Sigma { get; set; } = 1;
+
+    public void GaussianFilter()
+    {
+        try
+        {
+            MyFileLogger.SharedTimer.Restart();
+
+            AvaloniaImage = _portableBitmap.GaussianFilter(Sigma).ToAvalonia();
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Filtered in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void BoxBlurFilter()
+    {
+        try
+        {
+            MyFileLogger.SharedTimer.Restart();
+
+            AvaloniaImage = _portableBitmap.BoxBlur(KernelRadius).ToAvalonia();
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Filtered in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void SobelFilter()
+    {
+        try
+        {
+            MyFileLogger.SharedTimer.Restart();
+
+            AvaloniaImage = _portableBitmap.SobelFilter().ToAvalonia();
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Filtered in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            MyFileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    [Reactive]
+    public float Sharpness { get; set; } = 1;
+
+    public void SharpFilter()
+    {
+        try
+        {
+            MyFileLogger.SharedTimer.Restart();
+
+            AvaloniaImage = _portableBitmap.ContrastAdaptiveSharpening(Sharpness).ToAvalonia();
+
+            MyFileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Filtered in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            MyFileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {

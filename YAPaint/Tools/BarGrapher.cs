@@ -25,4 +25,20 @@ public static class BarGrapher
 
         return histograms;
     }
+
+    public static int[] CreateGreyBarGraph(PortableBitmap bitmap)
+    {
+        var histogram = new int[256];
+
+        for (var y = 0; y < bitmap.Height; y++)
+        {
+            for (var x = 0; x < bitmap.Width; x++)
+            {
+                var pixel = bitmap.GetPixel(x, y);
+                histogram[Coefficient.Denormalize(pixel.First + pixel.Second + pixel.Third) / 3]++;
+            }
+        }
+
+        return histogram;
+    }
 }
