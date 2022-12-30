@@ -507,7 +507,7 @@ public class MainWindowViewModel : ViewModelBase
     }
 
     [Reactive]
-    public float Sigma { get; set; }
+    public int Sigma { get; set; }
 
     public void GaussianFilter()
     {

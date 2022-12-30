@@ -82,6 +82,42 @@
                 <Image Width="300" Source="{Binding Histogram2}" RenderOptions.BitmapInterpolationMode="Default" />
                 <Image Width="300" Source="{Binding Histogram3}" RenderOptions.BitmapInterpolationMode="Default" />
             </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <TextBlock Text="Threshold" VerticalAlignment="Center"/>
+                <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
+                               Value="{Binding FilterThreshold}"
+                               Minimum="0"
+                               Maximum="255"
+                               Increment="1"
+                               FormatString="{}{0:#,0}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <TextBlock Text="Kernel Radius" VerticalAlignment="Center"/>
+                <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
+                               Value="{Binding KernelRadius}"
+                               Minimum="0"
+                               Maximum="20"
+                               Increment="1"
+                               FormatString="{}{0:#,0}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <TextBlock Text="Sigma" VerticalAlignment="Center"/>
+                <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
+                               Value="{Binding Sigma}"
+                               Minimum="0"
+                               Maximum="7"
+                               Increment="1"
+                               FormatString="{}{0:#,0}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <TextBlock Text="Sharpness" VerticalAlignment="Center"/>
+                <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
+                               Value="{Binding Sharpness}"
+                               Minimum="0"
+                               Maximum="1"
+                               Increment="0.01"
+                               FormatString="{}{0:#,0.00}" />
+            </StackPanel>
         </StackPanel>
         <TextBlock DockPanel.Dock="Bottom"
                    Margin="10"
