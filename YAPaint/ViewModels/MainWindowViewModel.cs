@@ -401,6 +401,7 @@ public class MainWindowViewModel : ViewModelBase
 
     public void Rescale()
     {
-        AvaloniaImage = _portableBitmap.ScaleNearestNeighbor(NewWidth, NewHeight, FocalPointX, FocalPointY).ToAvalonia();
+        _portableBitmap = _portableBitmap.ScaleLanczos3(NewWidth, NewHeight, FocalPointX, FocalPointY);
+        AvaloniaImage = _portableBitmap.ToAvalonia();
     }
 }
