@@ -4,7 +4,7 @@ using System.IO;
 
 namespace YAPaint.Tools;
 
-public static class MyFileLogger
+public static class FileLogger
 {
     public const string Filepath = @"..\..\..\log.txt";
 

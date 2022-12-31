@@ -39,7 +39,7 @@ public static class PnmParser
             }
         }
 
-        MyFileLogger.Log("DBG", $"Read file at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
+        FileLogger.Log("DBG", $"Read file at {FileLogger.SharedTimer.Elapsed.TotalSeconds} s");
 
         return map;
     }

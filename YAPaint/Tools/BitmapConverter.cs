@@ -35,7 +35,7 @@ public static class BitmapConverter
             }
         }
 
-        MyFileLogger.Log("DBG", $"Converted to AvaloniaBitmap at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
+        FileLogger.Log("DBG", $"Converted to Avalonia at {FileLogger.SharedTimer.Elapsed.TotalSeconds} s");
 
         return writeableBitmap;
     }
@@ -62,7 +62,7 @@ public static class BitmapConverter
             }
         }
 
-        MyFileLogger.Log("DBG", $"Converted to AvaloniaBitmap at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
+        FileLogger.Log("DBG", $"Converted to Avalonia at {FileLogger.SharedTimer.Elapsed.TotalSeconds} s");
 
         return writeableBitmap;
     }

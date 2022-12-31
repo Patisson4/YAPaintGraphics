@@ -35,7 +35,7 @@ public class PortableBitmap
         _map = new ColorSpace[Width, Height];
         Array.Copy(map, _map, map.Length);
 
-        MyFileLogger.Log("DBG", $"Object created at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
+        FileLogger.Log("DBG", $"Object created at {FileLogger.SharedTimer.Elapsed.TotalSeconds} s");
     }
 
     public IColorBaseConverter ColorConverter { get; private set; }
