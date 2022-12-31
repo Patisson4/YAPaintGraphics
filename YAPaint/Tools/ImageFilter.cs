@@ -97,7 +97,7 @@ public static class ImageFilter
         {
             for (int y = 0; y < bitmap.Height; y++)
             {
-                var neighbors = bitmap.GetNeighborsColorSpaces(x, y, kernelRadius);
+                var neighbors = bitmap.GetNeighbors(x, y, kernelRadius);
                 var median = FindMedian(neighbors);
                 filteredMap[x, y] = new ColorSpace(median.First, median.Second, median.Third);
             }
@@ -110,32 +110,6 @@ public static class ImageFilter
             bitmap.IsFirstVisible,
             bitmap.IsSecondVisible,
             bitmap.IsThirdVisible);
-    }
-
-    private static ColorSpace FindMedian(ColorSpace[,] matrix)
-    {
-        Span<ColorSpace> span = stackalloc ColorSpace[matrix.GetLength(0) * matrix.GetLength(1)];
-
-        var index = 0;
-        for (int i = 0; i < matrix.GetLength(0); i++)
-        {
-            for (int j = 0; j < matrix.GetLength(1); j++)
-            {
-                span[index++] = matrix[i, j];
-            }
-        }
-
-        span.Sort(
-            (color, other) =>
-                (Coefficient.Denormalize(color.First)
-               + Coefficient.Denormalize(color.Second)
-               + Coefficient.Denormalize(color.Third))
-              / 3
-              - (Coefficient.Denormalize(other.First)
-               + Coefficient.Denormalize(other.Second)
-               + Coefficient.Denormalize(other.Third))
-              / 3);
-        return span[span.Length / 2];
     }
 
     public static PortableBitmap GaussianFilter(this PortableBitmap bitmap, int sigma)
@@ -173,7 +147,7 @@ public static class ImageFilter
         {
             for (int y = 0; y < bitmap.Height; y++)
             {
-                var neighbors = bitmap.GetNeighborsColorSpaces(x, y, kernelRadius);
+                var neighbors = bitmap.GetNeighbors(x, y, kernelRadius);
                 var color1 = 0.0f;
                 var color2 = 0.0f;
                 var color3 = 0.0f;
@@ -221,7 +195,7 @@ public static class ImageFilter
         {
             for (int y = 0; y < bitmap.Height; y++)
             {
-                var neighbors = bitmap.GetNeighborsColorSpaces(x, y, kernelRadius);
+                var neighbors = bitmap.GetNeighbors(x, y, kernelRadius);
                 var color1 = 0.0f;
                 var color2 = 0.0f;
                 var color3 = 0.0f;
@@ -259,7 +233,7 @@ public static class ImageFilter
         {
             for (int y = 0; y < bitmap.Height; y++)
             {
-                var neighbors = bitmap.GetNeighborsColorSpaces(x, y, 1);
+                var neighbors = bitmap.GetNeighbors(x, y, 1);
                 var gx = neighbors[0, 0].First * -1
                        + neighbors[0, 2].First * 1
                        + neighbors[1, 0].First * -2
@@ -305,7 +279,7 @@ public static class ImageFilter
         {
             for (int y = 0; y < bitmap.Height; y++)
             {
-                var neighbors = bitmap.GetNeighborsColorSpaces(x, y, 1);
+                var neighbors = bitmap.GetNeighbors(x, y, 1);
                 float minR = float.MaxValue;
                 float maxR = 0.0f;
                 float minG = float.MaxValue;
@@ -373,7 +347,7 @@ public static class ImageFilter
                 float t = (float)x / bitmap.Width * (1.0f - (float)y / bitmap.Height);
                 float u = (1.0f - (float)x / bitmap.Width) * (float)y / bitmap.Height;
                 float v = (float)x / bitmap.Width * (float)y / bitmap.Height;
-                var neighbors = bitmap.GetNeighborsColorSpaces(x, y, 2);
+                var neighbors = bitmap.GetNeighbors(x, y, 2);
                 float minR = float.MaxValue;
                 float maxR = 0.0f;
                 float minG = float.MaxValue;
@@ -513,9 +487,42 @@ public static class ImageFilter
             bitmap.IsThirdVisible);
     }
 
+    private static ColorSpace FindMedian(ColorSpace[,] matrix)
+    {
+        Span<ColorSpace> span = stackalloc ColorSpace[matrix.GetLength(0) * matrix.GetLength(1)];
+
+        var index = 0;
+        for (int i = 0; i < matrix.GetLength(0); i++)
+        {
+            for (int j = 0; j < matrix.GetLength(1); j++)
+            {
+                span[index++] = matrix[i, j];
+            }
+        }
+
+        span.Sort(
+            (color, other) =>
+                (Coefficient.Denormalize(color.First)
+               + Coefficient.Denormalize(color.Second)
+               + Coefficient.Denormalize(color.Third))
+              / 3
+              - (Coefficient.Denormalize(other.First)
+               + Coefficient.Denormalize(other.Second)
+               + Coefficient.Denormalize(other.Third))
+              / 3);
+        return span[span.Length / 2];
+    }
+
+    /// <summary>
+    /// Internal buffer to contain sliding-window neighbors of given point <p/>
+    /// <b>MUST</b> be initialized before calling <see cref="GetNeighbors"/>
+    /// </summary>
     private static ColorSpace[,] _kernelBuffer;
 
-    private static ColorSpace[,] GetNeighborsColorSpaces(this PortableBitmap bitmap, int x, int y, int kernelRadius)
+    /// <summary>
+    /// IMPORTANT – <b><see cref="_kernelBuffer"/> = new ColorSpace[kernelRadius * 2 + 1, kernelRadius * 2 + 1]</b> before calling this method
+    /// </summary>
+    private static ColorSpace[,] GetNeighbors(this PortableBitmap bitmap, int x, int y, int kernelRadius)
     {
         for (int i = x - kernelRadius; i <= x + kernelRadius; i++)
         {
