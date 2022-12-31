@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace YAPaint.Tools;
 
-public static class CustomExceptionHelper
+public static class ExceptionHelper
 {
     public static void ThrowIfGreaterThan(
         int value,

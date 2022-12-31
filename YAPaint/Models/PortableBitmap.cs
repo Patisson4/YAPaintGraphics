@@ -49,8 +49,8 @@ public class PortableBitmap
 
     public ColorSpace GetPixel(int x, int y)
     {
-        CustomExceptionHelper.ThrowIfGreaterThan(x, Width);
-        CustomExceptionHelper.ThrowIfGreaterThan(y, Height);
+        ExceptionHelper.ThrowIfGreaterThan(x, Width);
+        ExceptionHelper.ThrowIfGreaterThan(y, Height);
 
         var color = _map[x, y];
 
@@ -69,8 +69,8 @@ public class PortableBitmap
 
     public void SetPixel(int x, int y, ColorSpace color)
     {
-        CustomExceptionHelper.ThrowIfGreaterThan(x, Width);
-        CustomExceptionHelper.ThrowIfGreaterThan(y, Height);
+        ExceptionHelper.ThrowIfGreaterThan(x, Width);
+        ExceptionHelper.ThrowIfGreaterThan(y, Height);
 
         _map[x, y] = color;
     }
