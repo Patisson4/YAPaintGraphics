@@ -24,7 +24,7 @@ public static class IntensityCorrector
 
     private static (float leftEdge, float rightEdge) FindEdges(PortableBitmap bitmap, double proportion)
     {
-        var histograms = BarGrapher.CreateBarGraphs(bitmap);
+        var histograms = HistogramGenerator.CreateHistograms(bitmap);
         var currentBack = 0d;
         int i;
         var threshold = proportion * bitmap.Width * bitmap.Height * 3;

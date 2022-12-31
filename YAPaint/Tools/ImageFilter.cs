@@ -43,7 +43,7 @@ public static class FilteringExtension
 
     public static PortableBitmap OtsuThresholdFilter(this PortableBitmap bitmap)
     {
-        var histogram = BarGrapher.CreateGreyBarGraph(bitmap);
+        var histogram = HistogramGenerator.CreateGrayHistogram(bitmap);
 
         double sum = 0;
         for (int i = 0; i < 256; i++)

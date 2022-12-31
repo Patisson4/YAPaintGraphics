@@ -432,7 +432,7 @@ public class MainWindowViewModel : ViewModelBase
     {
         try
         {
-            double[][] histograms = BarGrapher.CreateBarGraphs(_portableBitmap);
+            double[][] histograms = HistogramGenerator.CreateHistograms(_portableBitmap);
             var plot = new Plot();
 
             plot.AddBar(histograms[0]);
