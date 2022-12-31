@@ -60,6 +60,8 @@ public class MainWindowViewModel : ViewModelBase
     private bool _isSecondChannelVisible = true;
     private bool _isThirdChannelVisible = true;
 
+    private Plot Plot { get; } = new Plot();
+
     private readonly MainWindow _view;
 
     public MainWindowViewModel(MainWindow view)
@@ -141,8 +143,6 @@ public class MainWindowViewModel : ViewModelBase
 
     [Reactive]
     public bool IsHistogramVisible { get; private set; }
-
-    public Plot Plot { get; } = new Plot();
 
     [Reactive]
     public WriteableBitmap Histogram1 { get; set; }
@@ -453,7 +453,6 @@ public class MainWindowViewModel : ViewModelBase
         try
         {
             double[][] histograms = HistogramGenerator.CreateHistograms(_portableBitmap);
-            var plot = new Plot();
 
             Plot.Clear();
             Plot.AddBar(histograms[0]);
