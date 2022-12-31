@@ -460,7 +460,6 @@ public static class FilteringExtension
                 float vG = v * (1.0f / 32.0f + maxG - minG);
                 float vB = v * (1.0f / 32.0f + maxB - minB);
                 
-
                 float sharpenedColorR =
                     (neighbors[2, 1].First * wfR * sR + neighbors[1, 2].First * wfR * sR +
                      neighbors[3, 1].First * wgR * tR + neighbors[4, 2].First * wgR * tR +
@@ -497,6 +496,16 @@ public static class FilteringExtension
                 sharpenedColorB = float.Clamp(sharpenedColorB, 0, 1);
                 filteredMap[x, y] = new ColorSpace(sharpenedColorR, sharpenedColorG, sharpenedColorB);
             }
+        }
+        
+        for (int x = 0; x < bitmap.Width; x++)
+        {
+            filteredMap[x, bitmap.Height - 1] = bitmap.GetPixel(x, bitmap.Height - 1);
+        }
+        
+        for (int y= 0; y < bitmap.Height; y++)
+        {
+            filteredMap[bitmap.Width - 1, y] = bitmap.GetPixel(bitmap.Width - 1, y);
         }
 
         return new PortableBitmap(
