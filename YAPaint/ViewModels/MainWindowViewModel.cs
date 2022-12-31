@@ -292,7 +292,7 @@ public class MainWindowViewModel : ViewModelBase
         }
         catch (Exception e)
         {
-            MyFileLogger.Log("ERR", $"{e}\n");
+            FileLogger.Log("ERR", $"{e}\n");
         }
     }
 
@@ -509,7 +509,7 @@ public class MainWindowViewModel : ViewModelBase
         {
             FileLogger.SharedTimer.Restart();
 
-            AvaloniaImage = _portableBitmap.OtsuThresholdFilter().ToAvalonia();
+            AvaloniaImage = _portableBitmap.OtsuFilter().ToAvalonia();
 
             FileLogger.SharedTimer.Stop();
             _operationsCount++;
@@ -572,7 +572,7 @@ public class MainWindowViewModel : ViewModelBase
         {
             FileLogger.SharedTimer.Restart();
 
-            AvaloniaImage = _portableBitmap.BoxBlur(KernelRadius).ToAvalonia();
+            AvaloniaImage = _portableBitmap.BoxBlurFilter(KernelRadius).ToAvalonia();
 
             FileLogger.SharedTimer.Stop();
             _operationsCount++;

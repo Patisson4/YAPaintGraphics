@@ -3,7 +3,7 @@ using YAPaint.Models;
 
 namespace YAPaint.Tools;
 
-public static class FilteringExtension
+public static class ImageFilter
 {
     public static PortableBitmap ThresholdFilter(this PortableBitmap bitmap, int threshold)
     {
@@ -41,7 +41,7 @@ public static class FilteringExtension
             bitmap.IsThirdVisible);
     }
 
-    public static PortableBitmap OtsuThresholdFilter(this PortableBitmap bitmap)
+    public static PortableBitmap OtsuFilter(this PortableBitmap bitmap)
     {
         var histogram = HistogramGenerator.CreateGrayHistogram(bitmap);
 
@@ -201,7 +201,7 @@ public static class FilteringExtension
             bitmap.IsThirdVisible);
     }
 
-    public static PortableBitmap BoxBlur(this PortableBitmap bitmap, int kernelRadius)
+    public static PortableBitmap BoxBlurFilter(this PortableBitmap bitmap, int kernelRadius)
     {
         if (kernelRadius < 0)
         {
