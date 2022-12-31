@@ -425,7 +425,7 @@ public class MainWindowViewModel : ViewModelBase
 
     public void Rescale()
     {
-        _portableBitmap = _portableBitmap.ScaleBSpline(NewWidth, NewHeight, FocalPointX, FocalPointY);
+        _portableBitmap = _portableBitmap.ScaleBcSpline(NewWidth, NewHeight, FocalPointX, FocalPointY);
         AvaloniaImage = _portableBitmap.ToAvalonia();
 
     public void DrawHistograms()

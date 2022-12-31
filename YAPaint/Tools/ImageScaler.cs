@@ -148,8 +148,8 @@ public static class ImageScaler
         return new PortableBitmap(newMap, bitmap.ColorConverter);
     }
 
-    public static PortableBitmap ScaleBSpline(this
-            PortableBitmap bitmap,
+    public static PortableBitmap ScaleBcSpline(
+        this PortableBitmap bitmap,
         float scaleX,
         float scaleY,
         float focusX,
@@ -188,7 +188,7 @@ public static class ImageScaler
                             continue;
                         }
 
-                        float kernelValue = BSplineKernel(i, B, C) * BSplineKernel(j, B, C);
+                        float kernelValue = BcSplineKernel(i, B, C) * BcSplineKernel(j, B, C);
 
                         ColorSpace color = bitmap.GetPixel(x2, y2);
 
@@ -208,7 +208,7 @@ public static class ImageScaler
         return new PortableBitmap(newMap, bitmap.ColorConverter);
     }
 
-    private static float BSplineKernel(float x, float B, float C)
+    private static float BcSplineKernel(float x, float B, float C)
     {
         if (x < 0)
         {
@@ -218,8 +218,7 @@ public static class ImageScaler
         return x switch
         {
             < 1 => ((12 - 9 * B - 6 * C) * x * x * x + (-18 + 12 * B + 6 * C) * x * x + (6 - 2 * B)) / 6,
-            < 2 => ((-B - 6 * C) * x * x * x + (6 * B + 30 * C) * x * x + (-12 * B - 48 * C) * x + (8 * B + 24 * C))
-                   / 6,
+            < 2 => ((-B - 6 * C) * x * x * x + (6 * B + 30 * C) * x * x + (-12 * B - 48 * C) * x + (8 * B + 24 * C)) / 6,
             _ => 0,
         };
     }
