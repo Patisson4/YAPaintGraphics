@@ -2,7 +2,7 @@
 
 namespace YAPaint.Tools;
 
-public static class GammaExtension
+public static class GammaCalculator
 {
     public static ColorSpace[,] ApplyGamma(this PortableBitmap bitmap, float value)
     {
@@ -25,18 +25,17 @@ public static class GammaExtension
         if (float.IsPositiveInfinity(value))
         {
             return new ColorSpace(
-                ComputeSRgbGamma(color.First),
-                ComputeSRgbGamma(color.Second),
-                ComputeSRgbGamma(color.Third));
+                CalculateSRgbGamma(color.First),
+                CalculateSRgbGamma(color.Second),
+                CalculateSRgbGamma(color.Third));
         }
 
         if (value == 0)
         {
             return new ColorSpace(
-                ComputeInverseSRgbGamma(color.First),
-                ComputeInverseSRgbGamma(color.Second),
-                ComputeInverseSRgbGamma(color.Third));
-            
+                CalculateInverseSRgbGamma(color.First),
+                CalculateInverseSRgbGamma(color.Second),
+                CalculateInverseSRgbGamma(color.Third));
         }
 
         return new ColorSpace(
@@ -45,7 +44,7 @@ public static class GammaExtension
             float.Pow(color.Third, value));
     }
 
-    private static float ComputeSRgbGamma(float value)
+    private static float CalculateSRgbGamma(float value)
     {
         if (value > 0.0031308f)
         {
@@ -55,7 +54,7 @@ public static class GammaExtension
         return value * 12.92f;
     }
 
-    private static float ComputeInverseSRgbGamma(float value)
+    private static float CalculateInverseSRgbGamma(float value)
     {
         if (value > 0.04045f)
         {
