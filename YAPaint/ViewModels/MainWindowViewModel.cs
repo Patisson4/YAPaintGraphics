@@ -55,6 +55,7 @@ public class MainWindowViewModel : ViewModelBase
     private IColorBaseConverter CurrentColorConverter =>
         ColorSpaces.First(s => s.GetType().Name == _selectedColorSpace);
 
+    //TODO: read actual value from _portableBitmap
     private bool _isFirstChannelVisible = true;
     private bool _isSecondChannelVisible = true;
     private bool _isThirdChannelVisible = true;
@@ -66,8 +67,12 @@ public class MainWindowViewModel : ViewModelBase
         _view = view;
     }
 
-    [Reactive]
-    public string Message { get; set; } = "Timings will be displayed here";
+    public static IReadOnlyCollection<string> ThreeChannelColorSpaceNames { get; } = SpaceTypes
+        .Where(t => t.GetInterfaces().Contains(typeof(IColorConverter)))
+        .Select(t => t.Name)
+        .ToList();
+
+    public static IReadOnlyCollection<string> ColorSpaceNames { get; } = SpaceTypes.Select(t => t.Name).ToList();
 
     public string SelectedColorSpace
     {
@@ -93,34 +98,51 @@ public class MainWindowViewModel : ViewModelBase
     }
 
     [Reactive]
+    public string Message { get; set; } = "Timings will be displayed here";
+
+    [Reactive]
     public WriteableBitmap AvaloniaImage { get; set; }
 
-    public static IReadOnlyCollection<string> ThreeChannelColorSpaceNames { get; } = SpaceTypes
-        .Where(t => t.GetInterfaces().Contains(typeof(IColorConverter)))
-        .Select(t => t.Name)
-        .ToList();
-
-    public static IReadOnlyCollection<string> ColorSpaceNames { get; } = SpaceTypes.Select(t => t.Name).ToList();
-
     [Reactive]
-    public float Gamma { get; set; }
-    
+    public float Gamma { get; set; } = 1;
+
     [Reactive]
     public float NewWidth { get; set; }
-    
+
     [Reactive]
     public float NewHeight { get; set; }
-    
+
     [Reactive]
     public float FocalPointX { get; set; }
-    
+
     [Reactive]
     public float FocalPointY { get; set; }
 
     [Reactive]
+    public float B { get; set; }
+
+    [Reactive]
+    public float C { get; set; }
+
+    [Reactive]
+    public float IntensityThreshold { get; set; }
+
+    [Reactive]
+    public int FilterThreshold { get; set; } = 100;
+
+    [Reactive]
+    public int KernelRadius { get; set; } = 2;
+
+    [Reactive]
+    public int Sigma { get; set; } = 1;
+
+    [Reactive]
+    public float Sharpness { get; set; } = 1;
+
+    [Reactive]
     public bool IsHistogramVisible { get; private set; }
 
-    public CultureInfo InvariantCultureInfo { get; } = CultureInfo.InvariantCulture;
+    public Plot Plot { get; } = new Plot();
 
     [Reactive]
     public WriteableBitmap Histogram1 { get; set; }
@@ -131,15 +153,14 @@ public class MainWindowViewModel : ViewModelBase
     [Reactive]
     public WriteableBitmap Histogram3 { get; set; }
 
-    [Reactive]
-    public float Threshold { get; set; }
+    public CultureInfo InvariantCultureInfo { get; } = CultureInfo.InvariantCulture;
 
     public async Task OpenPnm()
     {
         try
         {
             var dialog = new OpenFileDialog { Filters = PnmFileFilters, AllowMultiple = false };
-            string[] result = await dialog.ShowAsync(new Window()); // TODO: find real parent
+            string[] result = await dialog.ShowAsync(_view);
 
             if (result is null)
             {
@@ -172,7 +193,7 @@ public class MainWindowViewModel : ViewModelBase
         try
         {
             var dialog = new OpenFileDialog { Filters = PngFileFilters, AllowMultiple = false };
-            string[] result = await dialog.ShowAsync(new Window()); // TODO: find real parent
+            string[] result = await dialog.ShowAsync(_view);
 
             if (result is null)
             {
@@ -206,7 +227,7 @@ public class MainWindowViewModel : ViewModelBase
         try
         {
             var dialog = new SaveFileDialog { Filters = PnmFileFilters };
-            string result = await dialog.ShowAsync(new Window()); // TODO: find real parent
+            string result = await dialog.ShowAsync(_view);
 
             if (result is null)
             {
@@ -234,7 +255,7 @@ public class MainWindowViewModel : ViewModelBase
         try
         {
             var dialog = new SaveFileDialog { Filters = PnmFileFilters };
-            string result = await dialog.ShowAsync(new Window()); // TODO: find real parent
+            string result = await dialog.ShowAsync(_view);
 
             if (result is null)
             {
@@ -262,7 +283,7 @@ public class MainWindowViewModel : ViewModelBase
         try
         {
             var dialog = new SaveFileDialog { Filters = PngFileFilters };
-            string result = await dialog.ShowAsync(new Window()); // TODO: find real parent
+            string result = await dialog.ShowAsync(_view);
 
             if (result is null)
             {
@@ -402,28 +423,49 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
-    public void Rescale()
+    public void ScaleNearestNeighbor()
+    {
+        _portableBitmap = _portableBitmap.ScaleNearestNeighbor(NewWidth, NewHeight, FocalPointX, FocalPointY);
+        AvaloniaImage = _portableBitmap.ToAvalonia();
+    }
+
+    public void ScaleBilinear()
+    {
+        _portableBitmap = _portableBitmap.ScaleBilinear(NewWidth, NewHeight, FocalPointX, FocalPointY);
+        AvaloniaImage = _portableBitmap.ToAvalonia();
+    }
+
+    public void ScaleLanczos3()
+    {
+        _portableBitmap = _portableBitmap.ScaleLanczos3(NewWidth, NewHeight, FocalPointX, FocalPointY);
+        AvaloniaImage = _portableBitmap.ToAvalonia();
+    }
+
+    public void ScaleBcSpline()
     {
         _portableBitmap = _portableBitmap.ScaleBcSpline(NewWidth, NewHeight, FocalPointX, FocalPointY);
         AvaloniaImage = _portableBitmap.ToAvalonia();
+    }
 
     public void DrawHistograms()
     {
+        //TODO: add timings above and below
         try
         {
             double[][] histograms = HistogramGenerator.CreateHistograms(_portableBitmap);
             var plot = new Plot();
 
-            plot.AddBar(histograms[0]);
-            Histogram1 = plot.Render().ToAvalonia();
+            Plot.Clear();
+            Plot.AddBar(histograms[0]);
+            Histogram1 = Plot.Render().ToAvalonia();
 
-            plot.Clear();
-            plot.AddBar(histograms[1]);
-            Histogram2 = plot.Render().ToAvalonia();
+            Plot.Clear();
+            Plot.AddBar(histograms[1]);
+            Histogram2 = Plot.Render().ToAvalonia();
 
-            plot.Clear();
-            plot.AddBar(histograms[2]);
-            Histogram3 = plot.Render().ToAvalonia();
+            Plot.Clear();
+            Plot.AddBar(histograms[2]);
+            Histogram3 = Plot.Render().ToAvalonia();
 
             IsHistogramVisible = true;
         }
@@ -437,21 +479,21 @@ public class MainWindowViewModel : ViewModelBase
     {
         try
         {
-            if (Threshold < 0)
+            if (IntensityThreshold < 0)
             {
                 throw new ArgumentOutOfRangeException(
-                    nameof(Threshold),
-                    Threshold,
-                    $"{nameof(Threshold)} should be non-negative");
+                    nameof(IntensityThreshold),
+                    IntensityThreshold,
+                    $"{nameof(IntensityThreshold)} should be non-negative");
             }
 
-            if (Threshold < 0.001)
+            if (IntensityThreshold < 0.001)
             {
                 AvaloniaImage = _portableBitmap.ToAvalonia();
                 return;
             }
 
-            IntensityCorrector.CorrectIntensity(ref _portableBitmap, Threshold);
+            IntensityCorrector.CorrectIntensity(ref _portableBitmap, IntensityThreshold);
             AvaloniaImage = _portableBitmap.ToAvalonia();
         }
         catch (Exception e)
@@ -460,9 +502,7 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
-    [Reactive]
-    public int FilterThreshold { get; set; } = 100;
-
+    //TODO: save filter result internally
     public void ThresholdFilter()
     {
         try
@@ -501,9 +541,6 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
-    [Reactive]
-    public int KernelRadius { get; set; } = 2;
-
     public void MedianFilter()
     {
         try
@@ -522,9 +559,6 @@ public class MainWindowViewModel : ViewModelBase
             FileLogger.Log("ERR", $"{e}\n");
         }
     }
-
-    [Reactive]
-    public int Sigma { get; set; } = 1;
 
     public void GaussianFilter()
     {
@@ -582,9 +616,6 @@ public class MainWindowViewModel : ViewModelBase
             FileLogger.Log("ERR", $"{e}\n");
         }
     }
-
-    [Reactive]
-    public float Sharpness { get; set; } = 1;
 
     public void SharpFilter()
     {
