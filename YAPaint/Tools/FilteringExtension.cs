@@ -393,9 +393,9 @@ public static class FilteringExtension
                     }
                 }
                 
-                float sR = s * (1.0f / 32.0f + maxR - maxR);
-                float sG = s * (1.0f / 32.0f + maxG - maxG);
-                float sB = s * (1.0f / 32.0f + maxB - maxB);
+                float sR = s * (1.0f / 32.0f + maxR - minR);
+                float sG = s * (1.0f / 32.0f + maxG - minG);
+                float sB = s * (1.0f / 32.0f + maxB - minB);
                 
                 for (int i = 2; i < 5; i++)
                 {
@@ -414,9 +414,9 @@ public static class FilteringExtension
                     }
                 }
                 
-                float tR = t * (1.0f / 32.0f + maxR - maxR);
-                float tG = t * (1.0f / 32.0f + maxG - maxG);
-                float tB = t * (1.0f / 32.0f + maxB - maxB);
+                float tR = t * (1.0f / 32.0f + maxR - minR);
+                float tG = t * (1.0f / 32.0f + maxG - minG);
+                float tB = t * (1.0f / 32.0f + maxB - minB);
                 
                 for (int i = 1; i < 4; i++)
                 {
@@ -435,9 +435,9 @@ public static class FilteringExtension
                     }
                 }
                 
-                float uR = u * (1.0f / 32.0f + maxR - maxR);
-                float uG = u * (1.0f / 32.0f + maxG - maxG);
-                float uB = u * (1.0f / 32.0f + maxB - maxB);
+                float uR = u * (1.0f / 32.0f + maxR - minR);
+                float uG = u * (1.0f / 32.0f + maxG - minG);
+                float uB = u * (1.0f / 32.0f + maxB - minB);
                 
                 for (int i = 2; i < 5; i++)
                 {
@@ -456,9 +456,9 @@ public static class FilteringExtension
                     }
                 }
                 
-                float vR = v * (1.0f / 32.0f + maxR - maxR);
-                float vG = v * (1.0f / 32.0f + maxG - maxG);
-                float vB = v * (1.0f / 32.0f + maxB - maxB);
+                float vR = v * (1.0f / 32.0f + maxR - minR);
+                float vG = v * (1.0f / 32.0f + maxG - minG);
+                float vB = v * (1.0f / 32.0f + maxB - minB);
                 
 
                 float sharpenedColorR =
