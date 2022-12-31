@@ -383,12 +383,12 @@ public static class FilteringExtension
                         if (i == 2 && j == 1 || i == 1 && j == 2 || i == 2 && j == 3 || i == 3 && j == 2 ||
                             i == 2 && j == 2)
                         {
-                            minR = Math.Min(minG, neighbors[i, j].First);
-                            maxR = Math.Max(maxG, neighbors[i, j].First);
+                            minR = Math.Min(minR, neighbors[i, j].First);
+                            maxR = Math.Max(maxR, neighbors[i, j].First);
                             minG = Math.Min(minG, neighbors[i, j].Second);
                             maxG = Math.Max(maxG, neighbors[i, j].Second);
-                            minB = Math.Min(minG, neighbors[i, j].Third);
-                            maxB = Math.Max(maxG, neighbors[i, j].Third);
+                            minB = Math.Min(minB, neighbors[i, j].Third);
+                            maxB = Math.Max(maxB, neighbors[i, j].Third);
                         }
                     }
                 }
@@ -404,12 +404,12 @@ public static class FilteringExtension
                         if (i == 3 && j == 1 || i == 2 && j == 2 || i == 3 && j == 3 || i == 4 && j == 2 ||
                             i == 3 && j == 2)
                         {
-                            minR = Math.Min(minG, neighbors[i, j].First);
-                            maxR = Math.Max(maxG, neighbors[i, j].First);
+                            minR = Math.Min(minR, neighbors[i, j].First);
+                            maxR = Math.Max(maxR, neighbors[i, j].First);
                             minG = Math.Min(minG, neighbors[i, j].Second);
                             maxG = Math.Max(maxG, neighbors[i, j].Second);
-                            minB = Math.Min(minG, neighbors[i, j].Third);
-                            maxB = Math.Max(maxG, neighbors[i, j].Third);
+                            minB = Math.Min(minB, neighbors[i, j].Third);
+                            maxB = Math.Max(maxB, neighbors[i, j].Third);
                         }
                     }
                 }
@@ -425,12 +425,12 @@ public static class FilteringExtension
                         if (i == 2 && j == 2 || i == 1 && j == 3 || i == 2 && j == 4 || i == 3 && j == 3 ||
                             i == 2 && j == 3)
                         {
-                            minR = Math.Min(minG, neighbors[i, j].First);
-                            maxR = Math.Max(maxG, neighbors[i, j].First);
+                            minR = Math.Min(minR, neighbors[i, j].First);
+                            maxR = Math.Max(maxR, neighbors[i, j].First);
                             minG = Math.Min(minG, neighbors[i, j].Second);
                             maxG = Math.Max(maxG, neighbors[i, j].Second);
-                            minB = Math.Min(minG, neighbors[i, j].Third);
-                            maxB = Math.Max(maxG, neighbors[i, j].Third);
+                            minB = Math.Min(minB, neighbors[i, j].Third);
+                            maxB = Math.Max(maxB, neighbors[i, j].Third);
                         }
                     }
                 }
@@ -446,12 +446,12 @@ public static class FilteringExtension
                         if (i == 3 && j == 2 || i == 2 && j == 3 || i == 3 && j == 4 || i == 4 && j == 3 ||
                             i == 3 && j == 3)
                         {
-                            minR = Math.Min(minG, neighbors[i, j].First);
-                            maxR = Math.Max(maxG, neighbors[i, j].First);
+                            minR = Math.Min(minR, neighbors[i, j].First);
+                            maxR = Math.Max(maxR, neighbors[i, j].First);
                             minG = Math.Min(minG, neighbors[i, j].Second);
                             maxG = Math.Max(maxG, neighbors[i, j].Second);
-                            minB = Math.Min(minG, neighbors[i, j].Third);
-                            maxB = Math.Max(maxG, neighbors[i, j].Third);
+                            minB = Math.Min(minB, neighbors[i, j].Third);
+                            maxB = Math.Max(maxB, neighbors[i, j].Third);
                         }
                     }
                 }
