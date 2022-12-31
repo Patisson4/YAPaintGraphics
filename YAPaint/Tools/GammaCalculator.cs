@@ -4,7 +4,7 @@ namespace YAPaint.Tools;
 
 public static class GammaCalculator
 {
-    public static ColorSpace[,] ApplyGamma(this PortableBitmap bitmap, float value)
+    public static PortableBitmap ApplyGamma(this PortableBitmap bitmap, float value)
     {
         var map = new ColorSpace[bitmap.Width, bitmap.Height];
 
@@ -17,7 +17,13 @@ public static class GammaCalculator
             }
         }
 
-        return map;
+        return new PortableBitmap(
+            map,
+            bitmap.ColorConverter,
+            bitmap.Gamma,
+            bitmap.IsFirstVisible,
+            bitmap.IsSecondVisible,
+            bitmap.IsThirdVisible);
     }
 
     private static ColorSpace WithGamma(this ref ColorSpace color, float value)

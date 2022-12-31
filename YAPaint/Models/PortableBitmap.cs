@@ -14,6 +14,7 @@ public class PortableBitmap
     public PortableBitmap(
         ColorSpace[,] map,
         IColorBaseConverter colorConverter,
+        float gamma,
         bool isFirstVisible = true,
         bool isSecondVisible = true,
         bool isThirdVisible = true)
@@ -31,6 +32,7 @@ public class PortableBitmap
         IsThirdVisible = isThirdVisible;
 
         ColorConverter = colorConverter;
+        Gamma = gamma;
 
         _map = new ColorSpace[Width, Height];
         Array.Copy(map, _map, map.Length);
@@ -39,6 +41,7 @@ public class PortableBitmap
     }
 
     public IColorBaseConverter ColorConverter { get; private set; }
+    public float Gamma { get; }
 
     public int Width { get; }
     public int Height { get; }

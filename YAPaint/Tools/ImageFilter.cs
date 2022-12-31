@@ -36,6 +36,7 @@ public static class ImageFilter
         return new PortableBitmap(
             filteredMap,
             bitmap.ColorConverter,
+            bitmap.Gamma,
             bitmap.IsFirstVisible,
             bitmap.IsSecondVisible,
             bitmap.IsThirdVisible);
@@ -105,6 +106,7 @@ public static class ImageFilter
         return new PortableBitmap(
             filteredMap,
             bitmap.ColorConverter,
+            bitmap.Gamma,
             bitmap.IsFirstVisible,
             bitmap.IsSecondVisible,
             bitmap.IsThirdVisible);
@@ -196,6 +198,7 @@ public static class ImageFilter
         return new PortableBitmap(
             filteredMap,
             bitmap.ColorConverter,
+            bitmap.Gamma,
             bitmap.IsFirstVisible,
             bitmap.IsSecondVisible,
             bitmap.IsThirdVisible);
@@ -242,6 +245,7 @@ public static class ImageFilter
         return new PortableBitmap(
             filteredMap,
             bitmap.ColorConverter,
+            bitmap.Gamma,
             bitmap.IsFirstVisible,
             bitmap.IsSecondVisible,
             bitmap.IsThirdVisible);
@@ -281,6 +285,7 @@ public static class ImageFilter
         return new PortableBitmap(
             filteredMap,
             bitmap.ColorConverter,
+            bitmap.Gamma,
             bitmap.IsFirstVisible,
             bitmap.IsSecondVisible,
             bitmap.IsThirdVisible);
@@ -502,6 +507,7 @@ public static class ImageFilter
         return new PortableBitmap(
             filteredMap,
             bitmap.ColorConverter,
+            bitmap.Gamma,
             bitmap.IsFirstVisible,
             bitmap.IsSecondVisible,
             bitmap.IsThirdVisible);

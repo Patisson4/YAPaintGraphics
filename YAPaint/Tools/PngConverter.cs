@@ -34,13 +34,13 @@ public static class PngConverter
         WriteIendChunk(outputStream);
     }
 
-    public static ColorSpace[,] ReadPng(Stream inputStream, out float gamma)
+    public static PortableBitmap ReadPng(Stream inputStream)
     {
         int width = 0;
         int height = 0;
         byte bitDepth = 0;
         byte colorType = 0;
-        gamma = -1;
+        float gamma = -1;
         using var pixelData = new MemoryStream();
         var palette = new List<(byte, byte, byte)>();
 
@@ -98,7 +98,7 @@ public static class PngConverter
             {
                 if (chunkLength % 3 != 0)
                 {
-                    throw new InvalidDataException("Invalid PLTE fromat");
+                    throw new InvalidDataException("Invalid PLTE format");
                 }
 
                 for (int i = 0; i < chunkLength; i += 3)
@@ -116,7 +116,7 @@ public static class PngConverter
             }
             else
             {
-                MyFileLogger.Log(
+                FileLogger.Log(
                     "WRN",
                     $"Unsupported chunk format: {Encoding.Default.GetString(chunkTypeBytes)}; chunk ignored");
             }
@@ -231,7 +231,7 @@ public static class PngConverter
             raw.CopyTo(prior);
         }
 
-        return map;
+        return new PortableBitmap(map, Rgb.Instance, gamma);
     }
 
     private static byte BytesPerPixel(byte colorType)

@@ -152,12 +152,7 @@ public class MainWindowViewModel : ViewModelBase
 
             FileLogger.Log("DBG", $"Stream created at {FileLogger.SharedTimer.Elapsed.TotalSeconds} s");
 
-            _portableBitmap = new PortableBitmap(
-                PnmParser.ReadImage(stream),
-                CurrentColorConverter,
-                _isFirstChannelVisible,
-                _isSecondChannelVisible,
-                _isThirdChannelVisible);
+            _portableBitmap = PnmParser.ReadImage(stream, CurrentColorConverter);
 
             AvaloniaImage = _portableBitmap.ToAvalonia();
 
@@ -190,14 +185,8 @@ public class MainWindowViewModel : ViewModelBase
 
             FileLogger.Log("DBG", $"Stream created at {FileLogger.SharedTimer.Elapsed.TotalSeconds} s");
 
-            _portableBitmap = new PortableBitmap(
-                PngConverter.ReadPng(stream, out float gamma),
-                CurrentColorConverter,
-                _isFirstChannelVisible,
-                _isSecondChannelVisible,
-                _isThirdChannelVisible);
-
-            Gamma = float.Abs(gamma + 1) < float.Epsilon ? 0f : gamma;
+            //TODO: ApplyGamma inside if gamma was provided
+            _portableBitmap = PngConverter.ReadPng(stream);
 
             AvaloniaImage = _portableBitmap.ToAvalonia();
 
@@ -283,7 +272,7 @@ public class MainWindowViewModel : ViewModelBase
             FileLogger.SharedTimer.Restart();
 
             await using var stream = new FileStream(result, FileMode.Create);
-            _portableBitmap.WritePng(stream, -1);
+            _portableBitmap.WritePng(stream);
 
             FileLogger.SharedTimer.Stop();
             _operationsCount++;
@@ -302,12 +291,7 @@ public class MainWindowViewModel : ViewModelBase
         {
             FileLogger.SharedTimer.Restart();
 
-            AvaloniaImage = new PortableBitmap(
-                _portableBitmap.ApplyGamma(Gamma),
-                _portableBitmap.ColorConverter,
-                _isFirstChannelVisible,
-                _isSecondChannelVisible,
-                _isThirdChannelVisible).ToAvalonia();
+            AvaloniaImage = _portableBitmap.ApplyGamma(Gamma).ToAvalonia();
 
             FileLogger.SharedTimer.Stop();
             _operationsCount++;
@@ -326,12 +310,7 @@ public class MainWindowViewModel : ViewModelBase
         {
             FileLogger.SharedTimer.Restart();
 
-            _portableBitmap = new PortableBitmap(
-                _portableBitmap.ApplyGamma(Gamma),
-                _portableBitmap.ColorConverter,
-                _isFirstChannelVisible,
-                _isSecondChannelVisible,
-                _isThirdChannelVisible);
+            _portableBitmap = _portableBitmap.ApplyGamma(Gamma);
             AvaloniaImage = _portableBitmap.ToAvalonia();
 
             FileLogger.SharedTimer.Stop();

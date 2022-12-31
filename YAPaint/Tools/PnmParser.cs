@@ -2,13 +2,14 @@
 using System.Globalization;
 using System.IO;
 using YAPaint.Models;
+using YAPaint.Models.ColorSpaces;
 using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
 
 namespace YAPaint.Tools;
 
 public static class PnmParser
 {
-    public static ColorSpace[,] ReadImage(Stream stream)
+    public static PortableBitmap ReadImage(Stream stream, IColorBaseConverter converter)
     {
         using var bufferedStream = new BufferedStream(stream);
         using var reader = new BinaryReader(bufferedStream);
@@ -41,7 +42,7 @@ public static class PnmParser
 
         FileLogger.Log("DBG", $"Read file at {FileLogger.SharedTimer.Elapsed.TotalSeconds} s");
 
-        return map;
+        return new PortableBitmap(map, converter, -1);
     }
 
     private static ColorSpace ReadColor(BinaryReader reader, char type, int scale)
