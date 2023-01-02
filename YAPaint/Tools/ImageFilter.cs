@@ -362,19 +362,19 @@ public static class ImageFilter
                         if (i == 2 && j == 1 || i == 1 && j == 2 || i == 2 && j == 3 || i == 3 && j == 2 ||
                             i == 2 && j == 2)
                         {
-                            minR = Math.Min(minG, neighbors[i, j].First);
-                            maxR = Math.Max(maxG, neighbors[i, j].First);
+                            minR = Math.Min(minR, neighbors[i, j].First);
+                            maxR = Math.Max(maxR, neighbors[i, j].First);
                             minG = Math.Min(minG, neighbors[i, j].Second);
                             maxG = Math.Max(maxG, neighbors[i, j].Second);
-                            minB = Math.Min(minG, neighbors[i, j].Third);
-                            maxB = Math.Max(maxG, neighbors[i, j].Third);
+                            minB = Math.Min(minB, neighbors[i, j].Third);
+                            maxB = Math.Max(maxB, neighbors[i, j].Third);
                         }
                     }
                 }
                 
-                float sR = s * (1.0f / 32.0f + maxR - maxR);
-                float sG = s * (1.0f / 32.0f + maxG - maxG);
-                float sB = s * (1.0f / 32.0f + maxB - maxB);
+                float sR = s * (1.0f / 32.0f + maxR - minR);
+                float sG = s * (1.0f / 32.0f + maxG - minG);
+                float sB = s * (1.0f / 32.0f + maxB - minB);
                 
                 for (int i = 2; i < 5; i++)
                 {
@@ -383,19 +383,19 @@ public static class ImageFilter
                         if (i == 3 && j == 1 || i == 2 && j == 2 || i == 3 && j == 3 || i == 4 && j == 2 ||
                             i == 3 && j == 2)
                         {
-                            minR = Math.Min(minG, neighbors[i, j].First);
-                            maxR = Math.Max(maxG, neighbors[i, j].First);
+                            minR = Math.Min(minR, neighbors[i, j].First);
+                            maxR = Math.Max(maxR, neighbors[i, j].First);
                             minG = Math.Min(minG, neighbors[i, j].Second);
                             maxG = Math.Max(maxG, neighbors[i, j].Second);
-                            minB = Math.Min(minG, neighbors[i, j].Third);
-                            maxB = Math.Max(maxG, neighbors[i, j].Third);
+                            minB = Math.Min(minB, neighbors[i, j].Third);
+                            maxB = Math.Max(maxB, neighbors[i, j].Third);
                         }
                     }
                 }
                 
-                float tR = t * (1.0f / 32.0f + maxR - maxR);
-                float tG = t * (1.0f / 32.0f + maxG - maxG);
-                float tB = t * (1.0f / 32.0f + maxB - maxB);
+                float tR = t * (1.0f / 32.0f + maxR - minR);
+                float tG = t * (1.0f / 32.0f + maxG - minG);
+                float tB = t * (1.0f / 32.0f + maxB - minB);
                 
                 for (int i = 1; i < 4; i++)
                 {
@@ -404,19 +404,19 @@ public static class ImageFilter
                         if (i == 2 && j == 2 || i == 1 && j == 3 || i == 2 && j == 4 || i == 3 && j == 3 ||
                             i == 2 && j == 3)
                         {
-                            minR = Math.Min(minG, neighbors[i, j].First);
-                            maxR = Math.Max(maxG, neighbors[i, j].First);
+                            minR = Math.Min(minR, neighbors[i, j].First);
+                            maxR = Math.Max(maxR, neighbors[i, j].First);
                             minG = Math.Min(minG, neighbors[i, j].Second);
                             maxG = Math.Max(maxG, neighbors[i, j].Second);
-                            minB = Math.Min(minG, neighbors[i, j].Third);
-                            maxB = Math.Max(maxG, neighbors[i, j].Third);
+                            minB = Math.Min(minB, neighbors[i, j].Third);
+                            maxB = Math.Max(maxB, neighbors[i, j].Third);
                         }
                     }
                 }
                 
-                float uR = u * (1.0f / 32.0f + maxR - maxR);
-                float uG = u * (1.0f / 32.0f + maxG - maxG);
-                float uB = u * (1.0f / 32.0f + maxB - maxB);
+                float uR = u * (1.0f / 32.0f + maxR - minR);
+                float uG = u * (1.0f / 32.0f + maxG - minG);
+                float uB = u * (1.0f / 32.0f + maxB - minB);
                 
                 for (int i = 2; i < 5; i++)
                 {
@@ -425,21 +425,20 @@ public static class ImageFilter
                         if (i == 3 && j == 2 || i == 2 && j == 3 || i == 3 && j == 4 || i == 4 && j == 3 ||
                             i == 3 && j == 3)
                         {
-                            minR = Math.Min(minG, neighbors[i, j].First);
-                            maxR = Math.Max(maxG, neighbors[i, j].First);
+                            minR = Math.Min(minR, neighbors[i, j].First);
+                            maxR = Math.Max(maxR, neighbors[i, j].First);
                             minG = Math.Min(minG, neighbors[i, j].Second);
                             maxG = Math.Max(maxG, neighbors[i, j].Second);
-                            minB = Math.Min(minG, neighbors[i, j].Third);
-                            maxB = Math.Max(maxG, neighbors[i, j].Third);
+                            minB = Math.Min(minB, neighbors[i, j].Third);
+                            maxB = Math.Max(maxB, neighbors[i, j].Third);
                         }
                     }
                 }
                 
-                float vR = v * (1.0f / 32.0f + maxR - maxR);
-                float vG = v * (1.0f / 32.0f + maxG - maxG);
-                float vB = v * (1.0f / 32.0f + maxB - maxB);
+                float vR = v * (1.0f / 32.0f + maxR - minR);
+                float vG = v * (1.0f / 32.0f + maxG - minG);
+                float vB = v * (1.0f / 32.0f + maxB - minB);
                 
-
                 float sharpenedColorR =
                     (neighbors[2, 1].First * wfR * sR + neighbors[1, 2].First * wfR * sR +
                      neighbors[3, 1].First * wgR * tR + neighbors[4, 2].First * wgR * tR +
@@ -476,6 +475,16 @@ public static class ImageFilter
                 sharpenedColorB = float.Clamp(sharpenedColorB, 0, 1);
                 filteredMap[x, y] = new ColorSpace(sharpenedColorR, sharpenedColorG, sharpenedColorB);
             }
+        }
+        
+        for (int x = 0; x < bitmap.Width; x++)
+        {
+            filteredMap[x, bitmap.Height - 1] = bitmap.GetPixel(x, bitmap.Height - 1);
+        }
+        
+        for (int y= 0; y < bitmap.Height; y++)
+        {
+            filteredMap[bitmap.Width - 1, y] = bitmap.GetPixel(bitmap.Width - 1, y);
         }
 
         return new PortableBitmap(
