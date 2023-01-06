@@ -73,12 +73,27 @@ public class MainWindowViewModel : ViewModelBase
         ThirdChannelName = (CurrentColorConverter as IColorConverter)?.ThirdChannelName;
     }
 
+    [Reactive]
+    public string Message { get; set; } = "Timings will be displayed here";
+
     public static IReadOnlyCollection<string> ThreeChannelColorSpaceNames { get; } = SpaceTypes
         .Where(t => t.GetInterfaces().Contains(typeof(IColorConverter)))
         .Select(t => t.Name)
         .ToList();
 
     public static IReadOnlyCollection<string> ColorSpaceNames { get; } = SpaceTypes.Select(t => t.Name).ToList();
+
+    [Reactive]
+    public bool IsColorConverter { get; private set; }
+
+    [Reactive]
+    public string FirstChannelName { get; private set; }
+
+    [Reactive]
+    public string SecondChannelName { get; private set; }
+
+    [Reactive]
+    public string ThirdChannelName { get; private set; }
 
     public string SelectedColorSpace
     {
@@ -110,21 +125,6 @@ public class MainWindowViewModel : ViewModelBase
     }
 
     [Reactive]
-    public bool IsColorConverter { get; private set; }
-
-    [Reactive]
-    public string FirstChannelName { get; private set; }
-
-    [Reactive]
-    public string SecondChannelName { get; private set; }
-
-    [Reactive]
-    public string ThirdChannelName { get; private set; }
-
-    [Reactive]
-    public string Message { get; set; } = "Timings will be displayed here";
-
-    [Reactive]
     public WriteableBitmap AvaloniaImage { get; set; }
 
     [Reactive]
@@ -149,7 +149,7 @@ public class MainWindowViewModel : ViewModelBase
     public float C { get; set; }
 
     [Reactive]
-    public float IntensityThreshold { get; set; }
+    public float IntensityThreshold { get; set; } = 0.1f;
 
     [Reactive]
     public int FilterThreshold { get; set; } = 100;
