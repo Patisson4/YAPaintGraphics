@@ -178,7 +178,7 @@ public static class DitheringExtension
     {
         if (x >= 0 && x < bitmap.Width && y >= 0 && y < bitmap.Height)
         {
-            ColorSpace newPixel = new ColorSpace(rError * factor, gError * factor, bError * factor);
+            ColorSpace newPixel = new ColorSpace( Coefficient.Normalize((int)Math.Round(rError * factor)), Coefficient.Normalize((int)Math.Round(gError * factor)), Coefficient.Normalize((int)Math.Round(bError * factor)));
             bitmap.SetPixel(x, y, newPixel);
         }
     }
