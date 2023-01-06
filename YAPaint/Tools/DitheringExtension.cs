@@ -14,41 +14,36 @@ public static class DitheringExtension
         { 2, 50, 14, 62, 1, 49, 13, 61 },
         { 34, 18, 46, 30, 33, 17, 45, 29 },
         { 10, 58, 6, 54, 9, 57, 5, 53 },
-        { 42, 26, 38, 22, 41, 25, 37, 21 }
+        { 42, 26, 38, 22, 41, 25, 37, 21 },
     };
+
     public static PortableBitmap DitherOrdered(this PortableBitmap bitmap, int bitDepth)
     {
-        
         for (int y = 0; y < bitmap.Height; y++)
         {
             for (int x = 0; x < bitmap.Width; x++)
             {
-                // Get the current pixel and its color values
                 ColorSpace currentPixel = bitmap.GetPixel(x, y);
                 int r = Coefficient.Denormalize(currentPixel.First);
                 int g = Coefficient.Denormalize(currentPixel.Second);
                 int b = Coefficient.Denormalize(currentPixel.Third);
 
-                // Add a dither value based on the position in the 8x8 grid
                 r += OrderedDitherValues[x % 8, y % 8];
                 g += OrderedDitherValues[x % 8, y % 8];
                 b += OrderedDitherValues[x % 8, y % 8];
 
-                r = Math.Clamp(r, 0, 255);
-                g = Math.Clamp(g, 0, 255);
-                b = Math.Clamp(b, 0, 255);
+                r = int.Clamp(r, 0, 255);
+                g = int.Clamp(g, 0, 255);
+                b = int.Clamp(b, 0, 255);
 
-                // Quantize the color values to the specified bit depth
-                int quantizedR = (int)Math.Round(r / (float)((1 << bitDepth) - 1));
-                int quantizedG = (int)Math.Round(g / (float)((1 << bitDepth) - 1));
-                int quantizedB = (int)Math.Round(b / (float)((1 << bitDepth) - 1));
+                int quantizedR = (int)float.Round(r / (float)((1 << bitDepth) - 1));
+                int quantizedG = (int)float.Round(g / (float)((1 << bitDepth) - 1));
+                int quantizedB = (int)float.Round(b / (float)((1 << bitDepth) - 1));
 
-                // Calculate the error between the original and quantized values
                 int rError = r - quantizedR;
                 int gError = g - quantizedG;
                 int bError = b - quantizedB;
 
-                // Propagate the error to the neighboring pixels
                 PropagateError(bitmap, x + 1, y, rError, gError, bError, 7 / 16.0f);
                 PropagateError(bitmap, x - 1, y + 1, rError, gError, bError, 3 / 16.0f);
                 PropagateError(bitmap, x, y + 1, rError, gError, bError, 5 / 16.0f);
@@ -61,38 +56,31 @@ public static class DitheringExtension
 
     public static PortableBitmap DitherRandom(this PortableBitmap bitmap, int bitDepth)
     {
-        Random random = new Random();
-
         for (int y = 0; y < bitmap.Height; y++)
         {
             for (int x = 0; x < bitmap.Width; x++)
             {
-                // Get the current pixel and its color values
                 ColorSpace currentPixel = bitmap.GetPixel(x, y);
                 int r = Coefficient.Denormalize(currentPixel.First);
                 int g = Coefficient.Denormalize(currentPixel.Second);
                 int b = Coefficient.Denormalize(currentPixel.Third);
 
-                // Add a random value to the color values
-                r += random.Next(-128, 128);
-                g += random.Next(-128, 128);
-                b += random.Next(-128, 128);
-                
-                r = Math.Clamp(r, 0, 255);
-                g = Math.Clamp(g, 0, 255);
-                b = Math.Clamp(b, 0, 255);
+                r += Random.Shared.Next(-128, 128);
+                g += Random.Shared.Next(-128, 128);
+                b += Random.Shared.Next(-128, 128);
 
-                // Quantize the color values to the specified bit depth
+                r = int.Clamp(r, 0, 255);
+                g = int.Clamp(g, 0, 255);
+                b = int.Clamp(b, 0, 255);
+
                 int quantizedR = (int)Math.Round(r / (float)((1 << bitDepth) - 1));
                 int quantizedG = (int)Math.Round(g / (float)((1 << bitDepth) - 1));
                 int quantizedB = (int)Math.Round(b / (float)((1 << bitDepth) - 1));
 
-                // Calculate the error between the original and quantized values
                 int rError = r - quantizedR;
                 int gError = g - quantizedG;
                 int bError = b - quantizedB;
 
-                // Propagate the error to the neighboring pixels
                 PropagateError(bitmap, x + 1, y, rError, gError, bError, 7 / 16.0f);
                 PropagateError(bitmap, x - 1, y + 1, rError, gError, bError, 3 / 16.0f);
                 PropagateError(bitmap, x, y + 1, rError, gError, bError, 5 / 16.0f);
@@ -109,23 +97,19 @@ public static class DitheringExtension
         {
             for (int x = 0; x < bitmap.Width; x++)
             {
-                // Get the current pixel and its color values
                 ColorSpace currentPixel = bitmap.GetPixel(x, y);
                 int r = Coefficient.Denormalize(currentPixel.First);
                 int g = Coefficient.Denormalize(currentPixel.Second);
                 int b = Coefficient.Denormalize(currentPixel.Third);
 
-                // Quantize the color values to the specified bit depth
-                int quantizedR = (int)Math.Round(r / (float)((1 << bitDepth) - 1));
-                int quantizedG = (int)Math.Round(g / (float)((1 << bitDepth) - 1));
-                int quantizedB = (int)Math.Round(b / (float)((1 << bitDepth) - 1));
+                int quantizedR = (int)float.Round(r / (float)((1 << bitDepth) - 1));
+                int quantizedG = (int)float.Round(g / (float)((1 << bitDepth) - 1));
+                int quantizedB = (int)float.Round(b / (float)((1 << bitDepth) - 1));
 
-                // Calculate the error between the original and quantized values
                 int rError = r - quantizedR;
                 int gError = g - quantizedG;
                 int bError = b - quantizedB;
 
-                // Propagate the error to the neighboring pixels
                 PropagateError(bitmap, x + 1, y, rError, gError, bError, 7 / 16.0f);
                 PropagateError(bitmap, x - 1, y + 1, rError, gError, bError, 3 / 16.0f);
                 PropagateError(bitmap, x, y + 1, rError, gError, bError, 5 / 16.0f);
@@ -142,23 +126,19 @@ public static class DitheringExtension
         {
             for (int x = 0; x < bitmap.Width; x++)
             {
-                // Get the current pixel and its color values
                 ColorSpace currentPixel = bitmap.GetPixel(x, y);
                 int r = Coefficient.Denormalize(currentPixel.First);
                 int g = Coefficient.Denormalize(currentPixel.Second);
                 int b = Coefficient.Denormalize(currentPixel.Third);
 
-                // Quantize the color values to the specified bit depth
-                int quantizedR = (int)Math.Round(r / (float)((1 << bitDepth) - 1));
-                int quantizedG = (int)Math.Round(g / (float)((1 << bitDepth) - 1));
-                int quantizedB = (int)Math.Round(b / (float)((1 << bitDepth) - 1));
+                int quantizedR = (int)float.Round(r / (float)((1 << bitDepth) - 1));
+                int quantizedG = (int)float.Round(g / (float)((1 << bitDepth) - 1));
+                int quantizedB = (int)float.Round(b / (float)((1 << bitDepth) - 1));
 
-                // Calculate the error between the original and quantized values
                 int rError = r - quantizedR;
                 int gError = g - quantizedG;
                 int bError = b - quantizedB;
 
-                // Propagate the error to the neighboring pixels
                 PropagateError(bitmap, x + 1, y, rError, gError, bError, 1 / 8.0f);
                 PropagateError(bitmap, x + 2, y, rError, gError, bError, 1 / 8.0f);
                 PropagateError(bitmap, x - 1, y + 1, rError, gError, bError, 1 / 8.0f);
@@ -172,14 +152,26 @@ public static class DitheringExtension
     }
 
     private static void PropagateError(
-        PortableBitmap bitmap, int x, int y,
-        int rError, int gError, int bError,
+        PortableBitmap bitmap,
+        int x,
+        int y,
+        int rError,
+        int gError,
+        int bError,
         float factor)
     {
-        if (x >= 0 && x < bitmap.Width && y >= 0 && y < bitmap.Height)
+        if (x < 0 || x >= bitmap.Width || y < 0 || y >= bitmap.Height)
         {
-            ColorSpace newPixel = new ColorSpace( Coefficient.Normalize((int)Math.Round(rError * factor)), Coefficient.Normalize((int)Math.Round(gError * factor)), Coefficient.Normalize((int)Math.Round(bError * factor)));
-            bitmap.SetPixel(x, y, newPixel);
+            return;
         }
+
+        var newPixel = new ColorSpace
+        {
+            First = Coefficient.Normalize((int)Math.Round(rError * factor)),
+            Second = Coefficient.Normalize((int)Math.Round(gError * factor)),
+            Third = Coefficient.Normalize((int)Math.Round(bError * factor)),
+        };
+
+        bitmap.SetPixel(x, y, newPixel);
     }
 }
