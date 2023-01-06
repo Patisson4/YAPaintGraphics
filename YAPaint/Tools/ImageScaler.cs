@@ -1,5 +1,4 @@
-﻿using System;
-using YAPaint.Models;
+﻿using YAPaint.Models;
 
 namespace YAPaint.Tools;
 
@@ -16,18 +15,18 @@ public static class ImageScaler
         int scaledHeight = (int)(scaleY * bitmap.Height);
         var scaledMap = new ColorSpace[scaledWidth, scaledHeight];
 
-        var offsetX = focusX * scaleX * bitmap.Width;
-        var offsetY = focusY * scaleY * bitmap.Height;
+        float offsetX = focusX * scaleX * bitmap.Width;
+        float offsetY = focusY * scaleY * bitmap.Height;
 
-        for (var j = 0; j < scaledHeight; j++)
+        for (int j = 0; j < scaledHeight; j++)
         {
-            for (var i = 0; i < scaledWidth; i++)
+            for (int i = 0; i < scaledWidth; i++)
             {
-                var x = (int)((i + offsetX) / scaleX);
-                var y = (int)((j + offsetY) / scaleY);
+                int x = (int)((i + offsetX) / scaleX);
+                int y = (int)((j + offsetY) / scaleY);
 
-                x = Math.Clamp(x, 0, bitmap.Width - 1);
-                y = Math.Clamp(y, 0, bitmap.Height - 1);
+                x = int.Clamp(x, 0, bitmap.Width - 1);
+                y = int.Clamp(y, 0, bitmap.Height - 1);
 
                 scaledMap[i, j] = bitmap.GetPixel(x, y);
             }
@@ -64,15 +63,15 @@ public static class ImageScaler
                 float srcX = (x + offsetX) / scaleX;
                 float srcY = (y + offsetY) / scaleY;
 
-                int srcX1 = (int)Math.Floor(srcX);
-                int srcY1 = (int)Math.Floor(srcY);
-                int srcX2 = (int)Math.Floor(srcX) + 1;
-                int srcY2 = (int)Math.Floor(srcY) + 1;
+                int srcX1 = (int)float.Floor(srcX);
+                int srcY1 = (int)float.Floor(srcY);
+                int srcX2 = (int)float.Floor(srcX) + 1;
+                int srcY2 = (int)float.Floor(srcY) + 1;
 
-                srcX1 = Math.Max(0, Math.Min(srcX1, bitmap.Width - 1));
-                srcY1 = Math.Max(0, Math.Min(srcY1, bitmap.Height - 1));
-                srcX2 = Math.Max(0, Math.Min(srcX2, bitmap.Width - 1));
-                srcY2 = Math.Max(0, Math.Min(srcY2, bitmap.Height - 1));
+                srcX1 = int.Clamp(srcX1, 0, bitmap.Width - 1);
+                srcY1 = int.Clamp(srcY1, 0, bitmap.Height - 1);
+                srcX2 = int.Clamp(srcX2, 0, bitmap.Width - 1);
+                srcY2 = int.Clamp(srcY2, 0, bitmap.Height - 1);
 
                 scaledMap[x, y] = Interpolate(bitmap, srcX, srcY, srcX1, srcX2, srcY1, srcY2);
             }
