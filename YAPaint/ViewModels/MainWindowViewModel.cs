@@ -577,6 +577,25 @@ public class MainWindowViewModel : ViewModelBase
             FileLogger.Log("ERR", $"{e}\n");
         }
     }
+    
+    public void HideHistograms()
+    {
+        try
+        {
+            FileLogger.SharedTimer.Restart();
+
+            IsHistogramVisible = false;
+
+            FileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Generated in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            FileLogger.Log("ERR", $"{e}\n");
+        }
+    }
 
     public void CorrectIntensity()
     {

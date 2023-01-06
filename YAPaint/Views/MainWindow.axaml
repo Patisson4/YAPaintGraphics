@@ -144,6 +144,7 @@
             <StackPanel Orientation="Horizontal" Spacing="5">
                 <TextBlock Text="Histograms" VerticalAlignment="Center" />
                 <Button Content="Generate" Command="{Binding DrawHistograms}" />
+                <Button Content="Hide" Command="{Binding HideHistograms}" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="5">
                 <TextBlock Text="Intensity" VerticalAlignment="Center" />
