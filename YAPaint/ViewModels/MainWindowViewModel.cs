@@ -488,6 +488,42 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
+    public void GenerateGradient()
+    {
+        try
+        {
+            FileLogger.SharedTimer.Restart();
+
+            var map = new ColorSpace[256, 256];
+
+            for (int i = 0; i < 256; i++)
+            {
+                for (int j = 0; j < 256; j++)
+                {
+                    var pixel = new ColorSpace
+                    {
+                        First = (float)i / 256,
+                        Second = (float)i / 256,
+                        Third = (float)i / 256,
+                    };
+                    map[i, j] = pixel;
+                }
+            }
+
+            _portableBitmap = new PortableBitmap(map, CurrentColorConverter);
+            AvaloniaImage = _portableBitmap.ToAvalonia();
+
+            FileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Generated in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            FileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
     public void DitherOrdered()
     {
         try

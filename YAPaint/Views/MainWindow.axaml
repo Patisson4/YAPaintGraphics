@@ -104,6 +104,8 @@
                                Maximum="8"
                                Increment="1"
                                FormatString="{}{0:#,0}" />
+                <TextBlock Text="Gradient" VerticalAlignment="Center" />
+                <Button Content="Generate" Command="{Binding GenerateGradient}" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="5">
                 <TextBlock Text="Scale" VerticalAlignment="Center" />
