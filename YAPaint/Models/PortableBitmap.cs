@@ -13,7 +13,7 @@ public class PortableBitmap
     public PortableBitmap(
         ColorSpace[,] map,
         IColorBaseConverter colorConverter,
-        float gamma,
+        float gamma = -1,
         bool isFirstChannelVisible = true,
         bool isSecondChannelVisible = true,
         bool isThirdChannelVisible = true)

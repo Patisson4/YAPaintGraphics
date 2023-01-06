@@ -688,7 +688,7 @@ public class MainWindowViewModel : ViewModelBase
 
             FileLogger.SharedTimer.Stop();
             _operationsCount++;
-            Message = $"({_operationsCount}) Generated in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            Message = $"({_operationsCount}) Drew in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
             FileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
@@ -696,7 +696,7 @@ public class MainWindowViewModel : ViewModelBase
             FileLogger.Log("ERR", $"{e}\n");
         }
     }
-    
+
     public void HideHistograms()
     {
         try
@@ -707,7 +707,7 @@ public class MainWindowViewModel : ViewModelBase
 
             FileLogger.SharedTimer.Stop();
             _operationsCount++;
-            Message = $"({_operationsCount}) Generated in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            Message = $"({_operationsCount}) Hided in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
             FileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
