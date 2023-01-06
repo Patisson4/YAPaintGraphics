@@ -225,10 +225,12 @@ public static class PngConverter
                     }
                 }
 
-                map[x, y] = new ColorSpace(
-                    Coefficient.Normalize(r),
-                    Coefficient.Normalize(g),
-                    Coefficient.Normalize(b));
+                map[x, y] = new ColorSpace
+                {
+                    First = Coefficient.Normalize(r),
+                    Second = Coefficient.Normalize(g),
+                    Third = Coefficient.Normalize(b),
+                };
             }
 
             raw.CopyTo(prior);

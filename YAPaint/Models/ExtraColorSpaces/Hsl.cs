@@ -5,7 +5,18 @@ public class Hsl : IColorConverter
     private Hsl() { }
     public static IColorConverter Instance { get; } = new Hsl();
 
-    public ColorSpace DefaultValue { get; } = new ColorSpace(0f, 1f, 0.5f);
+    public ColorSpace Black { get; } = new ColorSpace { First = 0f, Second = 0f, Third = 0f };
+    public ColorSpace White { get; } = new ColorSpace { First = 0f, Second = 0f, Third = 1f };
+    public ColorSpace Default { get; } = new ColorSpace { First = 0f, Second = 1f, Third = .5f };
+
+    public string FirstChannelName => "Hue";
+    public string SecondChannelName => "Saturation";
+    public string ThirdChannelName => "Lightness";
+
+    public float GetGrayValue(ColorSpace color)
+    {
+        return color.First;
+    }
 
     public ColorSpace ToRgb(ref ColorSpace color)
     {
@@ -56,7 +67,12 @@ public class Hsl : IColorConverter
         var green = green1 + min;
         var blue = blue1 + min;
 
-        return new ColorSpace(Coefficient.Truncate(red), Coefficient.Truncate(green), Coefficient.Truncate(blue));
+        return new ColorSpace
+        {
+            First = float.Clamp(red, 0, 1),
+            Second = float.Clamp(green, 0, 1),
+            Third = float.Clamp(blue, 0, 1),
+        };
     }
 
     public ColorSpace FromRgb(ref ColorSpace color)
@@ -70,11 +86,11 @@ public class Hsl : IColorConverter
         {
             hue = 0;
         }
-        else if (max == color.First)
+        else if (float.Abs(max - color.First) < float.Epsilon)
         {
             hue = ((color.Second - color.Third) / chroma + 6) % 6;
         }
-        else if (max == color.Second)
+        else if (float.Abs(max - color.Second) < float.Epsilon)
         {
             hue = (color.Third - color.First) / chroma + 2;
         }
@@ -85,7 +101,12 @@ public class Hsl : IColorConverter
 
         if (float.Abs(max - min) < float.Epsilon || lightness == 0f)
         {
-            return new ColorSpace(hue / 6, saturation, lightness);
+            return new ColorSpace
+            {
+                First = float.Clamp(hue / 6, 0, 1),
+                Second = float.Clamp(saturation, 0, 1),
+                Third = float.Clamp(lightness, 0, 1),
+            };
         }
 
         //avoiding floating point error
@@ -98,6 +119,11 @@ public class Hsl : IColorConverter
             saturation = chroma / (1f - float.Abs(max + min - 1f));
         }
 
-        return new ColorSpace(hue / 6, saturation, lightness);
+        return new ColorSpace
+        {
+            First = float.Clamp(hue / 6, 0, 1),
+            Second = float.Clamp(saturation, 0, 1),
+            Third = float.Clamp(lightness, 0, 1),
+        };
     }
 }

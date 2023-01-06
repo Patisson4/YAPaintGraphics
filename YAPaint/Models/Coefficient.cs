@@ -1,22 +1,7 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿namespace YAPaint.Models;
 
-namespace YAPaint.Models;
-
-public readonly record struct Coefficient
+public static class Coefficient
 {
-    private readonly float _value;
-
-    public Coefficient(float value, [CallerArgumentExpression(nameof(value))] string paramName = null)
-    {
-        if (value is < 0f or > 1f)
-        {
-            throw new ArgumentOutOfRangeException(paramName, value, "Value exceeds operating range");
-        }
-
-        _value = value;
-    }
-
     public static float Normalize(int value)
     {
         return (float)value / byte.MaxValue;
@@ -25,25 +10,5 @@ public readonly record struct Coefficient
     public static byte Denormalize(float value)
     {
         return (byte)(value * byte.MaxValue);
-    }
-
-    public static float Truncate(float value)
-    {
-        return value switch
-        {
-            > 1f => 1f,
-            < 0f => 0f,
-            _ => value,
-        };
-    }
-
-    public static implicit operator Coefficient(float value)
-    {
-        return new Coefficient(value);
-    }
-
-    public static implicit operator float(Coefficient coefficient)
-    {
-        return coefficient._value;
     }
 }

@@ -16,7 +16,7 @@ public static class IntensityCorrector
                 var newPixelFirst = float.Clamp((pixel.First - leftEdge) / (rightEdge - leftEdge), 0, 1);
                 var newPixelSecond = float.Clamp((pixel.Second - leftEdge) / (rightEdge - leftEdge), 0, 1);
                 var newPixelThird = float.Clamp((pixel.Third - leftEdge) / (rightEdge - leftEdge), 0, 1);
-                var newPixel = new ColorSpace(newPixelFirst, newPixelSecond, newPixelThird);
+                var newPixel = new ColorSpace { First = newPixelFirst, Second = newPixelSecond, Third = newPixelThird };
                 bitmap.SetPixel(x, y, newPixel);
             }
         }

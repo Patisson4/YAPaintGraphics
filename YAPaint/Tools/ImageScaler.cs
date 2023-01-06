@@ -110,7 +110,12 @@ public static class ImageScaler
         float g = c1.Second * w1 + c2.Second * w2 + c3.Second * w3 + c4.Second * w4;
         float b = c1.Third * w1 + c2.Third * w2 + c3.Third * w3 + c4.Third * w4;
 
-        return new ColorSpace(Math.Clamp(r, 0, 1), Math.Clamp(g, 0, 1), Math.Clamp(b, 0, 1));
+        return new ColorSpace
+        {
+            First = float.Clamp(r, 0, 1),
+            Second = float.Clamp(g, 0, 1),
+            Third = float.Clamp(b, 0, 1),
+        };
     }
 
     public static PortableBitmap ScaleLanczos3(
@@ -160,10 +165,12 @@ public static class ImageScaler
                     }
                 }
 
-                scaledMap[x, y] = new ColorSpace(
-                    float.Clamp(red, 0, 1),
-                    float.Clamp(green, 0, 1),
-                    float.Clamp(blue, 0, 1));
+                scaledMap[x, y] = new ColorSpace
+                {
+                    First = float.Clamp(red, 0, 1),
+                    Second = float.Clamp(green, 0, 1),
+                    Third = float.Clamp(blue, 0, 1),
+                };
             }
         }
 
@@ -225,10 +232,12 @@ public static class ImageScaler
                     }
                 }
 
-                scaledMap[x, y] = new ColorSpace(
-                    float.Clamp(red, 0, 1),
-                    float.Clamp(green, 0, 1),
-                    float.Clamp(blue, 0, 1));
+                scaledMap[x, y] = new ColorSpace
+                {
+                    First = float.Clamp(red, 0, 1),
+                    Second = float.Clamp(green, 0, 1),
+                    Third = float.Clamp(blue, 0, 1),
+                };
             }
         }
 

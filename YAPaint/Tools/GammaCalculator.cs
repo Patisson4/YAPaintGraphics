@@ -30,24 +30,30 @@ public static class GammaCalculator
     {
         if (float.IsPositiveInfinity(value))
         {
-            return new ColorSpace(
-                CalculateSRgbGamma(color.First),
-                CalculateSRgbGamma(color.Second),
-                CalculateSRgbGamma(color.Third));
+            return new ColorSpace
+            {
+                First = CalculateSRgbGamma(color.First),
+                Second = CalculateSRgbGamma(color.Second),
+                Third = CalculateSRgbGamma(color.Third),
+            };
         }
 
         if (value == 0)
         {
-            return new ColorSpace(
-                CalculateInverseSRgbGamma(color.First),
-                CalculateInverseSRgbGamma(color.Second),
-                CalculateInverseSRgbGamma(color.Third));
+            return new ColorSpace
+            {
+                First = CalculateInverseSRgbGamma(color.First),
+                Second = CalculateInverseSRgbGamma(color.Second),
+                Third = CalculateInverseSRgbGamma(color.Third),
+            };
         }
 
-        return new ColorSpace(
-            float.Pow(color.First, value),
-            float.Pow(color.Second, value),
-            float.Pow(color.Third, value));
+        return new ColorSpace
+        {
+            First = float.Pow(color.First, value),
+            Second = float.Pow(color.Second, value),
+            Third = float.Pow(color.Third, value),
+        };
     }
 
     private static float CalculateSRgbGamma(float value)

@@ -18,17 +18,14 @@ public static class ImageFilter
             for (int y = 0; y < bitmap.Height; y++)
             {
                 var color = bitmap.GetPixel(x, y);
-                var averageColor = (Coefficient.Denormalize(color.First)
-                                  + Coefficient.Denormalize(color.Second)
-                                  + Coefficient.Denormalize(color.Third))
-                                 / 3;
+                var averageColor = Coefficient.Denormalize(bitmap.ColorConverter.GetGrayValue(color));
                 if (averageColor >= threshold)
                 {
-                    filteredMap[x, y] = new ColorSpace(1, 1, 1); //TODO: use static black&white colors
+                    filteredMap[x, y] = bitmap.ColorConverter.White;
                 }
                 else
                 {
-                    filteredMap[x, y] = new ColorSpace(0, 0, 0);
+                    filteredMap[x, y] = bitmap.ColorConverter.Black;
                 }
             }
         }
@@ -98,8 +95,7 @@ public static class ImageFilter
             for (int y = 0; y < bitmap.Height; y++)
             {
                 var neighbors = bitmap.GetNeighbors(x, y, kernelRadius);
-                var median = FindMedian(neighbors);
-                filteredMap[x, y] = new ColorSpace(median.First, median.Second, median.Third);
+                filteredMap[x, y] = FindMedian(neighbors);
             }
         }
 
@@ -162,10 +158,12 @@ public static class ImageFilter
                     }
                 }
 
-                filteredMap[x, y] = new ColorSpace(
-                    float.Clamp(color1, 0, 1),
-                    float.Clamp(color2, 0, 1),
-                    float.Clamp(color3, 0, 1));
+                filteredMap[x, y] = new ColorSpace
+                {
+                    First = float.Clamp(color1, 0, 1),
+                    Second = float.Clamp(color2, 0, 1),
+                    Third = float.Clamp(color3, 0, 1),
+                };
             }
         }
 
@@ -212,7 +210,7 @@ public static class ImageFilter
                 color1 /= kernelSize * kernelSize;
                 color2 /= kernelSize * kernelSize;
                 color3 /= kernelSize * kernelSize;
-                filteredMap[x, y] = new ColorSpace(color1, color2, color3);
+                filteredMap[x, y] = new ColorSpace { First = color1, Second = color2, Third = color3 };
             }
         }
 
@@ -246,13 +244,9 @@ public static class ImageFilter
                        + neighbors[2, 1].First * 2
                        + neighbors[0, 2].First * -1
                        + neighbors[2, 2].First * 1;
-                var g = float.Sqrt(gx * gx + gy * gy);
-                if (g > 1)
-                {
-                    g = 1;
-                }
 
-                filteredMap[x, y] = new ColorSpace(g, g, g);
+                var g = float.Clamp(float.Sqrt(gx * gx + gy * gy), 0, 1);
+                filteredMap[x, y] = new ColorSpace { First = g, Second = g, Third = g };
             }
         }
 
@@ -473,7 +467,13 @@ public static class ImageFilter
                 sharpenedColorR = float.Clamp(sharpenedColorR, 0, 1);
                 sharpenedColorG = float.Clamp(sharpenedColorG, 0, 1);
                 sharpenedColorB = float.Clamp(sharpenedColorB, 0, 1);
-                filteredMap[x, y] = new ColorSpace(sharpenedColorR, sharpenedColorG, sharpenedColorB);
+
+                filteredMap[x, y] = new ColorSpace
+                {
+                    First = sharpenedColorR,
+                    Second = sharpenedColorG,
+                    Third = sharpenedColorB,
+                };
             }
         }
         
