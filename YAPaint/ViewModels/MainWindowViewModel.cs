@@ -149,6 +149,9 @@ public class MainWindowViewModel : ViewModelBase
     public float C { get; set; }
 
     [Reactive]
+    public int BitDepth { get; set; } = 1;
+
+    [Reactive]
     public float IntensityThreshold { get; set; } = 0.1f;
 
     [Reactive]
@@ -477,6 +480,86 @@ public class MainWindowViewModel : ViewModelBase
             FileLogger.SharedTimer.Stop();
             _operationsCount++;
             Message = $"({_operationsCount}) Scaled in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            FileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void DitherOrdered()
+    {
+        try
+        {
+            FileLogger.SharedTimer.Restart();
+
+            _portableBitmap = _portableBitmap.DitherOrdered(BitDepth);
+            AvaloniaImage = _portableBitmap.ToAvalonia();
+
+            FileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Dithered in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            FileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void DitherRandom()
+    {
+        try
+        {
+            FileLogger.SharedTimer.Restart();
+
+            _portableBitmap = _portableBitmap.DitherRandom(BitDepth);
+            AvaloniaImage = _portableBitmap.ToAvalonia();
+
+            FileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Dithered in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            FileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void DitherFloydSteinberg()
+    {
+        try
+        {
+            FileLogger.SharedTimer.Restart();
+
+            _portableBitmap = _portableBitmap.DitherFloydSteinberg(BitDepth);
+            AvaloniaImage = _portableBitmap.ToAvalonia();
+
+            FileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Dithered in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            FileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void DitherAtkinson()
+    {
+        try
+        {
+            FileLogger.SharedTimer.Restart();
+
+            _portableBitmap = _portableBitmap.DitherAtkinson(BitDepth);
+            AvaloniaImage = _portableBitmap.ToAvalonia();
+
+            FileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Dithered in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
             FileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
