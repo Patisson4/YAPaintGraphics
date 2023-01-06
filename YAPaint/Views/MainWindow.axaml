@@ -22,7 +22,7 @@
     </Window.Styles>
 
     <DockPanel LastChildFill="False">
-        <Menu DockPanel.Dock="Top" HorizontalAlignment="Left" Width="120">
+        <Menu DockPanel.Dock="Top" HorizontalAlignment="Left" Width="255">
             <MenuItem Header="File">
                 <MenuItem Header="Open...">
                     <MenuItem Header="PNG" Command="{Binding OpenPng}" />
@@ -79,8 +79,8 @@
                           Content="{Binding ThirdChannelName}"
                           Command="{Binding ToggleThirdChannel}" />
             </StackPanel>
-            <TextBlock Text="Gamma" VerticalAlignment="Center" />
             <StackPanel Orientation="Horizontal" Spacing="5">
+                <TextBlock Text="Gamma" VerticalAlignment="Center" />
                 <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
                                Value="{Binding Gamma}"
                                Minimum="0.0"
@@ -115,14 +115,14 @@
                                Minimum="-0.5"
                                Maximum="0.5"
                                Increment="0.01"
-                               FormatString="{}{0:#,0.00;'';''}" />
+                               FormatString="{}{0:#,0.00}" />
                 <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
                                Value="{Binding FocalPointY}"
                                Watermark="Y"
                                Minimum="-0.5"
                                Maximum="0.5"
                                Increment="0.01"
-                               FormatString="{}{0:#,0.00;'';''}" />
+                               FormatString="{}{0:#,0.00}" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="5">
                 <TextBlock Text="BC" VerticalAlignment="Center" />
@@ -187,17 +187,17 @@
                                Increment="1"
                                FormatString="{}{0:#,0}" />
             </StackPanel>
-            <StackPanel Orientation="Vertical" IsVisible="{Binding IsHistogramVisible}">
-                <Image Width="300" Source="{Binding Histogram1}" RenderOptions.BitmapInterpolationMode="Default" />
-                <Image Width="300" Source="{Binding Histogram2}" RenderOptions.BitmapInterpolationMode="Default" />
-                <Image Width="300" Source="{Binding Histogram3}" RenderOptions.BitmapInterpolationMode="Default" />
-            </StackPanel>
         </StackPanel>
         <TextBlock DockPanel.Dock="Bottom"
                    HorizontalAlignment="Left"
                    Padding="10"
                    Background="Black"
                    Text="{Binding Message}" />
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" IsVisible="{Binding IsHistogramVisible}">
+            <Image Width="300" Source="{Binding Histogram1}" RenderOptions.BitmapInterpolationMode="Default" />
+            <Image Width="300" Source="{Binding Histogram2}" RenderOptions.BitmapInterpolationMode="Default" />
+            <Image Width="300" Source="{Binding Histogram3}" RenderOptions.BitmapInterpolationMode="Default" />
+        </StackPanel>
         <Canvas ZIndex="-1">
             <Image Source="{Binding AvaloniaImage}"
                    ZIndex="-1"
