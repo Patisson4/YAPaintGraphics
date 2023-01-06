@@ -13,7 +13,7 @@ public static class GammaCalculator
             for (int i = 0; i < bitmap.Width; i++)
             {
                 ColorSpace pixel = bitmap.GetPixel(i, j);
-                map[i, j] = pixel.WithGamma(value);
+                map[i, j] = WithGamma(ref pixel, value);
             }
         }
 
@@ -26,7 +26,7 @@ public static class GammaCalculator
             bitmap.IsThirdVisible);
     }
 
-    private static ColorSpace WithGamma(this ref ColorSpace color, float value)
+    private static ColorSpace WithGamma(ref ColorSpace color, float value)
     {
         if (float.IsPositiveInfinity(value))
         {
