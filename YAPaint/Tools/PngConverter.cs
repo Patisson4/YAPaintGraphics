@@ -5,7 +5,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 using YAPaint.Models;
-using YAPaint.Models.ColorSpaces;
 using YAPaint.Models.ExtraColorSpaces;
 
 namespace YAPaint.Tools;
@@ -48,7 +47,7 @@ public static class PngConverter
 
         if (inputStream.Read(signature) != 8 || !signature.SequenceEqual(PngSignature))
         {
-            throw new InvalidDataException("Invalid Png Signature");
+            throw new ArgumentException("Invalid Png Signature");
         }
 
         Span<byte> chunkLengthBytes = stackalloc byte[SizeOfInt];
@@ -71,7 +70,10 @@ public static class PngConverter
             uint expectedChunkCrc = CalculateCrc(chunkTypeBytes, chunkData);
             if (chunkCrc != expectedChunkCrc)
             {
-                throw new InvalidDataException("Invalid crc");
+                throw new ArgumentOutOfRangeException(
+                    nameof(chunkCrc),
+                    chunkCrc,
+                    $"Invalid crc, expected {expectedChunkCrc}");
             }
 
             if (chunkTypeBytes.SequenceEqual(IhdrChunkName))
@@ -101,7 +103,7 @@ public static class PngConverter
             {
                 if (chunkLength % 3 != 0)
                 {
-                    throw new InvalidDataException("Invalid PLTE format");
+                    throw new ArgumentException("Invalid PLTE format");
                 }
 
                 for (int i = 0; i < chunkLength; i += 3)
@@ -127,7 +129,7 @@ public static class PngConverter
 
         if (width == 0 || height == 0)
         {
-            throw new InvalidDataException("Missing required chunk in PNG file");
+            throw new ArgumentException("Missing required chunk in PNG file");
         }
 
         if (bitDepth != 8)
@@ -199,7 +201,7 @@ public static class PngConverter
 
                     break;
                 default:
-                    throw new InvalidDataException("Invalid filter type");
+                    throw new ArgumentOutOfRangeException(nameof(filterType), filterType, "Invalid filter type");
             }
 
             for (int x = 0; x < width; x++)
@@ -249,7 +251,7 @@ public static class PngConverter
             3 => 1,
             4 => 2,
             6 => 4,
-            _ => throw new InvalidDataException(),
+            _ => throw new ArgumentOutOfRangeException(nameof(colorType), colorType, "Invalid color type"),
         };
     }
 
