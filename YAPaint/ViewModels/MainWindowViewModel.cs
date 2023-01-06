@@ -174,6 +174,9 @@ public class MainWindowViewModel : ViewModelBase
             FileLogger.Log("DBG", $"Stream created at {FileLogger.SharedTimer.Elapsed.TotalSeconds} s");
 
             _portableBitmap = PnmParser.ReadImage(stream, CurrentColorConverter);
+            _portableBitmap.ChangeFirstChannelVisibility(_isFirstChannelVisible);
+            _portableBitmap.ChangeSecondChannelVisibility(_isSecondChannelVisible);
+            _portableBitmap.ChangeThirdChannelVisibility(_isThirdChannelVisible);
 
             AvaloniaImage = _portableBitmap.ToAvalonia();
 
@@ -206,8 +209,10 @@ public class MainWindowViewModel : ViewModelBase
 
             FileLogger.Log("DBG", $"Stream created at {FileLogger.SharedTimer.Elapsed.TotalSeconds} s");
 
-            //TODO: ApplyGamma inside if gamma was provided
             _portableBitmap = PngConverter.ReadPng(stream);
+            _portableBitmap.ChangeFirstChannelVisibility(_isFirstChannelVisible);
+            _portableBitmap.ChangeSecondChannelVisibility(_isSecondChannelVisible);
+            _portableBitmap.ChangeThirdChannelVisibility(_isThirdChannelVisible);
 
             AvaloniaImage = _portableBitmap.ToAvalonia();
 
@@ -355,9 +360,14 @@ public class MainWindowViewModel : ViewModelBase
                 return;
             }
 
+            if (_portableBitmap.IsFirstChannelVisible == _isFirstChannelVisible)
+            {
+                return;
+            }
+
             FileLogger.SharedTimer.Restart();
 
-            _portableBitmap.ToggleFirstChannel();
+            _portableBitmap.ChangeFirstChannelVisibility(_isFirstChannelVisible);
             AvaloniaImage = _portableBitmap.ToAvalonia();
 
             FileLogger.SharedTimer.Stop();
@@ -381,9 +391,14 @@ public class MainWindowViewModel : ViewModelBase
                 return;
             }
 
+            if (_portableBitmap.IsSecondChannelVisible == _isSecondChannelVisible)
+            {
+                return;
+            }
+
             FileLogger.SharedTimer.Restart();
 
-            _portableBitmap.ToggleSecondChannel();
+            _portableBitmap.ChangeSecondChannelVisibility(_isSecondChannelVisible);
             AvaloniaImage = _portableBitmap.ToAvalonia();
 
             FileLogger.SharedTimer.Stop();
@@ -407,9 +422,14 @@ public class MainWindowViewModel : ViewModelBase
                 return;
             }
 
+            if (_portableBitmap.IsThirdChannelVisible == _isThirdChannelVisible)
+            {
+                return;
+            }
+
             FileLogger.SharedTimer.Restart();
 
-            _portableBitmap.ToggleThirdChannel();
+            _portableBitmap.ChangeThirdChannelVisibility(_isThirdChannelVisible);
             AvaloniaImage = _portableBitmap.ToAvalonia();
 
             FileLogger.SharedTimer.Stop();

@@ -277,11 +277,7 @@ public static class PngConverter
 
         IhdrBuffer[8] = 8; // bit depth
 
-        // TODO: Replace with IsGrayScaleImage or sth
-        if (bitmap.ColorConverter is BlackAndWhite or GreyScale
-         || bitmap.IsFirstVisible && !bitmap.IsSecondVisible && !bitmap.IsThirdVisible
-         || !bitmap.IsFirstVisible && bitmap.IsSecondVisible && !bitmap.IsThirdVisible
-         || !bitmap.IsFirstVisible && !bitmap.IsSecondVisible && bitmap.IsThirdVisible)
+        if (bitmap.IsInSingleChannelMode)
         {
             IhdrBuffer[9] = 0; // greyscale
         }

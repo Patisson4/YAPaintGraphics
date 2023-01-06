@@ -36,9 +36,9 @@ public static class ImageScaler
             scaledMap,
             bitmap.ColorConverter,
             bitmap.Gamma,
-            bitmap.IsFirstVisible,
-            bitmap.IsSecondVisible,
-            bitmap.IsThirdVisible);
+            bitmap.IsFirstChannelVisible,
+            bitmap.IsSecondChannelVisible,
+            bitmap.IsThirdChannelVisible);
     }
 
     public static PortableBitmap ScaleBilinear(
@@ -81,9 +81,9 @@ public static class ImageScaler
             scaledMap,
             bitmap.ColorConverter,
             bitmap.Gamma,
-            bitmap.IsFirstVisible,
-            bitmap.IsSecondVisible,
-            bitmap.IsThirdVisible);
+            bitmap.IsFirstChannelVisible,
+            bitmap.IsSecondChannelVisible,
+            bitmap.IsThirdChannelVisible);
     }
 
     private static ColorSpace Interpolate(
@@ -177,9 +177,9 @@ public static class ImageScaler
             scaledMap,
             bitmap.ColorConverter,
             bitmap.Gamma,
-            bitmap.IsFirstVisible,
-            bitmap.IsSecondVisible,
-            bitmap.IsThirdVisible);
+            bitmap.IsFirstChannelVisible,
+            bitmap.IsSecondChannelVisible,
+            bitmap.IsThirdChannelVisible);
     }
 
     public static PortableBitmap ScaleBcSpline(
@@ -244,9 +244,9 @@ public static class ImageScaler
             scaledMap,
             bitmap.ColorConverter,
             bitmap.Gamma,
-            bitmap.IsFirstVisible,
-            bitmap.IsSecondVisible,
-            bitmap.IsThirdVisible);
+            bitmap.IsFirstChannelVisible,
+            bitmap.IsSecondChannelVisible,
+            bitmap.IsThirdChannelVisible);
     }
 
     private static float BcSplineKernel(float x, float B, float C)

@@ -21,9 +21,9 @@ public static class GammaCalculator
             map,
             bitmap.ColorConverter,
             bitmap.Gamma,
-            bitmap.IsFirstVisible,
-            bitmap.IsSecondVisible,
-            bitmap.IsThirdVisible);
+            bitmap.IsFirstChannelVisible,
+            bitmap.IsSecondChannelVisible,
+            bitmap.IsThirdChannelVisible);
     }
 
     private static ColorSpace WithGamma(ref ColorSpace color, float value)

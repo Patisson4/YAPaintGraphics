@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 using YAPaint.Models.ColorSpaces;
@@ -15,9 +14,9 @@ public class PortableBitmap
         ColorSpace[,] map,
         IColorBaseConverter colorConverter,
         float gamma,
-        bool isFirstVisible = true,
-        bool isSecondVisible = true,
-        bool isThirdVisible = true)
+        bool isFirstChannelVisible = true,
+        bool isSecondChannelVisible = true,
+        bool isThirdChannelVisible = true)
     {
         Width = map.GetLength(0);
         Height = map.GetLength(1);
@@ -27,9 +26,9 @@ public class PortableBitmap
             throw new ArgumentOutOfRangeException(nameof(map), map, "Bitmap cannot be empty");
         }
 
-        IsFirstVisible = isFirstVisible;
-        IsSecondVisible = isSecondVisible;
-        IsThirdVisible = isThirdVisible;
+        IsFirstChannelVisible = isFirstChannelVisible;
+        IsSecondChannelVisible = isSecondChannelVisible;
+        IsThirdChannelVisible = isThirdChannelVisible;
 
         ColorConverter = colorConverter;
         Gamma = gamma;
@@ -46,41 +45,48 @@ public class PortableBitmap
     public int Width { get; }
     public int Height { get; }
 
-    public bool IsFirstVisible { get; private set; }
-    public bool IsSecondVisible { get; private set; }
-    public bool IsThirdVisible { get; private set; }
+    public bool IsFirstChannelVisible { get; private set; }
+    public bool IsSecondChannelVisible { get; private set; }
+    public bool IsThirdChannelVisible { get; private set; }
+
+    public bool IsInSingleChannelMode =>
+        ColorConverter is BlackAndWhite or GreyScale
+     || IsFirstChannelVisible && !IsSecondChannelVisible && !IsThirdChannelVisible
+     || IsFirstChannelVisible && IsSecondChannelVisible && !IsThirdChannelVisible
+     || !IsFirstChannelVisible && !IsSecondChannelVisible && IsThirdChannelVisible;
 
     public ColorSpace GetPixel(int x, int y)
     {
-        ExceptionHelper.ThrowIfGreaterThan(x, Width);
-        ExceptionHelper.ThrowIfGreaterThan(y, Height);
+        ExceptionHelper.ThrowIfGreaterThan(x, Width - 1);
+        ExceptionHelper.ThrowIfGreaterThan(y, Height - 1);
 
         var color = _map[x, y];
-
-        if (IsFirstVisible && IsSecondVisible && IsThirdVisible)
+        if (IsFirstChannelVisible && IsSecondChannelVisible && IsThirdChannelVisible)
         {
             return color;
         }
 
-        var result = new ColorSpace(
-            IsFirstVisible ? color.First : ColorConverter.DefaultValue.First,
-            IsSecondVisible ? color.Second : ColorConverter.DefaultValue.Second,
-            IsThirdVisible ? color.Third : ColorConverter.DefaultValue.Third);
+        var result = new ColorSpace
+        {
+            First = IsFirstChannelVisible ? color.First : ColorConverter.Default.First,
+            Second = IsSecondChannelVisible ? color.Second : ColorConverter.Default.Second,
+            Third = IsThirdChannelVisible ? color.Third : ColorConverter.Default.Third,
+        };
 
         return result;
     }
 
     public void SetPixel(int x, int y, ColorSpace color)
     {
-        ExceptionHelper.ThrowIfGreaterThan(x, Width);
-        ExceptionHelper.ThrowIfGreaterThan(y, Height);
+        ExceptionHelper.ThrowIfGreaterThan(x, Width - 1);
+        ExceptionHelper.ThrowIfGreaterThan(y, Height - 1);
 
         _map[x, y] = color;
     }
 
     public void ConvertTo(IColorBaseConverter colorConverter)
     {
-        //consider more sophisticated check in the future
+        // WRN: consider more sophisticated check in the future; for now it's just comparing references of singleton instances
         if (ColorConverter == colorConverter)
         {
             return;
@@ -98,43 +104,36 @@ public class PortableBitmap
         ColorConverter = colorConverter;
     }
 
-    public void ToggleFirstChannel()
+    public void ChangeFirstChannelVisibility(bool visibility)
     {
-        IsFirstVisible = !IsFirstVisible;
+        IsFirstChannelVisible = visibility;
     }
 
-    public void ToggleSecondChannel()
+    public void ChangeSecondChannelVisibility(bool visibility)
     {
-        IsSecondVisible = !IsSecondVisible;
+        IsSecondChannelVisible = visibility;
     }
 
-    public void ToggleThirdChannel()
+    public void ChangeThirdChannelVisibility(bool visibility)
     {
-        IsThirdVisible = !IsThirdVisible;
+        IsThirdChannelVisible = visibility;
     }
 
     public void SaveRaw(Stream stream)
     {
         int type = 6;
-        if (ColorConverter is BlackAndWhite or GreyScale)
-        {
-            type = 5;
-        }
-        else if (IsFirstVisible && !IsSecondVisible && !IsThirdVisible
-              || !IsFirstVisible && IsSecondVisible && !IsThirdVisible
-              || !IsFirstVisible && !IsSecondVisible && IsThirdVisible)
+        if (IsInSingleChannelMode)
         {
             type = 5;
         }
 
-        bool byPart = type == 5;
         WriteHeader(stream, type, byte.MaxValue);
 
         for (int y = 0; y < Height; y++)
         {
             for (int x = 0; x < Width; x++)
             {
-                WriteBytePixel(stream, GetPixel(x, y), byPart);
+                WriteBytePixel(stream, GetPixel(x, y));
             }
         }
     }
@@ -142,29 +141,22 @@ public class PortableBitmap
     public void SavePlain(Stream stream)
     {
         int type = 3;
-        if (ColorConverter is BlackAndWhite or GreyScale)
-        {
-            type = 2;
-        }
-        else if (IsFirstVisible && !IsSecondVisible && !IsThirdVisible
-              || !IsFirstVisible && IsSecondVisible && !IsThirdVisible
-              || !IsFirstVisible && !IsSecondVisible && IsThirdVisible)
+        if (IsInSingleChannelMode)
         {
             type = 2;
         }
 
-        bool byPart = type == 2;
         WriteHeader(stream, type, byte.MaxValue);
 
         for (int y = 0; y < Height; y++)
         {
             for (int x = 0; x < Width - 1; x++)
             {
-                WritePlainPixel(stream, GetPixel(x, y), byPart);
+                WritePlainPixel(stream, GetPixel(x, y));
                 stream.Write(" "u8);
             }
 
-            WritePlainPixel(stream, GetPixel(Width - 1, y), byPart);
+            WritePlainPixel(stream, GetPixel(Width - 1, y));
             stream.Write("\n"u8);
         }
     }
@@ -176,58 +168,47 @@ public class PortableBitmap
         stream.Write(Encoding.ASCII.GetBytes($"{depth}\n"));
     }
 
-    private void WriteBytePixel(Stream stream, ColorSpace pixel, bool byPart = true)
+    private void WriteBytePixel(Stream stream, ColorSpace pixel)
     {
-        var bytePixel = pixel.ToRaw();
-        if (!byPart)
+        if (ColorConverter is BlackAndWhite or GreyScale
+         || IsFirstChannelVisible && !IsSecondChannelVisible && !IsThirdChannelVisible)
         {
-            stream.Write(bytePixel);
+            stream.WriteByte(Coefficient.Denormalize(pixel.First));
+        }
+        else if (!IsFirstChannelVisible && IsSecondChannelVisible && !IsThirdChannelVisible)
+        {
+            stream.WriteByte(Coefficient.Denormalize(pixel.Second));
+        }
+        else if (!IsFirstChannelVisible && !IsSecondChannelVisible && IsThirdChannelVisible)
+        {
+            stream.WriteByte(Coefficient.Denormalize(pixel.Third));
         }
         else
         {
-            if (ColorConverter is BlackAndWhite or GreyScale || IsFirstVisible)
-            {
-                stream.WriteByte(bytePixel[0]);
-            }
-            else if (IsSecondVisible)
-            {
-                stream.WriteByte(bytePixel[1]);
-            }
-            else if (IsThirdVisible)
-            {
-                stream.WriteByte(bytePixel[2]);
-            }
-            else
-            {
-                throw new UnreachableException($"Tried to serialize part of pixel: {pixel.ToPlain()}");
-            }
+            stream.WriteByte(Coefficient.Denormalize(pixel.First));
+            stream.WriteByte(Coefficient.Denormalize(pixel.Second));
+            stream.WriteByte(Coefficient.Denormalize(pixel.Third));
         }
     }
 
-    private void WritePlainPixel(Stream stream, ColorSpace pixel, bool byPart = true)
+    private void WritePlainPixel(Stream stream, ColorSpace pixel)
     {
-        if (!byPart)
+        if (ColorConverter is BlackAndWhite or GreyScale
+         || IsFirstChannelVisible && !IsSecondChannelVisible && !IsThirdChannelVisible)
         {
-            stream.Write(Encoding.ASCII.GetBytes($"{pixel.ToPlain()}"));
+            stream.Write(Encoding.ASCII.GetBytes($"{Coefficient.Denormalize(pixel.First)}"));
+        }
+        else if (!IsFirstChannelVisible && IsSecondChannelVisible && !IsThirdChannelVisible)
+        {
+            stream.Write(Encoding.ASCII.GetBytes($"{Coefficient.Denormalize(pixel.Second)}"));
+        }
+        else if (!IsFirstChannelVisible && !IsSecondChannelVisible && IsThirdChannelVisible)
+        {
+            stream.Write(Encoding.ASCII.GetBytes($"{Coefficient.Denormalize(pixel.Third)}"));
         }
         else
         {
-            if (ColorConverter is BlackAndWhite or GreyScale || IsFirstVisible)
-            {
-                stream.Write(Encoding.ASCII.GetBytes($"{Coefficient.Denormalize(pixel.First)}"));
-            }
-            else if (IsSecondVisible)
-            {
-                stream.Write(Encoding.ASCII.GetBytes($"{Coefficient.Denormalize(pixel.Second)}"));
-            }
-            else if (IsThirdVisible)
-            {
-                stream.Write(Encoding.ASCII.GetBytes($"{Coefficient.Denormalize(pixel.Third)}"));
-            }
-            else
-            {
-                throw new UnreachableException($"Tried to serialize part of pixel: {pixel.ToPlain()}");
-            }
+            stream.Write(Encoding.ASCII.GetBytes(pixel.ToString()));
         }
     }
 }

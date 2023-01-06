@@ -34,9 +34,9 @@ public static class ImageFilter
             filteredMap,
             bitmap.ColorConverter,
             bitmap.Gamma,
-            bitmap.IsFirstVisible,
-            bitmap.IsSecondVisible,
-            bitmap.IsThirdVisible);
+            bitmap.IsFirstChannelVisible,
+            bitmap.IsSecondChannelVisible,
+            bitmap.IsThirdChannelVisible);
     }
 
     public static PortableBitmap OtsuFilter(this PortableBitmap bitmap)
@@ -104,9 +104,9 @@ public static class ImageFilter
             filteredMap,
             bitmap.ColorConverter,
             bitmap.Gamma,
-            bitmap.IsFirstVisible,
-            bitmap.IsSecondVisible,
-            bitmap.IsThirdVisible);
+            bitmap.IsFirstChannelVisible,
+            bitmap.IsSecondChannelVisible,
+            bitmap.IsThirdChannelVisible);
     }
 
     public static PortableBitmap GaussianFilter(this PortableBitmap bitmap, int sigma)
@@ -172,9 +172,9 @@ public static class ImageFilter
             filteredMap,
             bitmap.ColorConverter,
             bitmap.Gamma,
-            bitmap.IsFirstVisible,
-            bitmap.IsSecondVisible,
-            bitmap.IsThirdVisible);
+            bitmap.IsFirstChannelVisible,
+            bitmap.IsSecondChannelVisible,
+            bitmap.IsThirdChannelVisible);
     }
 
     public static PortableBitmap BoxBlurFilter(this PortableBitmap bitmap, int kernelRadius)
@@ -219,9 +219,9 @@ public static class ImageFilter
             filteredMap,
             bitmap.ColorConverter,
             bitmap.Gamma,
-            bitmap.IsFirstVisible,
-            bitmap.IsSecondVisible,
-            bitmap.IsThirdVisible);
+            bitmap.IsFirstChannelVisible,
+            bitmap.IsSecondChannelVisible,
+            bitmap.IsThirdChannelVisible);
     }
 
     public static PortableBitmap SobelFilter(this PortableBitmap bitmap)
@@ -255,9 +255,9 @@ public static class ImageFilter
             filteredMap,
             bitmap.ColorConverter,
             bitmap.Gamma,
-            bitmap.IsFirstVisible,
-            bitmap.IsSecondVisible,
-            bitmap.IsThirdVisible);
+            bitmap.IsFirstChannelVisible,
+            bitmap.IsSecondChannelVisible,
+            bitmap.IsThirdChannelVisible);
     }
 
     public static PortableBitmap ContrastAdaptiveSharpening(this PortableBitmap bitmap, float sharpness)
@@ -556,9 +556,9 @@ public static class ImageFilter
             filteredMap,
             bitmap.ColorConverter,
             bitmap.Gamma,
-            bitmap.IsFirstVisible,
-            bitmap.IsSecondVisible,
-            bitmap.IsThirdVisible);
+            bitmap.IsFirstChannelVisible,
+            bitmap.IsSecondChannelVisible,
+            bitmap.IsThirdChannelVisible);
     }
 
     private static ColorSpace FindMedian(ColorSpace[,] matrix)
