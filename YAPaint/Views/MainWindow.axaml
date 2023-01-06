@@ -1,10 +1,10 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:YAPaint.ViewModels"
-        WindowState="Maximized"
         x:Class="YAPaint.Views.MainWindow"
         Icon="/Assets/1158164.png"
-        Title="YAPaint">
+        Title="YAPaint"
+        ExtendClientAreaToDecorationsHint="True">
 
     <Design.DataContext>
         <vm:MainWindowViewModel />
@@ -16,10 +16,13 @@
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
+        <Style Selector="Window[WindowState=Maximized]">
+            <Setter Property="Padding" Value="8" />
+        </Style>
     </Window.Styles>
 
     <DockPanel LastChildFill="False">
-        <Menu DockPanel.Dock="Top">
+        <Menu DockPanel.Dock="Top" HorizontalAlignment="Left" Width="120">
             <MenuItem Header="File">
                 <MenuItem Header="Open...">
                     <MenuItem Header="PNG" Command="{Binding OpenPng}" />
@@ -56,7 +59,7 @@
                     HorizontalAlignment="Right"
                     ZIndex="1"
                     Spacing="5"
-                    Background="White"
+                    Background="Black"
                     Width="300">
             <StackPanel Orientation="Horizontal" Spacing="5">
                 <TextBlock Text="ColorSpace" VerticalAlignment="Center" />
@@ -65,10 +68,16 @@
                           PointerWheelChanged="InputElement_OnPointerWheelChanged"
                           SelectionChanged="ColorSpacesComboBox_OnSelectionChanged" />
             </StackPanel>
-            <StackPanel Orientation="Horizontal" Spacing="5">
-                <CheckBox IsChecked="True" Content="First" Command="{Binding ToggleFirstChannel}" />
-                <CheckBox IsChecked="True" Content="Second" Command="{Binding ToggleSecondChannel}" />
-                <CheckBox IsChecked="True" Content="Third" Command="{Binding ToggleThirdChannel}" />
+            <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding IsColorConverter}">
+                <CheckBox IsChecked="True"
+                          Content="{Binding FirstChannelName}"
+                          Command="{Binding ToggleFirstChannel}" />
+                <CheckBox IsChecked="True"
+                          Content="{Binding SecondChannelName}"
+                          Command="{Binding ToggleSecondChannel}" />
+                <CheckBox IsChecked="True"
+                          Content="{Binding ThirdChannelName}"
+                          Command="{Binding ToggleThirdChannel}" />
             </StackPanel>
             <TextBlock Text="Gamma" VerticalAlignment="Center" />
             <StackPanel Orientation="Horizontal" Spacing="5">
@@ -187,10 +196,12 @@
         <TextBlock DockPanel.Dock="Bottom"
                    HorizontalAlignment="Left"
                    Padding="10"
-                   Background="White"
+                   Background="Black"
                    Text="{Binding Message}" />
         <Canvas ZIndex="-1">
-            <Image Source="{Binding AvaloniaImage}" ZIndex="-1" Margin="5"
+            <Image Source="{Binding AvaloniaImage}"
+                   ZIndex="-1"
+                   Margin="5"
                    RenderOptions.BitmapInterpolationMode="Default" />
         </Canvas>
 
