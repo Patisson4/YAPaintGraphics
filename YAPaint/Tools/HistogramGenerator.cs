@@ -35,7 +35,7 @@ public static class HistogramGenerator
             for (var x = 0; x < bitmap.Width; x++)
             {
                 var pixel = bitmap.GetPixel(x, y);
-                histogram[(int)bitmap.ColorConverter.GetGrayValue(pixel)]++;
+                histogram[Coefficient.Denormalize(bitmap.ColorConverter.GetGrayValue(pixel))]++;
             }
         }
 
