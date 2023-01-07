@@ -215,7 +215,10 @@
                    Padding="10"
                    Background="Black"
                    Text="{Binding Message}" />
-        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" IsVisible="{Binding IsHistogramVisible}">
+        <StackPanel DockPanel.Dock="Bottom"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    IsVisible="{Binding IsHistogramVisible}">
             <Image Width="300" Source="{Binding HistogramFirst}" RenderOptions.BitmapInterpolationMode="Default" />
             <Image Width="300" Source="{Binding HistogramSecond}" RenderOptions.BitmapInterpolationMode="Default" />
             <Image Width="300" Source="{Binding HistogramThird}" RenderOptions.BitmapInterpolationMode="Default" />
