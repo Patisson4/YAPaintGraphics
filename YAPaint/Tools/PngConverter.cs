@@ -90,11 +90,7 @@ public static class PngConverter
             else if (chunkTypeBytes.SequenceEqual(GamaChunkName))
             {
                 int parsedGamma = BinaryPrimitives.ReadInt32BigEndian(chunkData);
-                if (parsedGamma is SrgbGamma)
-                {
-                    gamma = 0;
-                }
-                else
+                if (parsedGamma is not (SrgbGamma or SrgbGamma - 1 or SrgbGamma + 1))
                 {
                     gamma = (float)parsedGamma / 100000;
                 }
