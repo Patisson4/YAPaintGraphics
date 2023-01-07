@@ -229,9 +229,9 @@ public static class PngConverter
 
                 map[x, y] = new ColorSpace
                 {
-                    First = Coefficient.Normalize(r),
-                    Second = Coefficient.Normalize(g),
-                    Third = Coefficient.Normalize(b),
+                    First = (float)r / ((1 << bitDepth) - 1),
+                    Second = (float)g / ((1 << bitDepth) - 1),
+                    Third = (float)b / ((1 << bitDepth) - 1),
                 };
             }
 
