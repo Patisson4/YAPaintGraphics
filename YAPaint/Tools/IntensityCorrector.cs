@@ -4,8 +4,9 @@ namespace YAPaint.Tools;
 
 public static class IntensityCorrector
 {
-    public static void CorrectIntensity(ref PortableBitmap bitmap, double proportion)
+    public static PortableBitmap CorrectIntensity(this PortableBitmap bitmap, double proportion)
     {
+        var map = new ColorSpace[bitmap.Width, bitmap.Height];
         (float leftEdge, float rightEdge) = FindEdges(bitmap, proportion);
 
         for (int y = 0; y < bitmap.Height; y++)
@@ -16,10 +17,17 @@ public static class IntensityCorrector
                 var newPixelFirst = float.Clamp((pixel.First - leftEdge) / (rightEdge - leftEdge), 0, 1);
                 var newPixelSecond = float.Clamp((pixel.Second - leftEdge) / (rightEdge - leftEdge), 0, 1);
                 var newPixelThird = float.Clamp((pixel.Third - leftEdge) / (rightEdge - leftEdge), 0, 1);
-                var newPixel = new ColorSpace { First = newPixelFirst, Second = newPixelSecond, Third = newPixelThird };
-                bitmap.SetPixel(x, y, newPixel);
+                map[x, y] = new ColorSpace { First = newPixelFirst, Second = newPixelSecond, Third = newPixelThird };
             }
         }
+
+        return new PortableBitmap(
+            map,
+            bitmap.ColorConverter,
+            bitmap.Gamma,
+            bitmap.IsFirstChannelVisible,
+            bitmap.IsSecondChannelVisible,
+            bitmap.IsThirdChannelVisible);
     }
 
     private static (float leftEdge, float rightEdge) FindEdges(PortableBitmap bitmap, double proportion)
