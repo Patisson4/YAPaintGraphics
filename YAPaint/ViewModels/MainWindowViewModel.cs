@@ -121,7 +121,7 @@ public class MainWindowViewModel : ViewModelBase
 
             FileLogger.SharedTimer.Stop();
             _operationsCount++;
-            Message = $"({_operationsCount}) Changed ColorSpace in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            Message = $"({_operationsCount}) Changed in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
             FileLogger.Log("INF", $"{Message}\n");
         }
     }
@@ -792,7 +792,7 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
-    public void DrawHistograms()
+    public void RenderHistograms()
     {
         try
         {
@@ -821,7 +821,7 @@ public class MainWindowViewModel : ViewModelBase
 
             FileLogger.SharedTimer.Stop();
             _operationsCount++;
-            Message = $"({_operationsCount}) Drew in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            Message = $"({_operationsCount} Rendered in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
             FileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
