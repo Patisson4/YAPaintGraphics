@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
@@ -52,75 +53,86 @@ public static class PngConverter
 
         Span<byte> chunkLengthBytes = stackalloc byte[SizeOfInt];
         Span<byte> chunkTypeBytes = stackalloc byte[SizeOfInt];
-
+        byte[] chunkData = Array.Empty<byte>();
         Span<byte> chunkCrcBytes = stackalloc byte[SizeOfInt];
-        while (true)
+        try
         {
-            inputStream.Read(chunkLengthBytes);
-            inputStream.Read(chunkTypeBytes);
-
-            int chunkLength = BinaryPrimitives.ReadInt32BigEndian(chunkLengthBytes);
-            byte[] chunkData = new byte[chunkLength]; // any way to improve memory allocations here???
-
-            inputStream.Read(chunkData, 0, chunkLength);
-            inputStream.Read(chunkCrcBytes);
-
-            uint chunkCrc = BinaryPrimitives.ReadUInt32BigEndian(chunkCrcBytes);
-
-            uint expectedChunkCrc = CalculateCrc(chunkTypeBytes, chunkData);
-            if (chunkCrc != expectedChunkCrc)
+            while (true)
             {
-                throw new ArgumentOutOfRangeException(
-                    nameof(chunkCrc),
-                    chunkCrc,
-                    $"Invalid crc, expected {expectedChunkCrc}");
-            }
+                inputStream.Read(chunkLengthBytes);
+                inputStream.Read(chunkTypeBytes);
 
-            if (chunkTypeBytes.SequenceEqual(IhdrChunkName))
-            {
-                width = BinaryPrimitives.ReadInt32BigEndian(chunkData);
-                height = BinaryPrimitives.ReadInt32BigEndian(chunkData.AsSpan()[SizeOfInt..]);
-                bitDepth = chunkData[8];
-                colorType = chunkData[9];
-                if (chunkData[12] != 0)
+                int chunkLength = BinaryPrimitives.ReadInt32BigEndian(chunkLengthBytes);
+                chunkData = ArrayPool<byte>.Shared.Rent(chunkLength);
+
+                inputStream.Read(chunkData, 0, chunkLength);
+                inputStream.Read(chunkCrcBytes);
+
+                uint chunkCrc = BinaryPrimitives.ReadUInt32BigEndian(chunkCrcBytes);
+
+                uint expectedChunkCrc = CalculateCrc(chunkTypeBytes, chunkData.AsSpan()[..chunkLength]);
+                if (chunkCrc != expectedChunkCrc)
                 {
-                    throw new NotSupportedException("Interlacing methods are not supported");
-                }
-            }
-            else if (chunkTypeBytes.SequenceEqual(GamaChunkName))
-            {
-                int parsedGamma = BinaryPrimitives.ReadInt32BigEndian(chunkData);
-                if (parsedGamma is not (SrgbGamma or SrgbGamma - 1 or SrgbGamma + 1))
-                {
-                    gamma = (float)parsedGamma / 100000;
-                }
-            }
-            else if (chunkTypeBytes.SequenceEqual(PlteChunkName))
-            {
-                if (chunkLength % 3 != 0)
-                {
-                    throw new ArgumentException("Invalid PLTE format");
+                    throw new ArgumentOutOfRangeException(
+                        nameof(chunkCrc),
+                        chunkCrc,
+                        $"Invalid crc, expected {expectedChunkCrc}");
                 }
 
-                for (int i = 0; i < chunkLength; i += 3)
+                if (chunkTypeBytes.SequenceEqual(IhdrChunkName))
                 {
-                    palette.Add((chunkData[i], chunkData[i + 1], chunkData[i + 2]));
+                    width = BinaryPrimitives.ReadInt32BigEndian(chunkData);
+                    height = BinaryPrimitives.ReadInt32BigEndian(chunkData.AsSpan()[SizeOfInt..]);
+                    bitDepth = chunkData[8];
+                    colorType = chunkData[9];
+                    if (chunkData[12] != 0)
+                    {
+                        throw new NotSupportedException("Interlacing methods are not supported");
+                    }
                 }
+                else if (chunkTypeBytes.SequenceEqual(GamaChunkName))
+                {
+                    int parsedGamma = BinaryPrimitives.ReadInt32BigEndian(chunkData);
+                    if (parsedGamma is not (SrgbGamma or SrgbGamma - 1 or SrgbGamma + 1))
+                    {
+                        gamma = (float)parsedGamma / 100000;
+                    }
+                }
+                else if (chunkTypeBytes.SequenceEqual(PlteChunkName))
+                {
+                    if (chunkLength % 3 != 0)
+                    {
+                        throw new ArgumentException("Invalid PLTE format");
+                    }
+
+                    for (int i = 0; i < chunkLength; i += 3)
+                    {
+                        palette.Add((chunkData[i], chunkData[i + 1], chunkData[i + 2]));
+                    }
+                }
+                else if (chunkTypeBytes.SequenceEqual(IdatChunkName))
+                {
+                    pixelData.Write(chunkData.AsSpan()[..chunkLength]);
+                }
+                else if (chunkTypeBytes.SequenceEqual(IendChunkName))
+                {
+                    ArrayPool<byte>.Shared.Return(chunkData);
+                    break;
+                }
+                else
+                {
+                    FileLogger.Log(
+                        "WRN",
+                        $"Unsupported chunk format: {Encoding.Default.GetString(chunkTypeBytes)}; chunk ignored");
+                }
+
+                ArrayPool<byte>.Shared.Return(chunkData);
             }
-            else if (chunkTypeBytes.SequenceEqual(IdatChunkName))
-            {
-                pixelData.Write(chunkData);
-            }
-            else if (chunkTypeBytes.SequenceEqual(IendChunkName))
-            {
-                break;
-            }
-            else
-            {
-                FileLogger.Log(
-                    "WRN",
-                    $"Unsupported chunk format: {Encoding.Default.GetString(chunkTypeBytes)}; chunk ignored");
-            }
+        }
+        catch (Exception e)
+        {
+            ArrayPool<byte>.Shared.Return(chunkData);
+            FileLogger.Log("ERR", $"{e}\n");
         }
 
         if (width == 0 || height == 0)
