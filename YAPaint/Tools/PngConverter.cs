@@ -235,7 +235,9 @@ public static class PngConverter
         }
 
         var bitmap = new PortableBitmap(map, Rgb.Instance, gamma);
-        return float.Abs(gamma + 1) > float.Epsilon ? bitmap.ApplyGamma(gamma) : bitmap;
+
+        // return float.Abs(gamma + 1) > float.Epsilon ? bitmap.ApplyGamma(1 / gamma) : bitmap;
+        return bitmap;
     }
 
     private static byte BytesPerPixel(byte colorType)
