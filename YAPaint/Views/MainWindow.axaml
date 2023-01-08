@@ -101,6 +101,70 @@
                 <Button Content="Apply" Command="{Binding ApplyGamma}" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="5">
+                <TextBlock Text="Thickness" VerticalAlignment="Center" />
+                <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
+                               Value="{Binding Thickness}"
+                               Minimum="1"
+                               Maximum="100"
+                               Increment="1"
+                               FormatString="{}{0:#,0}" />
+                <TextBlock Text="Transparency" VerticalAlignment="Center" />
+                <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
+                               Value="{Binding Transparency}"
+                               Minimum="0"
+                               Maximum="1"
+                               Increment="0.01"
+                               FormatString="{}{0:#,0.00}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <TextBlock Text="Color" VerticalAlignment="Center" />
+                <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
+                               Value="{Binding LineColorR}"
+                               Minimum="0"
+                               Maximum="255"
+                               Increment="1"
+                               FormatString="{}{0:#,0}" />
+                <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
+                               Value="{Binding LineColorG}"
+                               Minimum="0"
+                               Maximum="255"
+                               Increment="1"
+                               FormatString="{}{0:#,0}" />
+                <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
+                               Value="{Binding LineColorB}"
+                               Minimum="0"
+                               Maximum="255"
+                               Increment="1"
+                               FormatString="{}{0:#,0}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
+                               Value="{Binding StartX}"
+                               Minimum="0"
+                               Increment="1"
+                               FormatString="{}{0:#,0}" />
+                <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
+                               Value="{Binding StartY}"
+                               Minimum="0"
+                               Increment="1"
+                               FormatString="{}{0:#,0}" />
+                <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
+                               Value="{Binding EndX}"
+                               Minimum="0"
+                               Increment="1"
+                               FormatString="{}{0:#,0}" />
+                <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
+                               Value="{Binding EndY}"
+                               Minimum="0"
+                               Increment="1"
+                               FormatString="{}{0:#,0}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <TextBlock Text="Line" VerticalAlignment="Center" />
+                <Button Content="Draw" Command="{Binding DrawLine}" />
+            </StackPanel>
+            <Rectangle Height="1" Width="295" Fill="White" />
+            <StackPanel Orientation="Horizontal" Spacing="5">
                 <TextBlock Text="Bit Depth" VerticalAlignment="Center" />
                 <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
                                Value="{Binding BitDepth}"

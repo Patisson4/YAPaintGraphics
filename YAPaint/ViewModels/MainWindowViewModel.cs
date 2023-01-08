@@ -133,6 +133,33 @@ public class MainWindowViewModel : ViewModelBase
     public float Gamma { get; set; } = 1;
 
     [Reactive]
+    public int Thickness { get; set; } = 1;
+
+    [Reactive]
+    public float Transparency { get; set; } = 1;
+
+    [Reactive]
+    public int LineColorR { get; set; }
+
+    [Reactive]
+    public int LineColorG { get; set; }
+
+    [Reactive]
+    public int LineColorB { get; set; }
+
+    [Reactive]
+    public int StartX { get; set; }
+
+    [Reactive]
+    public int StartY { get; set; }
+
+    [Reactive]
+    public int EndX { get; set; }
+
+    [Reactive]
+    public int EndY { get; set; }
+
+    [Reactive]
     public float NewWidth { get; set; }
 
     [Reactive]
@@ -453,6 +480,54 @@ public class MainWindowViewModel : ViewModelBase
             FileLogger.SharedTimer.Stop();
             _operationsCount++;
             Message = $"({_operationsCount}) Applied in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            FileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void DrawLine()
+    {
+        try
+        {
+            FileLogger.SharedTimer.Restart();
+
+            if (IsInPreview)
+            {
+                AvaloniaImage = _portableBitmap.DrawLine(
+                                                   new ColorSpace
+                                                   {
+                                                       First = LineColorR / 255f,
+                                                       Second = LineColorG / 255f,
+                                                       Third = LineColorB / 255f,
+                                                   },
+                                                   Thickness,
+                                                   Transparency,
+                                                   (StartX, StartY),
+                                                   (EndX, EndY))
+                                               .ToAvalonia();
+            }
+            else
+            {
+                _portableBitmap = _portableBitmap.DrawLine(
+                    new ColorSpace
+                    {
+                        First = LineColorR / 255f,
+                        Second = LineColorG / 255f,
+                        Third = LineColorB / 255f,
+                    },
+                    Thickness,
+                    Transparency,
+                    (StartX, StartY),
+                    (EndX, EndY));
+                AvaloniaImage = _portableBitmap.ToAvalonia();
+            }
+
+            FileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Drew in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
             FileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
