@@ -85,10 +85,12 @@
                           Content="{Binding ThirdChannelName}"
                           Command="{Binding ToggleThirdChannel}" />
             </StackPanel>
+            <Rectangle Height="1" Width="295" Fill="White" />
             <StackPanel Orientation="Horizontal" Spacing="5">
                 <TextBlock Text="Preview Mode" VerticalAlignment="Center" />
                 <CheckBox IsChecked="{Binding IsInPreview}" />
             </StackPanel>
+            <Rectangle Height="1" Width="295" Fill="White" />
             <StackPanel Orientation="Horizontal" Spacing="5">
                 <TextBlock Text="Gamma" VerticalAlignment="Center" />
                 <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
@@ -99,6 +101,7 @@
                                FormatString="{}{0:#,0.00}" />
                 <Button Content="Apply" Command="{Binding ApplyGamma}" />
             </StackPanel>
+            <Rectangle Height="1" Width="295" Fill="White" />
             <StackPanel Orientation="Horizontal" Spacing="5">
                 <TextBlock Text="Thickness" VerticalAlignment="Center" />
                 <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
@@ -174,6 +177,7 @@
                 <TextBlock Text="Gradient" VerticalAlignment="Center" />
                 <Button Content="Generate" Command="{Binding GenerateGradient}" />
             </StackPanel>
+            <Rectangle Height="1" Width="295" Fill="White" />
             <StackPanel Orientation="Horizontal" Spacing="5">
                 <TextBlock Text="Scale" VerticalAlignment="Center" />
                 <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
@@ -225,6 +229,7 @@
                                Increment="0.01"
                                FormatString="{}{0:#,0.00;0.00;''}" />
             </StackPanel>
+            <Rectangle Height="1" Width="295" Fill="White" />
             <StackPanel Orientation="Horizontal" Spacing="5">
                 <TextBlock Text="Histograms" VerticalAlignment="Center" />
                 <Button Content="Draw" Command="{Binding RenderHistograms}" />
@@ -240,6 +245,7 @@
                                FormatString="{}{0:#,0.00}" />
                 <Button Content="Correct" Command="{Binding CorrectIntensity}" />
             </StackPanel>
+            <Rectangle Height="1" Width="295" Fill="White" />
             <StackPanel Orientation="Horizontal" Spacing="5">
                 <TextBlock Text="Threshold" VerticalAlignment="Center" />
                 <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
