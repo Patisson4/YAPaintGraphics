@@ -12,6 +12,15 @@ public static class LineDrawer
         (int x, int y) start,
         (int x, int y) end)
     {
+        var map = new ColorSpace[bitmap.Width, bitmap.Height];
+        for (int i = 0; i < bitmap.Width; i++)
+        {
+            for (int j = 0; j < bitmap.Height; j++)
+            {
+                map[i, j] = bitmap.GetPixel(i, j);
+            }
+        }
+
         int dx = end.x - start.x;
         int dy = end.y - start.y;
 
@@ -51,7 +60,7 @@ public static class LineDrawer
         {
             int centerX = steep ? y : x;
             int centerY = steep ? x : y;
-            bitmap = DrawCircle(bitmap, color, thickness, transparency, centerX, centerY);
+            DrawCircle(map, color, thickness, transparency, centerX, centerY);
 
             err -= dy1;
             if (err >= 0)
@@ -63,11 +72,17 @@ public static class LineDrawer
             err += dx1;
         }
 
-        return bitmap;
+        return new PortableBitmap(
+            map,
+            bitmap.ColorConverter,
+            bitmap.Gamma,
+            bitmap.IsFirstChannelVisible,
+            bitmap.IsSecondChannelVisible,
+            bitmap.IsThirdChannelVisible);
     }
 
-    private static PortableBitmap DrawCircle(
-        PortableBitmap bitmap,
+    private static void DrawCircle(
+        ColorSpace[,] bitmap,
         ColorSpace color,
         int thickness,
         float transparency,
@@ -75,16 +90,18 @@ public static class LineDrawer
         int centerY)
     {
         int radius = thickness / 2;
+        int width = bitmap.GetLength(0);
+        int height = bitmap.GetLength(1);
         for (int x = centerX - radius; x <= centerX + radius; x++)
         {
             for (int y = centerY - radius; y <= centerY + radius; y++)
             {
-                if (x < 0 || x >= bitmap.Width || y < 0 || y >= bitmap.Height)
+                if (x < 0 || x >= width || y < 0 || y >= height)
                 {
                     continue;
                 }
 
-                ColorSpace pixelColor = bitmap.GetPixel(x, y);
+                ColorSpace pixelColor = bitmap[x, y];
                 var finalColor = new ColorSpace
                 {
                     First = (1 - transparency) * pixelColor.First + transparency * color.First,
@@ -92,10 +109,8 @@ public static class LineDrawer
                     Third = (1 - transparency) * pixelColor.Third + transparency * color.Third,
                 };
 
-                bitmap.SetPixel(x, y, finalColor);
+                bitmap[x, y] = finalColor;
             }
         }
-
-        return bitmap;
     }
 }
