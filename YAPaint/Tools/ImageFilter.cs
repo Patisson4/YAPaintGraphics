@@ -233,18 +233,18 @@ public static class ImageFilter
             for (int y = 0; y < bitmap.Height; y++)
             {
                 var neighbors = bitmap.GetNeighbors(x, y, 1);
-                var gx = neighbors[0, 0].First * -1
-                       + neighbors[0, 2].First * 1
-                       + neighbors[1, 0].First * -2
-                       + neighbors[1, 2].First * 2
-                       + neighbors[2, 0].First * -1
-                       + neighbors[2, 2].First * 1;
-                var gy = neighbors[0, 0].First * -1
-                       + neighbors[2, 0].First * 1
-                       + neighbors[0, 1].First * -2
-                       + neighbors[2, 1].First * 2
-                       + neighbors[0, 2].First * -1
-                       + neighbors[2, 2].First * 1;
+                var gx = bitmap.ColorConverter.GetGrayValue(neighbors[0, 0]) * -1
+                       + bitmap.ColorConverter.GetGrayValue(neighbors[0, 2]) * 1
+                       + bitmap.ColorConverter.GetGrayValue(neighbors[1, 0]) * -2
+                       + bitmap.ColorConverter.GetGrayValue(neighbors[1, 2]) * 2
+                       + bitmap.ColorConverter.GetGrayValue(neighbors[2, 0]) * -1
+                       + bitmap.ColorConverter.GetGrayValue(neighbors[2, 2]) * 1;
+                var gy = bitmap.ColorConverter.GetGrayValue(neighbors[0, 0]) * -1
+                       + bitmap.ColorConverter.GetGrayValue(neighbors[2, 0]) * 1
+                       + bitmap.ColorConverter.GetGrayValue(neighbors[0, 1]) * -2
+                       + bitmap.ColorConverter.GetGrayValue(neighbors[2, 1]) * 2
+                       + bitmap.ColorConverter.GetGrayValue(neighbors[0, 2]) * -1
+                       + bitmap.ColorConverter.GetGrayValue(neighbors[2, 2]) * 1;
 
                 var g = float.Clamp(float.Sqrt(gx * gx + gy * gy), 0, 1);
                 filteredMap[x, y] = new ColorSpace { First = g, Second = g, Third = g };
