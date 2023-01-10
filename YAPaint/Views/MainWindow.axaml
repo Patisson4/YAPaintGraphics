@@ -292,13 +292,15 @@
             <Image Width="300" Source="{Binding HistogramThird}" RenderOptions.BitmapInterpolationMode="Default" />
             <Image Width="300" Source="{Binding HistogramGrey}" RenderOptions.BitmapInterpolationMode="Default" />
         </StackPanel>
-        <Canvas ZIndex="-1">
-            <Image Source="{Binding AvaloniaImage}"
-                   ZIndex="-1"
+        <RelativePanel>
+            <Image RelativePanel.AlignVerticalCenterWithPanel="True"
+                   RelativePanel.AlignHorizontalCenterWithPanel="True"
+                   Source="{Binding AvaloniaImage}"
+                   Width="{Binding AvaloniaImage.Size.Width}"
+                   Height="{Binding AvaloniaImage.Size.Height}"
                    Margin="5"
                    RenderOptions.BitmapInterpolationMode="Default" />
-        </Canvas>
-
+        </RelativePanel>
     </DockPanel>
 
 </Window>
