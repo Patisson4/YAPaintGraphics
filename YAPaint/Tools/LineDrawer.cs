@@ -108,12 +108,14 @@ public static class LineDrawer
                     continue;
                 }
 
+                float finalTransparency = transparency * float.Clamp(1 - distance / radius, 0, 1);
+
                 ColorSpace pixelColor = bitmap[x, y];
                 var finalColor = new ColorSpace
                 {
-                    First = (1 - transparency) * pixelColor.First + transparency * color.First,
-                    Second = (1 - transparency) * pixelColor.Second + transparency * color.Second,
-                    Third = (1 - transparency) * pixelColor.Third + transparency * color.Third,
+                    First = (1 - finalTransparency) * pixelColor.First + finalTransparency * color.First,
+                    Second = (1 - finalTransparency) * pixelColor.Second + finalTransparency * color.Second,
+                    Third = (1 - finalTransparency) * pixelColor.Third + finalTransparency * color.Third,
                 };
 
                 bitmap[x, y] = finalColor;
