@@ -276,28 +276,26 @@ public static class ImageFilter
             {
                 var neighbors = bitmap.GetNeighbors(x, y, 1);
                 float minR = float.MaxValue;
-                float maxR = 0f;
+                float maxR = float.MinValue;
                 float minG = float.MaxValue;
-                float maxG = 0f;
+                float maxG = float.MinValue;
                 float minB = float.MaxValue;
-                float maxB = 0f;
+                float maxB = float.MinValue;
                 for (int i = 0; i < 3; i++)
                 {
                     for (int j = 0; j < 3; j++)
                     {
-                        if (i == 1 && j == 0
-                         || i == 0 && j == 1
-                         || i == 1 && j == 1
-                         || i == 2 && j == 1
-                         || i == 1 && j == 2)
+                        if (i is 0 or 2 && j is 0 or 2)
                         {
-                            minR = float.Min(minR, neighbors[i, j].First);
-                            maxR = float.Max(maxR, neighbors[i, j].First);
-                            minG = float.Min(minG, neighbors[i, j].Second);
-                            maxG = float.Max(maxG, neighbors[i, j].Second);
-                            minB = float.Min(minB, neighbors[i, j].Third);
-                            maxB = float.Max(maxB, neighbors[i, j].Third);
+                            continue;
                         }
+
+                        minR = float.Min(minR, neighbors[i, j].First);
+                        maxR = float.Max(maxR, neighbors[i, j].First);
+                        minG = float.Min(minG, neighbors[i, j].Second);
+                        maxG = float.Max(maxG, neighbors[i, j].Second);
+                        minB = float.Min(minB, neighbors[i, j].Third);
+                        maxB = float.Max(maxB, neighbors[i, j].Third);
                     }
                 }
 
@@ -313,22 +311,22 @@ public static class ImageFilter
         }
 
         _kernelBuffer = new ColorSpace[5, 5];
-        for (int x = 0; x < bitmap.Width - 1; x++)
+        for (int x = 0; x < bitmap.Width; x++)
         {
-            for (int y = 0; y < bitmap.Height - 1; y++)
+            for (int y = 0; y < bitmap.Height; y++)
             {
                 var wfR = weights[0, x, y];
                 var wfG = weights[1, x, y];
                 var wfB = weights[2, x, y];
-                var wgR = weights[0, x + 1, y];
-                var wgG = weights[1, x + 1, y];
-                var wgB = weights[2, x + 1, y];
-                var wjR = weights[0, x, y + 1];
-                var wjG = weights[1, x, y + 1];
-                var wjB = weights[2, x, y + 1];
-                var wkR = weights[0, x + 1, y + 1];
-                var wkG = weights[1, x + 1, y + 1];
-                var wkB = weights[2, x + 1, y + 1];
+                var wgR = weights[0, int.Clamp(x + 1, 0, bitmap.Width - 1), y];
+                var wgG = weights[1, int.Clamp(x + 1, 0, bitmap.Width - 1), y];
+                var wgB = weights[2, int.Clamp(x + 1, 0, bitmap.Width - 1), y];
+                var wjR = weights[0, x, int.Clamp(y + 1, 0, bitmap.Height - 1)];
+                var wjG = weights[1, x, int.Clamp(y + 1, 0, bitmap.Height - 1)];
+                var wjB = weights[2, x, int.Clamp(y + 1, 0, bitmap.Height - 1)];
+                var wkR = weights[0, int.Clamp(x + 1, 0, bitmap.Width - 1), int.Clamp(y + 1, 0, bitmap.Height - 1)];
+                var wkG = weights[1, int.Clamp(x + 1, 0, bitmap.Width - 1), int.Clamp(y + 1, 0, bitmap.Height - 1)];
+                var wkB = weights[2, int.Clamp(x + 1, 0, bitmap.Width - 1), int.Clamp(y + 1, 0, bitmap.Height - 1)];
 
                 float s = (1f - (float)x / bitmap.Width) * (1f - (float)y / bitmap.Height);
                 float t = (float)x / bitmap.Width * (1f - (float)y / bitmap.Height);
@@ -337,12 +335,11 @@ public static class ImageFilter
 
                 var neighbors = bitmap.GetNeighbors(x, y, 2);
                 float minR = float.MaxValue;
-                float maxR = 0f;
+                float maxR = float.MinValue;
                 float minG = float.MaxValue;
-                float maxG = 0f;
+                float maxG = float.MinValue;
                 float minB = float.MaxValue;
-                float maxB = 0f;
-
+                float maxB = float.MinValue;
                 for (int i = 1; i < 4; i++)
                 {
                     for (int j = 1; j < 4; j++)
@@ -529,27 +526,13 @@ public static class ImageFilter
                    + wjB * uB
                    + vB);
 
-                sharpenedColorR = float.Clamp(sharpenedColorR, 0, 1);
-                sharpenedColorG = float.Clamp(sharpenedColorG, 0, 1);
-                sharpenedColorB = float.Clamp(sharpenedColorB, 0, 1);
-
                 filteredMap[x, y] = new ColorSpace
                 {
-                    First = sharpenedColorR,
-                    Second = sharpenedColorG,
-                    Third = sharpenedColorB,
+                    First = float.Clamp(sharpenedColorR, 0, 1),
+                    Second = float.Clamp(sharpenedColorG, 0, 1),
+                    Third = float.Clamp(sharpenedColorB, 0, 1),
                 };
             }
-        }
-
-        for (int x = 0; x < bitmap.Width; x++)
-        {
-            filteredMap[x, bitmap.Height - 1] = bitmap.GetPixel(x, bitmap.Height - 1);
-        }
-
-        for (int y = 0; y < bitmap.Height; y++)
-        {
-            filteredMap[bitmap.Width - 1, y] = bitmap.GetPixel(bitmap.Width - 1, y);
         }
 
         return new PortableBitmap(
@@ -602,40 +585,12 @@ public static class ImageFilter
         {
             for (int j = y - kernelRadius; j <= y + kernelRadius; j++)
             {
-                if (i < 0 || i >= bitmap.Width || j < 0 || j >= bitmap.Height)
-                {
-                    _kernelBuffer[i - (x - kernelRadius), j - (y - kernelRadius)] = bitmap.GetBorderColor(i, j);
-                }
-                else
-                {
-                    _kernelBuffer[i - (x - kernelRadius), j - (y - kernelRadius)] = bitmap.GetPixel(i, j);
-                }
+                _kernelBuffer[i - (x - kernelRadius), j - (y - kernelRadius)] = bitmap.GetPixel(
+                    int.Clamp(i, 0, bitmap.Width - 1),
+                    int.Clamp(j, 0, bitmap.Height - 1));
             }
         }
 
         return _kernelBuffer;
-    }
-
-    private static ColorSpace GetBorderColor(this PortableBitmap bitmap, int x, int y)
-    {
-        if (x < 0)
-        {
-            x = 0;
-        }
-        else if (x >= bitmap.Width)
-        {
-            x = bitmap.Width - 1;
-        }
-
-        if (y < 0)
-        {
-            y = 0;
-        }
-        else if (y >= bitmap.Height)
-        {
-            y = bitmap.Height - 1;
-        }
-
-        return bitmap.GetPixel(x, y);
     }
 }
