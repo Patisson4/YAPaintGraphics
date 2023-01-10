@@ -274,9 +274,8 @@
                 <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
                                Value="{Binding Sigma}"
                                Minimum="0"
-                               Maximum="7"
-                               Increment="1"
-                               FormatString="{}{0:#,0}" />
+                               Increment="0.01"
+                               FormatString="{}{0:#,0.00}" />
             </StackPanel>
         </StackPanel>
         <TextBlock DockPanel.Dock="Bottom"

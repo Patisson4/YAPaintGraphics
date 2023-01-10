@@ -190,7 +190,7 @@ public class MainWindowViewModel : ViewModelBase
     public int KernelRadius { get; set; } = 2;
 
     [Reactive]
-    public int Sigma { get; set; } = 1;
+    public float Sigma { get; set; } = .5f;
 
     [Reactive]
     public float Sharpness { get; set; } = 1;

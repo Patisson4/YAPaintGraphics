@@ -109,14 +109,14 @@ public static class ImageFilter
             bitmap.IsThirdChannelVisible);
     }
 
-    public static PortableBitmap GaussianFilter(this PortableBitmap bitmap, int sigma)
+    public static PortableBitmap GaussianFilter(this PortableBitmap bitmap, float sigma)
     {
         if (sigma < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(sigma), sigma, "Sigma must be positive");
         }
 
-        var kernelRadius = 3 * sigma;
+        var kernelRadius = (int)(3 * sigma);
         var kernelSize = kernelRadius * 2 + 1;
         var kernel = new float[kernelSize, kernelSize];
         var sum = 0f;
