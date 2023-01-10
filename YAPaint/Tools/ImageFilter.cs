@@ -363,9 +363,9 @@ public static class ImageFilter
                     }
                 }
 
-                float sR = s * (1f / 32f + maxR - minR);
-                float sG = s * (1f / 32f + maxG - minG);
-                float sB = s * (1f / 32f + maxB - minB);
+                float sR = s / (1 / 32f + maxR - minR);
+                float sG = s / (1 / 32f + maxG - minG);
+                float sB = s / (1 / 32f + maxB - minB);
 
                 for (int i = 2; i < 5; i++)
                 {
@@ -387,9 +387,9 @@ public static class ImageFilter
                     }
                 }
 
-                float tR = t * (1f / 32f + maxR - minR);
-                float tG = t * (1f / 32f + maxG - minG);
-                float tB = t * (1f / 32f + maxB - minB);
+                float tR = t / (1 / 32f + maxR - minR);
+                float tG = t / (1 / 32f + maxG - minG);
+                float tB = t / (1 / 32f + maxB - minB);
 
                 for (int i = 1; i < 4; i++)
                 {
@@ -411,9 +411,9 @@ public static class ImageFilter
                     }
                 }
 
-                float uR = u * (1f / 32f + maxR - minR);
-                float uG = u * (1f / 32f + maxG - minG);
-                float uB = u * (1f / 32f + maxB - minB);
+                float uR = u / (1 / 32f + maxR - minR);
+                float uG = u / (1 / 32f + maxG - minG);
+                float uB = u / (1 / 32f + maxB - minB);
 
                 for (int i = 2; i < 5; i++)
                 {
@@ -435,9 +435,9 @@ public static class ImageFilter
                     }
                 }
 
-                float vR = v * (1f / 32f + maxR - minR);
-                float vG = v * (1f / 32f + maxG - minG);
-                float vB = v * (1f / 32f + maxB - minB);
+                float vR = v / (1 / 32f + maxR - minR);
+                float vG = v / (1 / 32f + maxG - minG);
+                float vB = v / (1 / 32f + maxB - minB);
 
                 float sharpenedColorR =
                     (neighbors[2, 1].First * wfR * sR
