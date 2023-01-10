@@ -133,13 +133,13 @@ public class MainWindowViewModel : ViewModelBase
     public float Gamma { get; set; } = 1;
 
     [Reactive]
-    public int Thickness { get; set; } = 1;
+    public int Thickness { get; set; } = 20;
 
     [Reactive]
     public float Transparency { get; set; } = 1;
 
     [Reactive]
-    public int LineColorR { get; set; }
+    public int LineColorR { get; set; } = 255;
 
     [Reactive]
     public int LineColorG { get; set; }
@@ -148,28 +148,28 @@ public class MainWindowViewModel : ViewModelBase
     public int LineColorB { get; set; }
 
     [Reactive]
-    public int StartX { get; set; }
+    public int StartX { get; set; } = 100;
 
     [Reactive]
-    public int StartY { get; set; }
+    public int StartY { get; set; } = 100;
 
     [Reactive]
-    public int EndX { get; set; }
+    public int EndX { get; set; } = 200;
 
     [Reactive]
-    public int EndY { get; set; }
+    public int EndY { get; set; } = 200;
 
     [Reactive]
-    public float NewWidth { get; set; }
+    public float NewWidth { get; set; } = .5f;
 
     [Reactive]
-    public float NewHeight { get; set; }
+    public float NewHeight { get; set; } = .5f;
 
     [Reactive]
-    public float FocalPointX { get; set; }
+    public float FocalPointX { get; set; } = .5f;
 
     [Reactive]
-    public float FocalPointY { get; set; }
+    public float FocalPointY { get; set; } = .5f;
 
     [Reactive]
     public float B { get; set; }
@@ -181,7 +181,7 @@ public class MainWindowViewModel : ViewModelBase
     public int BitDepth { get; set; } = 1;
 
     [Reactive]
-    public float IntensityThreshold { get; set; } = 0.1f;
+    public float IntensityThreshold { get; set; } = .1f;
 
     [Reactive]
     public int FilterThreshold { get; set; } = 100;
