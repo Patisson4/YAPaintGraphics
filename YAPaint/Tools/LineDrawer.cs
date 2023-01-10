@@ -101,6 +101,13 @@ public static class LineDrawer
                     continue;
                 }
 
+                float distance = float.Sqrt(float.Pow(centerX - x, 2) + float.Pow(centerY - y, 2));
+
+                if (distance > radius)
+                {
+                    continue;
+                }
+
                 ColorSpace pixelColor = bitmap[x, y];
                 var finalColor = new ColorSpace
                 {
