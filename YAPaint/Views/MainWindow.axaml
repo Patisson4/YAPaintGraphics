@@ -140,26 +140,38 @@
                                FormatString="{}{0:#,0}" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="5">
-                <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
-                               Value="{Binding StartX}"
-                               Minimum="0"
-                               Increment="1"
-                               FormatString="{}{0:#,0}" />
-                <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
-                               Value="{Binding StartY}"
-                               Minimum="0"
-                               Increment="1"
-                               FormatString="{}{0:#,0}" />
-                <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
-                               Value="{Binding EndX}"
-                               Minimum="0"
-                               Increment="1"
-                               FormatString="{}{0:#,0}" />
-                <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
-                               Value="{Binding EndY}"
-                               Minimum="0"
-                               Increment="1"
-                               FormatString="{}{0:#,0}" />
+                <StackPanel Orientation="Vertical" Spacing="5">
+                    <TextBlock Text="StartX" VerticalAlignment="Center" />
+                    <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
+                                   Value="{Binding StartX}"
+                                   Minimum="0"
+                                   Increment="1"
+                                   FormatString="{}{0:#,0}" />
+                </StackPanel>
+                <StackPanel Orientation="Vertical" Spacing="5">
+                    <TextBlock Text="StartY" VerticalAlignment="Center" />
+                    <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
+                                   Value="{Binding StartY}"
+                                   Minimum="0"
+                                   Increment="1"
+                                   FormatString="{}{0:#,0}" />
+                </StackPanel>
+                <StackPanel Orientation="Vertical" Spacing="5">
+                    <TextBlock Text="EndX" VerticalAlignment="Center" />
+                    <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
+                                   Value="{Binding EndX}"
+                                   Minimum="0"
+                                   Increment="1"
+                                   FormatString="{}{0:#,0}" />
+                </StackPanel>
+                <StackPanel Orientation="Vertical" Spacing="5">
+                    <TextBlock Text="EndY" VerticalAlignment="Center" />
+                    <NumericUpDown CultureInfo="{Binding InvariantCultureInfo}"
+                                   Value="{Binding EndY}"
+                                   Minimum="0"
+                                   Increment="1"
+                                   FormatString="{}{0:#,0}" />
+                </StackPanel>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="5">
                 <TextBlock Text="Line" VerticalAlignment="Center" />
