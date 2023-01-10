@@ -270,8 +270,8 @@ public static class ImageScaler
         return x switch
         {
             0 => 1,
-            > 3 => 0,
-            _ => float.Sin(float.Pi * x) * float.Sin(float.Pi * x / 3f) / (float.Pi * float.Pi * x * x / 3f),
+            < -1 or > 1 => 0,
+            _ => float.Sin(float.Pi * x) * float.Sin(float.Pi * x) / (float.Pi * float.Pi * x * x),
         };
     }
 }
