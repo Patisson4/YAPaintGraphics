@@ -5,7 +5,18 @@ public class Hsv : IColorConverter
     private Hsv() { }
     public static IColorConverter Instance { get; } = new Hsv();
 
-    public ColorSpace DefaultValue { get; } = new ColorSpace(0f, 1f, 1f);
+    public ColorSpace Black { get; } = new ColorSpace { First = 0f, Second = 0f, Third = 0f };
+    public ColorSpace White { get; } = new ColorSpace { First = 0f, Second = 0f, Third = 1f };
+    public ColorSpace Default { get; } = new ColorSpace { First = 0f, Second = 1f, Third = 1f };
+
+    public string FirstChannelName => "Hue";
+    public string SecondChannelName => "Saturation";
+    public string ThirdChannelName => "Value";
+
+    public float GetGrayValue(ColorSpace color)
+    {
+        return color.First;
+    }
 
     public ColorSpace ToRgb(ref ColorSpace color)
     {
@@ -52,7 +63,16 @@ public class Hsv : IColorConverter
             blue1 = x;
         }
 
-        return new ColorSpace(red1 + min, green1 + min, blue1 + min);
+        var red = red1 + min;
+        var green = green1 + min;
+        var blue = blue1 + min;
+
+        return new ColorSpace
+        {
+            First = float.Clamp(red, 0, 1),
+            Second = float.Clamp(green, 0, 1),
+            Third = float.Clamp(blue, 0, 1),
+        };
     }
 
     public ColorSpace FromRgb(ref ColorSpace color)
@@ -66,11 +86,11 @@ public class Hsv : IColorConverter
         {
             hue = 0;
         }
-        else if (value == color.First)
+        else if (float.Abs(value - color.First) < float.Epsilon)
         {
             hue = ((color.Second - color.Third) / chroma + 6) % 6;
         }
-        else if (value == color.Second)
+        else if (float.Abs(value - color.Second) < float.Epsilon)
         {
             hue = (color.Third - color.First) / chroma + 2;
         }
@@ -84,6 +104,11 @@ public class Hsv : IColorConverter
             saturation = chroma / value;
         }
 
-        return new ColorSpace(hue / 6, saturation, value);
+        return new ColorSpace
+        {
+            First = float.Clamp(hue / 6, 0, 1),
+            Second = float.Clamp(saturation, 0, 1),
+            Third = float.Clamp(value, 0, 1),
+        };
     }
 }

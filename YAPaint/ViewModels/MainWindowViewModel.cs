@@ -44,7 +44,7 @@ public class MainWindowViewModel : ViewModelBase
                                                                     .Select(
                                                                         t => t.GetProperty("Instance")
                                                                               ?.GetValue(null))
-                                                                    .Cast<IColorBaseConverter>()
+                                                                    .OfType<IColorBaseConverter>()
                                                                     .ToList();
 
     private int _operationsCount;
@@ -59,41 +59,24 @@ public class MainWindowViewModel : ViewModelBase
     private bool _isSecondChannelVisible = true;
     private bool _isThirdChannelVisible = true;
 
+    private Plot Plot { get; } = new Plot();
+
     private readonly MainWindow _view;
 
     public MainWindowViewModel(MainWindow view)
     {
         _view = view;
+        IsColorConverter = CurrentColorConverter is IColorConverter;
+        FirstChannelName = (CurrentColorConverter as IColorConverter)?.FirstChannelName;
+        SecondChannelName = (CurrentColorConverter as IColorConverter)?.SecondChannelName;
+        ThirdChannelName = (CurrentColorConverter as IColorConverter)?.ThirdChannelName;
     }
 
     [Reactive]
     public string Message { get; set; } = "Timings will be displayed here";
 
-    public string SelectedColorSpace
-    {
-        get => _selectedColorSpace;
-        set
-        {
-            this.RaiseAndSetIfChanged(ref _selectedColorSpace, value);
-            if (_portableBitmap is null)
-            {
-                return;
-            }
-
-            MyFileLogger.SharedTimer.Restart();
-
-            _portableBitmap.ConvertTo(CurrentColorConverter);
-            AvaloniaImage = _portableBitmap.ToAvalonia();
-
-            MyFileLogger.SharedTimer.Stop();
-            _operationsCount++;
-            Message = $"({_operationsCount}) Changed ColorSpace in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-            MyFileLogger.Log("INF", $"{Message}\n");
-        }
-    }
-
     [Reactive]
-    public WriteableBitmap AvaloniaImage { get; set; }
+    public bool IsInPreview { get; set; } = true;
 
     public static IReadOnlyCollection<string> ThreeChannelColorSpaceNames { get; } = SpaceTypes
         .Where(t => t.GetInterfaces().Contains(typeof(IColorConverter)))
@@ -103,72 +86,165 @@ public class MainWindowViewModel : ViewModelBase
     public static IReadOnlyCollection<string> ColorSpaceNames { get; } = SpaceTypes.Select(t => t.Name).ToList();
 
     [Reactive]
-    public float Gamma { get; set; }
-    
+    public bool IsColorConverter { get; private set; }
+
     [Reactive]
-    public float NewWidth { get; set; }
-    
+    public string FirstChannelName { get; private set; }
+
     [Reactive]
-    public float NewHeight { get; set; }
-    
+    public string SecondChannelName { get; private set; }
+
     [Reactive]
-    public float FocalPointX { get; set; }
-    
+    public string ThirdChannelName { get; private set; }
+
+    public string SelectedColorSpace
+    {
+        get => _selectedColorSpace;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _selectedColorSpace, value);
+
+            IsColorConverter = CurrentColorConverter is IColorConverter;
+            FirstChannelName = (CurrentColorConverter as IColorConverter)?.FirstChannelName;
+            SecondChannelName = (CurrentColorConverter as IColorConverter)?.SecondChannelName;
+            ThirdChannelName = (CurrentColorConverter as IColorConverter)?.ThirdChannelName;
+
+            if (_portableBitmap is null)
+            {
+                return;
+            }
+
+            FileLogger.SharedTimer.Restart();
+
+            _portableBitmap.ConvertTo(CurrentColorConverter);
+            AvaloniaImage = _portableBitmap.ToAvalonia();
+
+            FileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Changed in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
+        }
+    }
+
     [Reactive]
-    public float FocalPointY { get; set; }
+    public WriteableBitmap AvaloniaImage { get; set; }
+
+    [Reactive]
+    public float Gamma { get; set; } = 1;
+
+    [Reactive]
+    public int Thickness { get; set; } = 20;
+
+    [Reactive]
+    public float Transparency { get; set; } = 1;
+
+    [Reactive]
+    public int LineColorR { get; set; } = 255;
+
+    [Reactive]
+    public int LineColorG { get; set; }
+
+    [Reactive]
+    public int LineColorB { get; set; }
+
+    [Reactive]
+    public int StartX { get; set; } = 100;
+
+    [Reactive]
+    public int StartY { get; set; } = 100;
+
+    [Reactive]
+    public int EndX { get; set; } = 200;
+
+    [Reactive]
+    public int EndY { get; set; } = 200;
+
+    [Reactive]
+    public float NewWidth { get; set; } = .5f;
+
+    [Reactive]
+    public float NewHeight { get; set; } = .5f;
+
+    [Reactive]
+    public float FocalPointX { get; set; } = .5f;
+
+    [Reactive]
+    public float FocalPointY { get; set; } = .5f;
+
+    [Reactive]
+    public float B { get; set; }
+
+    [Reactive]
+    public float C { get; set; } = .5f;
+
+    [Reactive]
+    public int BitDepth { get; set; } = 1;
+
+    [Reactive]
+    public float IntensityThreshold { get; set; } = .1f;
+
+    [Reactive]
+    public int FilterThreshold { get; set; } = 100;
+
+    [Reactive]
+    public int KernelRadius { get; set; } = 2;
+
+    [Reactive]
+    public float Sigma { get; set; } = .5f;
+
+    [Reactive]
+    public float Sharpness { get; set; } = 1;
 
     [Reactive]
     public bool IsHistogramVisible { get; private set; }
 
+    [Reactive]
+    public WriteableBitmap HistogramFirst { get; set; }
+
+    [Reactive]
+    public WriteableBitmap HistogramSecond { get; set; }
+
+    [Reactive]
+    public WriteableBitmap HistogramThird { get; set; }
+
+    [Reactive]
+    public WriteableBitmap HistogramGrey { get; set; }
+
     public CultureInfo InvariantCultureInfo { get; } = CultureInfo.InvariantCulture;
-
-    [Reactive]
-    public WriteableBitmap Histogram1 { get; set; }
-
-    [Reactive]
-    public WriteableBitmap Histogram2 { get; set; }
-
-    [Reactive]
-    public WriteableBitmap Histogram3 { get; set; }
-
-    [Reactive]
-    public float Threshold { get; set; }
 
     public async Task OpenPnm()
     {
         try
         {
             var dialog = new OpenFileDialog { Filters = PnmFileFilters, AllowMultiple = false };
-            string[] result = await dialog.ShowAsync(new Window()); // TODO: find real parent
+            string[] result = await dialog.ShowAsync(_view);
 
             if (result is null)
             {
                 return;
             }
 
-            MyFileLogger.SharedTimer.Restart();
+            FileLogger.SharedTimer.Restart();
 
             await using var stream = new FileStream(result[0], FileMode.Open);
 
-            MyFileLogger.Log("DBG", $"Stream created at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
+            FileLogger.Log("DBG", $"Stream created at {FileLogger.SharedTimer.Elapsed.TotalSeconds} s");
 
-            _portableBitmap = new PortableBitmap(
-                PnmParser.ReadImage(stream),
-                CurrentColorConverter,
-                _isFirstChannelVisible,
-                _isSecondChannelVisible,
-                _isThirdChannelVisible);
+            _portableBitmap = PnmParser.ReadImage(stream, CurrentColorConverter);
+            _portableBitmap.ChangeFirstChannelVisibility(_isFirstChannelVisible);
+            _portableBitmap.ChangeSecondChannelVisibility(_isSecondChannelVisible);
+            _portableBitmap.ChangeThirdChannelVisibility(_isThirdChannelVisible);
 
             AvaloniaImage = _portableBitmap.ToAvalonia();
 
-            MyFileLogger.SharedTimer.Stop();
+            FileLogger.SharedTimer.Stop();
             _operationsCount++;
-            Message = $"({_operationsCount}) Opened in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-            MyFileLogger.Log("INF", $"{Message}\n");
+            Message = $"({_operationsCount}) Opened in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
-            MyFileLogger.Log("ERR", $"{e}\n");
+            FileLogger.Log("ERR", $"{e}\n");
         }
     }
 
@@ -177,38 +253,34 @@ public class MainWindowViewModel : ViewModelBase
         try
         {
             var dialog = new OpenFileDialog { Filters = PngFileFilters, AllowMultiple = false };
-            string[] result = await dialog.ShowAsync(new Window()); // TODO: find real parent
+            string[] result = await dialog.ShowAsync(_view);
 
             if (result is null)
             {
                 return;
             }
 
-            MyFileLogger.SharedTimer.Restart();
+            FileLogger.SharedTimer.Restart();
 
             await using var stream = new FileStream(result[0], FileMode.Open);
 
-            MyFileLogger.Log("DBG", $"Stream created at {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s");
+            FileLogger.Log("DBG", $"Stream created at {FileLogger.SharedTimer.Elapsed.TotalSeconds} s");
 
-            _portableBitmap = new PortableBitmap(
-                PngConverter.ReadPng(stream, out float gamma),
-                CurrentColorConverter,
-                _isFirstChannelVisible,
-                _isSecondChannelVisible,
-                _isThirdChannelVisible);
-
-            Gamma = float.Abs(gamma + 1) < float.Epsilon ? 0f : gamma;
+            _portableBitmap = PngConverter.ReadPng(stream);
+            _portableBitmap.ChangeFirstChannelVisibility(_isFirstChannelVisible);
+            _portableBitmap.ChangeSecondChannelVisibility(_isSecondChannelVisible);
+            _portableBitmap.ChangeThirdChannelVisibility(_isThirdChannelVisible);
 
             AvaloniaImage = _portableBitmap.ToAvalonia();
 
-            MyFileLogger.SharedTimer.Stop();
+            FileLogger.SharedTimer.Stop();
             _operationsCount++;
-            Message = $"({_operationsCount}) Opened in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-            MyFileLogger.Log("INF", $"{Message}\n");
+            Message = $"({_operationsCount}) Opened in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
-            MyFileLogger.Log("ERR", $"{e}\n");
+            FileLogger.Log("ERR", $"{e}\n");
         }
     }
 
@@ -217,26 +289,26 @@ public class MainWindowViewModel : ViewModelBase
         try
         {
             var dialog = new SaveFileDialog { Filters = PnmFileFilters };
-            string result = await dialog.ShowAsync(new Window()); // TODO: find real parent
+            string result = await dialog.ShowAsync(_view);
 
             if (result is null)
             {
                 return;
             }
 
-            MyFileLogger.SharedTimer.Restart();
+            FileLogger.SharedTimer.Restart();
 
             await using var stream = new FileStream(result, FileMode.Create);
             _portableBitmap.SaveRaw(stream);
 
-            MyFileLogger.SharedTimer.Stop();
+            FileLogger.SharedTimer.Stop();
             _operationsCount++;
-            Message = $"({_operationsCount}) Saved in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-            MyFileLogger.Log("INF", $"{Message}\n");
+            Message = $"({_operationsCount}) Saved in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
-            MyFileLogger.Log("ERR", $"{e}\n");
+            FileLogger.Log("ERR", $"{e}\n");
         }
     }
 
@@ -245,26 +317,26 @@ public class MainWindowViewModel : ViewModelBase
         try
         {
             var dialog = new SaveFileDialog { Filters = PnmFileFilters };
-            string result = await dialog.ShowAsync(new Window()); // TODO: find real parent
+            string result = await dialog.ShowAsync(_view);
 
             if (result is null)
             {
                 return;
             }
 
-            MyFileLogger.SharedTimer.Restart();
+            FileLogger.SharedTimer.Restart();
 
             await using var stream = new FileStream(result, FileMode.Create);
             _portableBitmap.SavePlain(stream);
 
-            MyFileLogger.SharedTimer.Stop();
+            FileLogger.SharedTimer.Stop();
             _operationsCount++;
-            Message = $"({_operationsCount}) Saved in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-            MyFileLogger.Log("INF", $"{Message}\n");
+            Message = $"({_operationsCount}) Saved in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
-            MyFileLogger.Log("ERR", $"{e}\n");
+            FileLogger.Log("ERR", $"{e}\n");
         }
     }
 
@@ -273,75 +345,26 @@ public class MainWindowViewModel : ViewModelBase
         try
         {
             var dialog = new SaveFileDialog { Filters = PngFileFilters };
-            string result = await dialog.ShowAsync(new Window()); // TODO: find real parent
+            string result = await dialog.ShowAsync(_view);
 
             if (result is null)
             {
                 return;
             }
 
-            MyFileLogger.SharedTimer.Restart();
+            FileLogger.SharedTimer.Restart();
 
             await using var stream = new FileStream(result, FileMode.Create);
-            _portableBitmap.WritePng(stream, -1);
+            _portableBitmap.WritePng(stream);
 
-            MyFileLogger.SharedTimer.Stop();
+            FileLogger.SharedTimer.Stop();
             _operationsCount++;
-            Message = $"({_operationsCount}) Saved in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-            MyFileLogger.Log("INF", $"{Message}\n");
+            Message = $"({_operationsCount}) Saved in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
-            MyFileLogger.Log("ERR", $"{e}\n");
-        }
-    }
-
-    public void ApplyGamma()
-    {
-        try
-        {
-            MyFileLogger.SharedTimer.Restart();
-
-            AvaloniaImage = new PortableBitmap(
-                _portableBitmap.ApplyGamma(Gamma),
-                _portableBitmap.ColorConverter,
-                _isFirstChannelVisible,
-                _isSecondChannelVisible,
-                _isThirdChannelVisible).ToAvalonia();
-
-            MyFileLogger.SharedTimer.Stop();
-            _operationsCount++;
-            Message = $"({_operationsCount}) Applied in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-            MyFileLogger.Log("INF", $"{Message}\n");
-        }
-        catch (Exception e)
-        {
-            MyFileLogger.Log("ERR", $"{e}\n");
-        }
-    }
-
-    public void ConvertToGamma()
-    {
-        try
-        {
-            MyFileLogger.SharedTimer.Restart();
-
-            _portableBitmap = new PortableBitmap(
-                _portableBitmap.ApplyGamma(Gamma),
-                _portableBitmap.ColorConverter,
-                _isFirstChannelVisible,
-                _isSecondChannelVisible,
-                _isThirdChannelVisible);
-            AvaloniaImage = _portableBitmap.ToAvalonia();
-
-            MyFileLogger.SharedTimer.Stop();
-            _operationsCount++;
-            Message = $"({_operationsCount}) Converted in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-            MyFileLogger.Log("INF", $"{Message}\n");
-        }
-        catch (Exception e)
-        {
-            MyFileLogger.Log("ERR", $"{e}\n");
+            FileLogger.Log("ERR", $"{e}\n");
         }
     }
 
@@ -355,19 +378,24 @@ public class MainWindowViewModel : ViewModelBase
                 return;
             }
 
-            MyFileLogger.SharedTimer.Restart();
+            if (_portableBitmap.IsFirstChannelVisible == _isFirstChannelVisible)
+            {
+                return;
+            }
 
-            _portableBitmap.ToggleFirstChannel();
+            FileLogger.SharedTimer.Restart();
+
+            _portableBitmap.ChangeFirstChannelVisibility(_isFirstChannelVisible);
             AvaloniaImage = _portableBitmap.ToAvalonia();
 
-            MyFileLogger.SharedTimer.Stop();
+            FileLogger.SharedTimer.Stop();
             _operationsCount++;
-            Message = $"({_operationsCount}) Toggled in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-            MyFileLogger.Log("INF", $"{Message}\n");
+            Message = $"({_operationsCount}) Toggled in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
-            MyFileLogger.Log("ERR", $"{e}\n");
+            FileLogger.Log("ERR", $"{e}\n");
         }
     }
 
@@ -381,19 +409,24 @@ public class MainWindowViewModel : ViewModelBase
                 return;
             }
 
-            MyFileLogger.SharedTimer.Restart();
+            if (_portableBitmap.IsSecondChannelVisible == _isSecondChannelVisible)
+            {
+                return;
+            }
 
-            _portableBitmap.ToggleSecondChannel();
+            FileLogger.SharedTimer.Restart();
+
+            _portableBitmap.ChangeSecondChannelVisibility(_isSecondChannelVisible);
             AvaloniaImage = _portableBitmap.ToAvalonia();
 
-            MyFileLogger.SharedTimer.Stop();
+            FileLogger.SharedTimer.Stop();
             _operationsCount++;
-            Message = $"({_operationsCount}) Toggled in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-            MyFileLogger.Log("INF", $"{Message}\n");
+            Message = $"({_operationsCount}) Toggled in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
-            MyFileLogger.Log("ERR", $"{e}\n");
+            FileLogger.Log("ERR", $"{e}\n");
         }
     }
 
@@ -407,50 +440,412 @@ public class MainWindowViewModel : ViewModelBase
                 return;
             }
 
-            MyFileLogger.SharedTimer.Restart();
+            if (_portableBitmap.IsThirdChannelVisible == _isThirdChannelVisible)
+            {
+                return;
+            }
 
-            _portableBitmap.ToggleThirdChannel();
+            FileLogger.SharedTimer.Restart();
+
+            _portableBitmap.ChangeThirdChannelVisibility(_isThirdChannelVisible);
             AvaloniaImage = _portableBitmap.ToAvalonia();
 
-            MyFileLogger.SharedTimer.Stop();
+            FileLogger.SharedTimer.Stop();
             _operationsCount++;
-            Message = $"({_operationsCount}) Toggled in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-            MyFileLogger.Log("INF", $"{Message}\n");
+            Message = $"({_operationsCount}) Toggled in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
-            MyFileLogger.Log("ERR", $"{e}\n");
+            FileLogger.Log("ERR", $"{e}\n");
         }
     }
 
-    public void Rescale()
-    {
-        _portableBitmap = _portableBitmap.ScaleBSpline(NewWidth, NewHeight, FocalPointX, FocalPointY);
-        AvaloniaImage = _portableBitmap.ToAvalonia();
-
-    public void DrawHistograms()
+    public void ApplyGamma()
     {
         try
         {
-            double[][] histograms = BarGrapher.CreateBarGraphs(_portableBitmap);
-            var plot = new Plot();
+            FileLogger.SharedTimer.Restart();
 
-            plot.AddBar(histograms[0]);
-            Histogram1 = plot.Render().ToAvalonia();
+            if (IsInPreview)
+            {
+                AvaloniaImage = _portableBitmap.ApplyGamma(Gamma).ToAvalonia();
+            }
+            else
+            {
+                _portableBitmap = _portableBitmap.ApplyGamma(Gamma);
+                AvaloniaImage = _portableBitmap.ToAvalonia();
+            }
 
-            plot.Clear();
-            plot.AddBar(histograms[1]);
-            Histogram2 = plot.Render().ToAvalonia();
-
-            plot.Clear();
-            plot.AddBar(histograms[2]);
-            Histogram3 = plot.Render().ToAvalonia();
-
-            IsHistogramVisible = true;
+            FileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Applied in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
-            MyFileLogger.Log("ERR", $"{e}\n");
+            FileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void DrawLine()
+    {
+        try
+        {
+            FileLogger.SharedTimer.Restart();
+
+            if (IsInPreview)
+            {
+                AvaloniaImage = _portableBitmap.DrawLine(
+                                                   new ColorSpace
+                                                   {
+                                                       First = LineColorR / 255f,
+                                                       Second = LineColorG / 255f,
+                                                       Third = LineColorB / 255f,
+                                                   },
+                                                   Thickness,
+                                                   Transparency,
+                                                   (StartX, StartY),
+                                                   (EndX, EndY))
+                                               .ToAvalonia();
+            }
+            else
+            {
+                _portableBitmap = _portableBitmap.DrawLine(
+                    new ColorSpace
+                    {
+                        First = LineColorR / 255f,
+                        Second = LineColorG / 255f,
+                        Third = LineColorB / 255f,
+                    },
+                    Thickness,
+                    Transparency,
+                    (StartX, StartY),
+                    (EndX, EndY));
+                AvaloniaImage = _portableBitmap.ToAvalonia();
+            }
+
+            FileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Drew in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            FileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void GenerateGradient()
+    {
+        try
+        {
+            FileLogger.SharedTimer.Restart();
+
+            var map = new ColorSpace[256, 256];
+
+            for (int i = 0; i < 256; i++)
+            {
+                for (int j = 0; j < 256; j++)
+                {
+                    var pixel = new ColorSpace
+                    {
+                        First = (float)i / 256,
+                        Second = (float)i / 256,
+                        Third = (float)i / 256,
+                    };
+                    map[i, j] = pixel;
+                }
+            }
+
+            _portableBitmap = new PortableBitmap(map, CurrentColorConverter);
+            AvaloniaImage = _portableBitmap.ToAvalonia();
+
+            FileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Generated in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            FileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void DitherOrdered()
+    {
+        try
+        {
+            FileLogger.SharedTimer.Restart();
+
+            if (IsInPreview)
+            {
+                AvaloniaImage = _portableBitmap.DitherOrdered(BitDepth).ToAvalonia();
+            }
+            else
+            {
+                _portableBitmap = _portableBitmap.DitherOrdered(BitDepth);
+                AvaloniaImage = _portableBitmap.ToAvalonia();
+            }
+
+            FileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Dithered in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            FileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void DitherRandom()
+    {
+        try
+        {
+            FileLogger.SharedTimer.Restart();
+
+            if (IsInPreview)
+            {
+                AvaloniaImage = _portableBitmap.DitherRandom().ToAvalonia();
+            }
+            else
+            {
+                _portableBitmap = _portableBitmap.DitherRandom();
+                AvaloniaImage = _portableBitmap.ToAvalonia();
+            }
+
+            FileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Dithered in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            FileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void DitherFloydSteinberg()
+    {
+        try
+        {
+            FileLogger.SharedTimer.Restart();
+
+            if (IsInPreview)
+            {
+                AvaloniaImage = _portableBitmap.DitherFloydSteinberg(BitDepth).ToAvalonia();
+            }
+            else
+            {
+                _portableBitmap = _portableBitmap.DitherFloydSteinberg(BitDepth);
+                AvaloniaImage = _portableBitmap.ToAvalonia();
+            }
+
+            FileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Dithered in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            FileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void DitherAtkinson()
+    {
+        try
+        {
+            FileLogger.SharedTimer.Restart();
+
+            if (IsInPreview)
+            {
+                AvaloniaImage = _portableBitmap.DitherAtkinson(BitDepth).ToAvalonia();
+            }
+            else
+            {
+                _portableBitmap = _portableBitmap.DitherAtkinson(BitDepth);
+                AvaloniaImage = _portableBitmap.ToAvalonia();
+            }
+
+            FileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Dithered in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            FileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void ScaleNearestNeighbor()
+    {
+        try
+        {
+            FileLogger.SharedTimer.Restart();
+
+            if (IsInPreview)
+            {
+                AvaloniaImage = _portableBitmap.ScaleNearestNeighbor(NewWidth, NewHeight, FocalPointX, FocalPointY)
+                                               .ToAvalonia();
+            }
+            else
+            {
+                _portableBitmap = _portableBitmap.ScaleNearestNeighbor(NewWidth, NewHeight, FocalPointX, FocalPointY);
+                AvaloniaImage = _portableBitmap.ToAvalonia();
+            }
+
+            FileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Scaled in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            FileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void ScaleBilinear()
+    {
+        try
+        {
+            FileLogger.SharedTimer.Restart();
+
+            if (IsInPreview)
+            {
+                AvaloniaImage = _portableBitmap.ScaleBilinear(NewWidth, NewHeight, FocalPointX, FocalPointY)
+                                               .ToAvalonia();
+            }
+            else
+            {
+                _portableBitmap = _portableBitmap.ScaleBilinear(NewWidth, NewHeight, FocalPointX, FocalPointY);
+                AvaloniaImage = _portableBitmap.ToAvalonia();
+            }
+
+            FileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Scaled in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            FileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void ScaleLanczos3()
+    {
+        try
+        {
+            FileLogger.SharedTimer.Restart();
+
+            if (IsInPreview)
+            {
+                AvaloniaImage = _portableBitmap.ScaleLanczos3(NewWidth, NewHeight, FocalPointX, FocalPointY)
+                                               .ToAvalonia();
+            }
+            else
+            {
+                _portableBitmap = _portableBitmap.ScaleLanczos3(NewWidth, NewHeight, FocalPointX, FocalPointY);
+                AvaloniaImage = _portableBitmap.ToAvalonia();
+            }
+
+            FileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Scaled in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            FileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void ScaleBcSpline()
+    {
+        try
+        {
+            FileLogger.SharedTimer.Restart();
+
+            if (IsInPreview)
+            {
+                AvaloniaImage = _portableBitmap.ScaleBcSpline(NewWidth, NewHeight, FocalPointX, FocalPointY, B, C)
+                                               .ToAvalonia();
+            }
+            else
+            {
+                _portableBitmap = _portableBitmap.ScaleBcSpline(NewWidth, NewHeight, FocalPointX, FocalPointY, B, C);
+                AvaloniaImage = _portableBitmap.ToAvalonia();
+            }
+
+            FileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Scaled in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            FileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void RenderHistograms()
+    {
+        try
+        {
+            FileLogger.SharedTimer.Restart();
+
+            double[][] histograms = HistogramGenerator.CreateHistograms(_portableBitmap);
+            int[] histogram = HistogramGenerator.CreateGrayHistogram(_portableBitmap);
+
+            Plot.Clear();
+            Plot.AddBar(histograms[0]);
+            HistogramFirst = Plot.Render().ToAvalonia();
+
+            Plot.Clear();
+            Plot.AddBar(histograms[1]);
+            HistogramSecond = Plot.Render().ToAvalonia();
+
+            Plot.Clear();
+            Plot.AddBar(histograms[2]);
+            HistogramThird = Plot.Render().ToAvalonia();
+
+            Plot.Clear();
+            Plot.AddBar(histogram.Select(v => (double)v).ToArray());
+            HistogramGrey = Plot.Render().ToAvalonia();
+
+            IsHistogramVisible = true;
+
+            FileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount} Rendered in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            FileLogger.Log("ERR", $"{e}\n");
+        }
+    }
+
+    public void HideHistograms()
+    {
+        try
+        {
+            FileLogger.SharedTimer.Restart();
+
+            IsHistogramVisible = false;
+
+            FileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Hided in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
+        }
+        catch (Exception e)
+        {
+            FileLogger.Log("ERR", $"{e}\n");
         }
     }
 
@@ -458,48 +853,61 @@ public class MainWindowViewModel : ViewModelBase
     {
         try
         {
-            if (Threshold < 0)
+            if (IntensityThreshold < 0)
             {
                 throw new ArgumentOutOfRangeException(
-                    nameof(Threshold),
-                    Threshold,
-                    $"{nameof(Threshold)} should be non-negative");
+                    nameof(IntensityThreshold),
+                    IntensityThreshold,
+                    $"{nameof(IntensityThreshold)} should be non-negative");
             }
 
-            if (Threshold < 0.001)
+            FileLogger.SharedTimer.Restart();
+
+            if (IsInPreview)
             {
+                AvaloniaImage = _portableBitmap.CorrectIntensity(IntensityThreshold).ToAvalonia();
+            }
+            else
+            {
+                _portableBitmap = _portableBitmap.CorrectIntensity(IntensityThreshold);
                 AvaloniaImage = _portableBitmap.ToAvalonia();
-                return;
             }
 
-            IntensityCorrector.CorrectIntensity(ref _portableBitmap, Threshold);
-            AvaloniaImage = _portableBitmap.ToAvalonia();
+            FileLogger.SharedTimer.Stop();
+            _operationsCount++;
+            Message = $"({_operationsCount}) Corrected in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
-            MyFileLogger.Log("ERR", $"{e}\n");
+            FileLogger.Log("ERR", $"{e}\n");
         }
     }
-
-    [Reactive]
-    public int FilterThreshold { get; set; } = 100;
 
     public void ThresholdFilter()
     {
         try
         {
-            MyFileLogger.SharedTimer.Restart();
+            FileLogger.SharedTimer.Restart();
 
-            AvaloniaImage = _portableBitmap.ThresholdFilter(FilterThreshold).ToAvalonia();
+            if (IsInPreview)
+            {
+                AvaloniaImage = _portableBitmap.ThresholdFilter(FilterThreshold).ToAvalonia();
+            }
+            else
+            {
+                _portableBitmap = _portableBitmap.ThresholdFilter(FilterThreshold);
+                AvaloniaImage = _portableBitmap.ToAvalonia();
+            }
 
-            MyFileLogger.SharedTimer.Stop();
+            FileLogger.SharedTimer.Stop();
             _operationsCount++;
-            Message = $"({_operationsCount}) Filtered in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-            MyFileLogger.Log("INF", $"{Message}\n");
+            Message = $"({_operationsCount}) Filtered in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
-            MyFileLogger.Log("ERR", $"{e}\n");
+            FileLogger.Log("ERR", $"{e}\n");
         }
     }
 
@@ -507,62 +915,80 @@ public class MainWindowViewModel : ViewModelBase
     {
         try
         {
-            MyFileLogger.SharedTimer.Restart();
+            FileLogger.SharedTimer.Restart();
 
-            AvaloniaImage = _portableBitmap.OtsuThresholdFilter().ToAvalonia();
+            if (IsInPreview)
+            {
+                AvaloniaImage = _portableBitmap.OtsuFilter().ToAvalonia();
+            }
+            else
+            {
+                _portableBitmap = _portableBitmap.OtsuFilter();
+                AvaloniaImage = _portableBitmap.ToAvalonia();
+            }
 
-            MyFileLogger.SharedTimer.Stop();
+            FileLogger.SharedTimer.Stop();
             _operationsCount++;
-            Message = $"({_operationsCount}) Filtered in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-            MyFileLogger.Log("INF", $"{Message}\n");
+            Message = $"({_operationsCount}) Filtered in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
-            MyFileLogger.Log("ERR", $"{e}\n");
+            FileLogger.Log("ERR", $"{e}\n");
         }
     }
-
-    [Reactive]
-    public int KernelRadius { get; set; } = 2;
 
     public void MedianFilter()
     {
         try
         {
-            MyFileLogger.SharedTimer.Restart();
+            FileLogger.SharedTimer.Restart();
 
-            AvaloniaImage = _portableBitmap.MedianFilter(KernelRadius).ToAvalonia();
+            if (IsInPreview)
+            {
+                AvaloniaImage = _portableBitmap.MedianFilter(KernelRadius).ToAvalonia();
+            }
+            else
+            {
+                _portableBitmap = _portableBitmap.MedianFilter(KernelRadius);
+                AvaloniaImage = _portableBitmap.ToAvalonia();
+            }
 
-            MyFileLogger.SharedTimer.Stop();
+            FileLogger.SharedTimer.Stop();
             _operationsCount++;
-            Message = $"({_operationsCount}) Filtered in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-            MyFileLogger.Log("INF", $"{Message}\n");
+            Message = $"({_operationsCount}) Filtered in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
-            MyFileLogger.Log("ERR", $"{e}\n");
+            FileLogger.Log("ERR", $"{e}\n");
         }
     }
-
-    [Reactive]
-    public int Sigma { get; set; } = 1;
 
     public void GaussianFilter()
     {
         try
         {
-            MyFileLogger.SharedTimer.Restart();
+            FileLogger.SharedTimer.Restart();
 
-            AvaloniaImage = _portableBitmap.GaussianFilter(Sigma).ToAvalonia();
+            if (IsInPreview)
+            {
+                AvaloniaImage = _portableBitmap.GaussianFilter(Sigma).ToAvalonia();
+            }
+            else
+            {
+                _portableBitmap = _portableBitmap.GaussianFilter(Sigma);
+                AvaloniaImage = _portableBitmap.ToAvalonia();
+            }
 
-            MyFileLogger.SharedTimer.Stop();
+            FileLogger.SharedTimer.Stop();
             _operationsCount++;
-            Message = $"({_operationsCount}) Filtered in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-            MyFileLogger.Log("INF", $"{Message}\n");
+            Message = $"({_operationsCount}) Filtered in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
-            MyFileLogger.Log("ERR", $"{e}\n");
+            FileLogger.Log("ERR", $"{e}\n");
         }
     }
 
@@ -570,18 +996,26 @@ public class MainWindowViewModel : ViewModelBase
     {
         try
         {
-            MyFileLogger.SharedTimer.Restart();
+            FileLogger.SharedTimer.Restart();
 
-            AvaloniaImage = _portableBitmap.BoxBlur(KernelRadius).ToAvalonia();
+            if (IsInPreview)
+            {
+                AvaloniaImage = _portableBitmap.BoxBlurFilter(KernelRadius).ToAvalonia();
+            }
+            else
+            {
+                _portableBitmap = _portableBitmap.BoxBlurFilter(KernelRadius);
+                AvaloniaImage = _portableBitmap.ToAvalonia();
+            }
 
-            MyFileLogger.SharedTimer.Stop();
+            FileLogger.SharedTimer.Stop();
             _operationsCount++;
-            Message = $"({_operationsCount}) Filtered in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-            MyFileLogger.Log("INF", $"{Message}\n");
+            Message = $"({_operationsCount}) Filtered in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
-            MyFileLogger.Log("ERR", $"{e}\n");
+            FileLogger.Log("ERR", $"{e}\n");
         }
     }
 
@@ -589,40 +1023,53 @@ public class MainWindowViewModel : ViewModelBase
     {
         try
         {
-            MyFileLogger.SharedTimer.Restart();
+            FileLogger.SharedTimer.Restart();
 
-            AvaloniaImage = _portableBitmap.SobelFilter().ToAvalonia();
+            if (IsInPreview)
+            {
+                AvaloniaImage = _portableBitmap.SobelFilter().ToAvalonia();
+            }
+            else
+            {
+                _portableBitmap = _portableBitmap.SobelFilter();
+                AvaloniaImage = _portableBitmap.ToAvalonia();
+            }
 
-            MyFileLogger.SharedTimer.Stop();
+            FileLogger.SharedTimer.Stop();
             _operationsCount++;
-            Message = $"({_operationsCount}) Filtered in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-            MyFileLogger.Log("INF", $"{Message}\n");
+            Message = $"({_operationsCount}) Filtered in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
-            MyFileLogger.Log("ERR", $"{e}\n");
+            FileLogger.Log("ERR", $"{e}\n");
         }
     }
-
-    [Reactive]
-    public float Sharpness { get; set; } = 1;
 
     public void SharpFilter()
     {
         try
         {
-            MyFileLogger.SharedTimer.Restart();
+            FileLogger.SharedTimer.Restart();
 
-            AvaloniaImage = _portableBitmap.ContrastAdaptiveSharpening(Sharpness).ToAvalonia();
+            if (IsInPreview)
+            {
+                AvaloniaImage = _portableBitmap.ContrastAdaptiveSharpening(Sharpness).ToAvalonia();
+            }
+            else
+            {
+                _portableBitmap = _portableBitmap.ContrastAdaptiveSharpening(Sharpness);
+                AvaloniaImage = _portableBitmap.ToAvalonia();
+            }
 
-            MyFileLogger.SharedTimer.Stop();
+            FileLogger.SharedTimer.Stop();
             _operationsCount++;
-            Message = $"({_operationsCount}) Filtered in {MyFileLogger.SharedTimer.Elapsed.TotalSeconds} s";
-            MyFileLogger.Log("INF", $"{Message}\n");
+            Message = $"({_operationsCount}) Filtered in {FileLogger.SharedTimer.Elapsed.TotalSeconds} s";
+            FileLogger.Log("INF", $"{Message}\n");
         }
         catch (Exception e)
         {
-            MyFileLogger.Log("ERR", $"{e}\n");
+            FileLogger.Log("ERR", $"{e}\n");
         }
     }
 }

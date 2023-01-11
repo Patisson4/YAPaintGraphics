@@ -2,9 +2,9 @@
 
 namespace YAPaint.Tools;
 
-public static class BarGrapher
+public static class HistogramGenerator
 {
-    public static double[][] CreateBarGraphs(PortableBitmap bitmap)
+    public static double[][] CreateHistograms(PortableBitmap bitmap)
     {
         var histograms = new double[3][];
         for (var i = 0; i < 3; i++)
@@ -26,7 +26,7 @@ public static class BarGrapher
         return histograms;
     }
 
-    public static int[] CreateGreyBarGraph(PortableBitmap bitmap)
+    public static int[] CreateGrayHistogram(PortableBitmap bitmap)
     {
         var histogram = new int[256];
 
@@ -35,7 +35,7 @@ public static class BarGrapher
             for (var x = 0; x < bitmap.Width; x++)
             {
                 var pixel = bitmap.GetPixel(x, y);
-                histogram[Coefficient.Denormalize(pixel.First + pixel.Second + pixel.Third) / 3]++;
+                histogram[Coefficient.Denormalize(bitmap.ColorConverter.GetGrayValue(pixel))]++;
             }
         }
 
